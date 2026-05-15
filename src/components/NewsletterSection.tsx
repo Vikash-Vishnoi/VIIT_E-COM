@@ -1,0 +1,49 @@
+"use client";
+
+import { useState } from "react";
+
+export default function NewsletterSection() {
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email.trim()) setSubmitted(true);
+  };
+
+  return (
+    <section className="w-full bg-black py-16 px-6 md:px-10 flex flex-col items-center text-center">
+      {/* Heading */}
+      <h2
+        className="text-base font-black uppercase tracking-widest text-white mb-6"
+        style={{ fontFamily: "Arial Black, Arial, sans-serif" }}
+      >
+        BE THE FIRST TO KNOW
+      </h2>
+
+      {submitted ? (
+        <p className="text-sm text-gray-300">Thank you for subscribing!</p>
+      ) : (
+        <>
+          {/* Input + Button */}
+          <form onSubmit={handleSubmit} className="flex w-full max-w-xl">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email address here"
+              className="flex-1 bg-transparent border border-white/30 border-r-0 px-4 py-3 text-sm text-white placeholder-gray-400 outline-none focus:border-white transition-colors"
+            />
+            <button
+              type="submit"
+              className="bg-white text-black text-xs font-bold tracking-widest uppercase px-6 py-3 hover:bg-gray-200 transition-colors whitespace-nowrap"
+            >
+              SUBSCRIBE
+            </button>
+          </form>
+        </>
+      )}
+    </section>
+  );
+}
