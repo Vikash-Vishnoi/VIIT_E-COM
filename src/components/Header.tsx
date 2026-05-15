@@ -44,7 +44,7 @@ export default function Header() {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`text-[11px] font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"
+                className={`text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"
                   }`}
               >
                 {link.label}

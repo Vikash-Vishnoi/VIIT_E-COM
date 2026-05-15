@@ -1,3 +1,6 @@
+"use client";
+
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -10,10 +13,29 @@ const looks = [
 ];
 
 export default function LooksSection() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const SCROLL_AMOUNT = 400;
+
+  const scroll = (dir: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === "left" ? -SCROLL_AMOUNT : SCROLL_AMOUNT, behavior: "smooth" });
+  };
+
+  const updateArrows = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  };
+
   return (
     <section className="w-full bg-white py-8 px-6 md:px-10">
       {/* Header */}
-      <div className="relative z-20 pointer-events-none mb-4">
+      <div className="relative z-20 pointer-events-none ml-16 md:ml-32 mb-4">
         <p
           className="text-lg md:text-2xl font-light leading-snug text-black mb-1"
           style={{ fontFamily: "var(--font-dancing-script), 'Brush Script MT', cursive" }}
@@ -28,13 +50,47 @@ export default function LooksSection() {
         </h2>
       </div>
 
-      {/* Image grid */}
-      <div className="grid gap-1 mt-7 md:mt-9" style={{ gridTemplateColumns: `repeat(${looks.length}, 1fr)` }}>
+      {/* Image scrollable row wrapper */}
+      <div className="relative mt-7 md:mt-9 ml-16 md:ml-32">
+        {/* Left arrow */}
+        {canScrollLeft && (
+          <button
+            onClick={() => scroll("left")}
+            aria-label="Previous"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-24 h-24 flex items-center justify-center text-black hover:opacity-70 transition-all"
+            style={{ transform: "translateY(-50%)" }}
+          >
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+        )}
+
+        {/* Right arrow */}
+        {canScrollRight && (
+          <button
+            onClick={() => scroll("right")}
+            aria-label="Next"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-24 h-24 flex items-center justify-center text-black hover:opacity-70 transition-all"
+          >
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        )}
+
+        {/* Scrollable row */}
+        <div 
+          ref={scrollRef}
+          onScroll={updateArrows}
+          className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth" 
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
         {looks.map((look, i) => (
           <div
             key={i}
-            className="relative overflow-hidden bg-gray-50 group cursor-pointer"
-            style={{ aspectRatio: "3/4" }}
+            className="flex-none relative overflow-hidden bg-gray-50 group cursor-pointer"
+            style={{ width: "clamp(220px, 24vw, 340px)", aspectRatio: "3/4" }}
           >
             <Image
               src={look.src}
@@ -45,6 +101,7 @@ export default function LooksSection() {
             />
           </div>
         ))}
+        </div>
       </div>      
     </section>
   );
