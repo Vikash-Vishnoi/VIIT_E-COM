@@ -4,7 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-const navLinks = [
+type NavLink = {
+  label: string;
+  href: string;
+  highlight?: boolean;
+};
+
+const navLinks: NavLink[] = [
   { label: "MEN CLOTHES", href: "/men-clothes" },
   { label: "WOMEN CLOTHES", href: "/women-clothes" },
   { label: "ACCESSORIES", href: "/accessories" },
