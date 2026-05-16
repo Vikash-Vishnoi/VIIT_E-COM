@@ -57,7 +57,7 @@ export default function CalaCollection() {
           <button
             onClick={() => scroll("left")}
             aria-label="Previous"
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-24 h-24 flex items-center justify-center text-black hover:opacity-70 transition-all"
+            className="absolute -left-35 top-1/2 -translate-y-1/2 z-10 w-24 h-24 flex items-center justify-center text-black hover:opacity-70 transition-all"
             style={{ transform: "translateY(-50%)" }}
           >
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

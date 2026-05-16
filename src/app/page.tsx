@@ -1,4 +1,3 @@
-import Image from "next/image";
 import CalaCollection from "@/components/CalaCollection";
 import CategoryBanner from "@/components/CategoryBanner";
 import LooksSection from "@/components/LooksSection";
@@ -12,14 +11,18 @@ export default function Home() {
     <div className="flex flex-col flex-1">
       {/* Hero Banner */}
       <section className="relative w-full" style={{ height: "calc(100vh - 88px)" }}>
-        {/* Background Image */}
-        <Image
-          src="/images/IMG_3649.JPG.jpeg"
-          alt="Cala Bimba Campaign"
-          fill
-          priority
-          className="object-cover object-[center_35%]"
-        />
+        {/* Background Video */}
+        <video
+          className="absolute inset-0 h-full w-full object-cover object-[center_40%]"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+        >
+          <source src="/videos/model.mp4" type="video/mp4" />
+        </video>
 
         {/* Overlay gradient – subtle darkening on left for text legibility */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent" />
