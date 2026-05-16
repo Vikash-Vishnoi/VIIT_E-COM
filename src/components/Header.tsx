@@ -19,15 +19,30 @@ const navLinks: NavLink[] = [
 export default function Header() {
   const [cartCount] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="w-full bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
       <div className="w-full px-10 xl:px-16">
         {/* Single row: Logo | Nav | Icons */}
-        <div className="flex items-center justify-between py-4">
+        <div className="grid grid-cols-[auto_1fr_auto] items-center py-4 gap-3 md:flex md:justify-between md:gap-3">
+
+          {/* Mobile menu */}
+          <button
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            aria-label="Open menu"
+            aria-expanded={mobileMenuOpen}
+            className="md:hidden justify-self-start text-black hover:opacity-60 transition-opacity"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="18" x2="20" y2="18" />
+            </svg>
+          </button>
 
           {/* LEFT — Logo */}
-          <Link href="/" aria-label="Home" className="flex-shrink-0 relative w-[120px] h-[48px] flex items-center justify-center">
+          <Link href="/" aria-label="Home" className="justify-self-center md:justify-self-auto flex-shrink-0 relative w-[120px] h-[48px] flex items-center justify-center">
             <Image
               src="/images/logo-dark-transparent.png"
               alt="Logo"
@@ -39,7 +54,7 @@ export default function Header() {
           </Link>
 
           {/* CENTER — Nav links */}
-          <nav className="flex items-center gap-7 mx-8">
+          <nav className="hidden md:flex items-center gap-7 mx-8">
             {navLinks.map((link) => (
               <Link
                 key={link.label}
@@ -53,7 +68,8 @@ export default function Header() {
           </nav>
 
           {/* RIGHT — Icons */}
-          <div className="flex items-center gap-5 flex-shrink-0">
+          <div className="col-start-3 flex items-center gap-4 md:gap-5 flex-shrink-0">
+
             {/* Search */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
@@ -105,6 +121,23 @@ export default function Header() {
             placeholder="Search..."
             className="w-full bg-transparent text-sm outline-none text-black placeholder-gray-400"
           />
+        </div>
+      )}
+
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-gray-100 px-6 py-4 bg-white">
+          <nav className="flex flex-col gap-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 ${link.highlight ? "text-[#FFCC00]" : "text-black"}`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       )}
     </header>
