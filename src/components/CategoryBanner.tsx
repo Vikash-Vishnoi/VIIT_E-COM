@@ -19,7 +19,7 @@ export default function CategoryBanner({
   objectPosition = "center center",
 }: CategoryBannerProps) {
   return (
-    <section className="relative w-full overflow-hidden" style={{ height: "clamp(380px, 55vw, 620px)" }}>
+    <section className="relative w-full overflow-hidden" style={{ height: "clamp(390px, 57vw, 640px)" }}>
       {/* Background image */}
       <Image
         src={src}
