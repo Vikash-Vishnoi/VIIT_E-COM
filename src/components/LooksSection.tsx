@@ -57,10 +57,9 @@ export default function LooksSection() {
           <button
             onClick={() => scroll("left")}
             aria-label="Previous"
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-24 h-24 flex items-center justify-center text-black hover:opacity-70 transition-all"
-            style={{ transform: "translateY(-50%)" }}
+            className="absolute -left-40 top-1/2 -translate-y-1/2 z-10 w-28 h-28 flex items-center justify-center text-black hover:opacity-70 transition-all"
           >
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
@@ -71,9 +70,9 @@ export default function LooksSection() {
           <button
             onClick={() => scroll("right")}
             aria-label="Next"
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-24 h-24 flex items-center justify-center text-black hover:opacity-70 transition-all"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-28 h-28 flex items-center justify-center text-black hover:opacity-70 transition-all"
           >
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
@@ -83,7 +82,7 @@ export default function LooksSection() {
         <div 
           ref={scrollRef}
           onScroll={updateArrows}
-          className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth" 
+          className="-ml-24 md:-ml-40 pl-24 md:pl-40 flex gap-4 md:gap-6 overflow-x-auto scroll-smooth" 
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
         {looks.map((look, i) => (
