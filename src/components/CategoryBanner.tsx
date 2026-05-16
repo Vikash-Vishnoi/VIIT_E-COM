@@ -19,7 +19,7 @@ export default function CategoryBanner({
   objectPosition = "center center",
 }: CategoryBannerProps) {
   return (
-    <section className="relative w-full overflow-hidden" style={{ height: "clamp(380px, 55vw, 620px)" }}>
+    <section className="relative w-full overflow-hidden h-[70vw] md:h-[clamp(380px,55vw,620px)]">
       {/* Background image */}
       <Image
         src={src}
@@ -35,7 +35,7 @@ export default function CategoryBanner({
       <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/10 to-transparent" />
 
       {/* Text block — top left */}
-      <div className="absolute top-8 left-8 md:top-10 md:left-12 text-white">
+      <div className="absolute top-6 left-6 md:top-10 md:left-12 text-white">
         {/* Cursive collection name */}
         <p
           className="text-lg md:text-2xl font-light leading-snug"
@@ -56,7 +56,7 @@ export default function CategoryBanner({
       </div>
 
       {/* Buy Now Button — bottom left */}
-      <div className="absolute bottom-8 left-8 md:bottom-10 md:left-12">
+      <div className="absolute bottom-6 left-6 md:bottom-10 md:left-12">
         <Link 
           href={href}
           className="inline-flex items-center justify-center px-8 py-3 bg-white text-black font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-black hover:text-white transition-colors duration-300 shadow-sm"

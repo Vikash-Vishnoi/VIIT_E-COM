@@ -26,18 +26,18 @@ export default function NewsletterSection() {
       ) : (
         <>
           {/* Input + Button */}
-          <form onSubmit={handleSubmit} className="flex w-full max-w-xl">
+          <form onSubmit={handleSubmit} className="flex w-full max-w-xl flex-col md:flex-row gap-3 md:gap-0">
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email address here"
-              className="flex-1 bg-transparent border border-white/30 border-r-0 px-4 py-3 text-sm text-white placeholder-gray-400 outline-none focus:border-white transition-colors"
+              className="flex-1 bg-transparent border border-white/30 md:border-r-0 px-4 py-3 text-sm text-white placeholder-gray-400 outline-none focus:border-white transition-colors"
             />
             <button
               type="submit"
-              className="bg-white text-black text-xs font-bold tracking-widest uppercase px-6 py-3 hover:bg-gray-200 transition-colors whitespace-nowrap"
+              className="bg-white text-black text-xs font-bold tracking-widest uppercase px-6 py-3 hover:bg-gray-200 transition-colors whitespace-nowrap w-full md:w-auto"
             >
               SUBSCRIBE
             </button>

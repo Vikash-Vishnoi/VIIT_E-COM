@@ -21,7 +21,7 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <header className="w-full bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="w-full bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
       <div className="w-full px-10 xl:px-16">
         {/* Single row: Logo | Nav | Icons */}
         <div className="flex items-center justify-between py-4">

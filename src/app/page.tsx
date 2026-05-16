@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <div className="flex flex-col flex-1">
       {/* Hero Banner */}
-      <section className="relative w-full" style={{ height: "calc(100vh - 88px)" }}>
+      <section className="relative w-full h-[calc(100svh-88px)] md:h-[calc(100vh-88px)]">
         {/* Background Video */}
         <video
           className="absolute inset-0 h-full w-full object-cover object-[center_40%]"
@@ -28,10 +28,10 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent" />
 
         {/* Text overlay */}
-        <div className="absolute inset-0 flex flex-col justify-end pb-16 pl-10 md:pl-16">
+        <div className="absolute inset-0 flex flex-col justify-end pb-10 md:pb-16 pl-6 md:pl-16">
           {/* Brand name */}
           <p
-            className="text-5xl md:text-7xl font-black uppercase italic tracking-tight leading-none"
+            className="text-4xl md:text-7xl font-black uppercase italic tracking-tight leading-none"
             style={{
               color: "#E8D96A",
               fontFamily: "Arial Black, Impact, sans-serif",
@@ -43,7 +43,7 @@ export default function Home() {
 
           {/* Cursive sub-title */}
           <p
-            className="text-4xl md:text-6xl leading-tight mt-1"
+            className="text-3xl md:text-6xl leading-tight mt-1"
             style={{
               color: "#E8D96A",
               fontFamily: "var(--font-dancing-script), 'Brush Script MT', cursive",
@@ -70,7 +70,7 @@ export default function Home() {
         objectPosition="center 20%"
       />
       {/* White horizontal strip */}
-      <div className="w-full bg-white" style={{ height: "32px" }} />
+      <div className="w-full bg-white h-4 md:h-8" />
       <CategoryBanner
         src="/images/IMG_4745.JPG.jpeg"
         category="WOMEN CLOTHES"
@@ -78,11 +78,11 @@ export default function Home() {
         href="/women-clothes"
         objectPosition="center 30%"
       />
-      <div className="w-full bg-white" style={{ height: "32px" }} />
+      <div className="w-full bg-white h-4 md:h-8" />
       <LooksSection />
-      <div className="w-full bg-white" style={{ height: "32px" }} />
+      <div className="w-full bg-white h-4 md:h-8" />
       <NewsletterSection />
-      <div className="w-full bg-white" style={{ height: "32px" }} />
+      <div className="w-full bg-white h-4 md:h-8" />
       <OurWorld />
     </div>
 
