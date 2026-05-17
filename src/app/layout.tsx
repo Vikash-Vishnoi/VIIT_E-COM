@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   title: "VIIT India | Official Website",
   description: "Welcome to the official VIIT India website. Discover the latest collections and styles.",
   icons: {
-    icon: "/images/logo-dark.jpeg",
+    icon: "/images/logo.png",
   },
 };
 

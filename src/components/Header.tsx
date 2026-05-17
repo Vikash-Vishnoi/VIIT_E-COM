@@ -44,11 +44,11 @@ export default function Header() {
           {/* LEFT — Logo */}
           <Link href="/" aria-label="Home" className="justify-self-center md:justify-self-auto flex-shrink-0 relative w-[120px] h-[48px] flex items-center justify-center">
             <Image
-              src="/images/logo-dark-transparent.png"
+              src="/images/logo.png"
               alt="Logo"
               width={200}
               height={80}
-              className="object-contain absolute scale-[1.25] -mt-10"
+              className="object-contain absolute scale-[1] translate-y-3"
               priority
             />
           </Link>
