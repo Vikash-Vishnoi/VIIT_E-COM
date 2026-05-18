@@ -1,8 +1,11 @@
-import CalaCollection from "@/components/CalaCollection";
+import Category from "@/components/Category";
 import CategoryBanner from "@/components/CategoryBanner";
-import LooksSection from "@/components/LooksSection";
+import Looks from "@/components/Looks";
+import StorySection from "@/components/StorySection";
 import OurWorld from "@/components/OurWorld";
-import NewsletterSection from "@/components/NewsletterSection";
+import Newsletter from "@/components/Newsletter";
+import SectionDivider from "@/components/SectionDivider";
+import Image from "next/image";
 
 
 
@@ -11,18 +14,16 @@ export default function Home() {
     <div className="flex flex-col flex-1">
       {/* Hero Banner */}
       <section className="relative w-full h-[calc(100svh-88px)] md:h-[calc(100vh-88px)]">
-        {/* Background Video */}
-        <video
-          className="absolute inset-0 h-full w-full object-cover object-[center_40%]"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
+        {/* Background image (replaced video) */}
+        <Image
+          src="/images/cala-look-01.JPG.jpeg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[center_40%]"
           aria-hidden="true"
-        >
-          <source src="/videos/model.mp4" type="video/mp4" />
-        </video>
+        />
 
         {/* Overlay gradient – subtle darkening on left for text legibility */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent" />
@@ -30,59 +31,52 @@ export default function Home() {
         {/* Text overlay */}
         <div className="absolute inset-0 flex flex-col justify-end pb-10 md:pb-16 pl-6 md:pl-16">
           {/* Brand name */}
-          <p
+          <h1
             className="text-4xl md:text-7xl font-black uppercase italic tracking-tight leading-none"
             style={{
               color: "#E8D96A",
-              fontFamily: "Arial Black, Impact, sans-serif",
               textShadow: "0 2px 12px rgba(0,0,0,0.15)",
             }}
           >
             VIIT
-          </p>
+          </h1>
 
           {/* Cursive sub-title */}
           <p
-            className="text-3xl md:text-6xl leading-tight mt-1"
+            className="text-3xl md:text-6xl leading-tight mt-1 font-script"
             style={{
               color: "#E8D96A",
-              fontFamily: "var(--font-dancing-script), 'Brush Script MT', cursive",
               textShadow: "0 2px 12px rgba(0,0,0,0.15)",
             }}
           >
-            Cala Bimba
+            Venom i Try
           </p>
         </div>
 
-        {/* Right-side credits */}
-        <div
-          className="absolute bottom-16 right-10 md:right-16 text-right text-xs md:text-sm leading-relaxed"
-          style={{ color: "#E8D96A" }}
-        >
-        </div>
       </section>
-      <CalaCollection />
+      <Category />
       <CategoryBanner
-        src="/images/IMG_3659.JPG.jpeg"
-        category="ACCESSORIES"
-        collection="Cala Bimba"
+        src="/images/cala-look-03.JPG.jpeg"
+        category="Women's Universe"
+        uppercase={false}
         href="/accessories"
         objectPosition="center 20%"
       />
-      {/* White horizontal strip */}
-      <div className="w-full bg-white h-4 md:h-8" />
+      <SectionDivider />
       <CategoryBanner
-        src="/images/IMG_4745.JPG.jpeg"
-        category="WOMEN CLOTHES"
-        collection="Cala Bimba"
+        src="/images/cala-look-05.JPG.jpeg"
+        category="Accessories"
+        uppercase={false}
         href="/women-clothes"
         objectPosition="center 30%"
       />
-      <div className="w-full bg-white h-4 md:h-8" />
-      <LooksSection />
-      <div className="w-full bg-white h-4 md:h-8" />
-      <NewsletterSection />
-      <div className="w-full bg-white h-4 md:h-8" />
+      <SectionDivider />
+      <Looks />
+      <SectionDivider />
+      <StorySection />
+      <SectionDivider />
+      <Newsletter />
+      <SectionDivider />
       <OurWorld />
     </div>
 

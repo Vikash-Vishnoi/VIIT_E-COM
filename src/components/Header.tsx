@@ -11,13 +11,134 @@ type NavLink = {
 };
 
 const navLinks: NavLink[] = [
-  { label: "MEN CLOTHES", href: "/men-clothes" },
-  { label: "WOMEN CLOTHES", href: "/women-clothes" },
+  {label:"VIIT Exclusive", href:"/viit-exclusive"},
+  { label: "MAN", href: "/man-clothes" },
+  { label: "WOMAN", href: "/woman-clothes" },
+  { label: "KIDS", href: "/kids-clothes" },
   { label: "ACCESSORIES", href: "/accessories" },
 ];
 
+type DropdownItem = {
+  label: string;
+  href: string;
+};
+
+const kidsDropdownItems: DropdownItem[] = [
+  { label: "Girls' Dresses", href: "/kids-clothes" },
+  { label: "Party Princess", href: "/kids-clothes" },
+  { label: "Casual Cuties", href: "/kids-clothes" },
+  { label: "Mini Occasion Wear", href: "/kids-clothes" },
+];
+
+const accessoriesDropdownItems: DropdownItem[] = [
+  { label: "Brooches", href: "/accessories" },
+  { label: "Silk Stories (scarves)", href: "/accessories" },
+  { label: "Leg Couture (stockings)", href: "/accessories" },
+  { label: "Hand Luxe (gloves)", href: "/accessories" },
+];
+
+const womenDropdownItems: DropdownItem[] = [
+  { label: "Casual Edit", href: "/woman-clothes" },
+  { label: "Summer Stories", href: "/woman-clothes" },
+  { label: "Winter Luxe", href: "/woman-clothes" },
+  { label: "Party Icons", href: "/woman-clothes" },
+  { label: "Street Muse", href: "/woman-clothes" },
+  { label: "Club Nights", href: "/woman-clothes" },
+  { label: "Mall Edit", href: "/woman-clothes" },
+  { label: "Date Night", href: "/woman-clothes" },
+  { label: "Dinner Glam", href: "/woman-clothes" },
+  { label: "Resort Escape", href: "/woman-clothes" },
+  { label: "Vacation Edit", href: "/woman-clothes" },
+  { label: "Lounge Luxe", href: "/woman-clothes" },
+  { label: "Work Chic", href: "/woman-clothes" },
+  { label: "Evening Affair", href: "/woman-clothes" },
+  { label: "Statement Looks", href: "/woman-clothes" },
+  { label: "New Arrivals", href: "/woman-clothes" },
+];
+
+const womenEssentialsDropdownItems: DropdownItem[] = [
+  { label: "Denim Edit", href: "/woman-clothes" },
+  { label: "Jeans", href: "/woman-clothes" },
+  { label: "Shorts", href: "/woman-clothes" },
+  { label: "Trousers", href: "/woman-clothes" },
+  { label: "Pants", href: "/woman-clothes" },
+  { label: "Skirts", href: "/woman-clothes" },
+  { label: "Bodysuits", href: "/woman-clothes" },
+  { label: "Tops", href: "/woman-clothes" },
+  { label: "Shirts", href: "/woman-clothes" },
+  { label: "Co-ord Sets", href: "/woman-clothes" },
+  { label: "Dresses", href: "/woman-clothes" },
+  { label: "Kaftans", href: "/woman-clothes" },
+  { label: "Jumpsuits", href: "/woman-clothes" },
+  { label: "Blazers", href: "/woman-clothes" },
+  { label: "Knitwear", href: "/woman-clothes" },
+];
+
+type NavDropdownSimple = {
+  layout: "simple";
+  items: DropdownItem[];
+  imageSrc: string;
+  imageAlt: string;
+};
+
+type NavDropdownTwoColumn = {
+  layout: "two-column";
+  columns: {
+    title: string;
+    items: DropdownItem[];
+  }[];
+  imageSrc: string;
+  imageAlt: string;
+};
+
+type NavDropdown = NavDropdownSimple | NavDropdownTwoColumn;
+
+const navDropdowns: Partial<Record<string, NavDropdown>> = {
+  KIDS: {
+    layout: "simple",
+    items: kidsDropdownItems,
+    imageSrc: "/images/about.png",
+    imageAlt: "Kids collection preview",
+  },
+  ACCESSORIES: {
+    layout: "simple",
+    items: accessoriesDropdownItems,
+    imageSrc: "/images/about.png",
+    imageAlt: "Accessories collection preview",
+  },
+  WOMAN: {
+    layout: "two-column",
+    columns: [
+      { title: "Women", items: womenDropdownItems },
+      { title: "Women - Denim & Essentials", items: womenEssentialsDropdownItems },
+    ],
+    imageSrc: "/images/about.png",
+    imageAlt: "Women collection preview",
+  },
+};
+
+type NavLabelWithArrowProps = {
+  label: string;
+};
+
+function NavLabelWithArrow({ label }: NavLabelWithArrowProps) {
+  return (
+    <span className="inline-flex items-center">
+      {label}
+      <svg
+        className="ml-1 h-7 w-7 transition-transform duration-200 group-hover:rotate-180"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M5.25 7.5L10 12.25L14.75 7.5H5.25Z" />
+      </svg>
+    </span>
+  );
+}
+
 export default function Header() {
-  const [cartCount] = useState(0);
+  const cartCount = 0;
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -55,16 +176,103 @@ export default function Header() {
 
           {/* CENTER — Nav links */}
           <nav className="hidden md:flex items-center gap-7 mx-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={`text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"
-                  }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const dropdown = navDropdowns[link.label];
+
+              if (dropdown) {
+                if (dropdown.layout === "two-column") {
+                  return (
+                    <div key={link.label} className="relative group">
+                      <Link
+                        href={link.href}
+                        className={`text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"
+                          }`}
+                      >
+                        <NavLabelWithArrow label={link.label} />
+                      </Link>
+                      <div className="absolute left-1/2 top-full mt-0 w-[860px] -translate-x-1/2 rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50">
+                        <div className="grid grid-cols-[auto_1fr_1fr] gap-6 px-5 pb-5">
+                          <div className="flex-shrink-0">
+                            <Image
+                              src={dropdown.imageSrc}
+                              alt={dropdown.imageAlt}
+                              width={170}
+                              height={210}
+                              className="rounded-md object-cover w-[170px] h-[210px]"
+                            />
+                          </div>
+                          {dropdown.columns.map((column) => (
+                            <div key={column.title} className="min-w-0">
+                              <div className="text-xs font-bold uppercase tracking-wider text-gray-600 mb-3">
+                                {column.title}
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                {column.items.map((item) => (
+                                  <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    className="text-sm font-semibold text-black hover:opacity-70"
+                                  >
+                                    {item.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={link.label} className="relative group">
+                    <Link
+                      href={link.href}
+                      className={`text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"
+                        }`}
+                    >
+                      <NavLabelWithArrow label={link.label} />
+                    </Link>
+                    <div className="absolute left-1/2 top-full mt-0 w-[420px] -translate-x-1/2 rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50">
+                      <div className="flex gap-5 px-5 pb-5">
+                        <div className="flex-shrink-0">
+                          <Image
+                            src={dropdown.imageSrc}
+                            alt={dropdown.imageAlt}
+                            width={140}
+                            height={170}
+                            className="rounded-md object-cover w-[140px] h-[170px]"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {dropdown.items.map((item) => (
+                            <Link
+                              key={item.label}
+                              href={item.href}
+                              className="text-sm font-semibold text-black hover:opacity-70 whitespace-nowrap"
+                            >
+                              {item.label}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className={`group text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"
+                    }`}
+                >
+                  <NavLabelWithArrow label={link.label} />
+                </Link>
+              );
+            })}
           </nav>
 
           {/* RIGHT — Icons */}
@@ -115,9 +323,12 @@ export default function Header() {
       {/* Expandable Search bar */}
       {searchOpen && (
         <div className="border-t border-gray-100 px-10 xl:px-16 py-3 bg-gray-50">
+          <label htmlFor="site-search" className="sr-only">Search</label>
           <input
+            id="site-search"
             autoFocus
             type="text"
+            name="q"
             placeholder="Search..."
             className="w-full bg-transparent text-sm outline-none text-black placeholder-gray-400"
           />

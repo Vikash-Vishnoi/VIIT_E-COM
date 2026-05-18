@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function NewsletterSection() {
+export default function Newsletter() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -16,7 +16,6 @@ export default function NewsletterSection() {
       {/* Heading */}
       <h2
         className="text-base font-black uppercase tracking-widest text-white mb-6"
-        style={{ fontFamily: "Arial Black, Arial, sans-serif" }}
       >
         BE THE FIRST TO KNOW
       </h2>
@@ -27,7 +26,11 @@ export default function NewsletterSection() {
         <>
           {/* Input + Button */}
           <form onSubmit={handleSubmit} className="flex w-full max-w-xl flex-col md:flex-row gap-3 md:gap-0">
+            <label htmlFor="newsletter-email" className="sr-only">Email address</label>
             <input
+              id="newsletter-email"
+              name="email"
+              autoComplete="email"
               type="email"
               required
               value={email}
