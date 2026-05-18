@@ -12,8 +12,8 @@ type NavLink = {
 
 const navLinks: NavLink[] = [
   {label:"VIIT Exclusive", href:"/viit-exclusive"},
-  { label: "MAN", href: "/man-clothes" },
   { label: "WOMAN", href: "/woman-clothes" },
+  { label: "MAN", href: "/man-clothes" },
   { label: "KIDS", href: "/kids-clothes" },
   { label: "ACCESSORIES", href: "/accessories" },
 ];
@@ -73,6 +73,15 @@ const womenEssentialsDropdownItems: DropdownItem[] = [
   { label: "Blazers", href: "/woman-clothes" },
   { label: "Knitwear", href: "/woman-clothes" },
 ];
+const manDenimDropdownItems: DropdownItem[] = [
+  { label: "Denim Jacket", href: "/man-clothes" },
+  { label: "Denim Jeans", href: "/man-clothes" },
+];
+
+const manDropdownItems: DropdownItem[] = [
+  { label: "Jeans", href: "/man-clothes" },
+  { label: "Linen", href: "/man-clothes" },
+];
 
 type NavDropdownSimple = {
   layout: "simple";
@@ -97,13 +106,13 @@ const navDropdowns: Partial<Record<string, NavDropdown>> = {
   KIDS: {
     layout: "simple",
     items: kidsDropdownItems,
-    imageSrc: "/images/about.png",
+    imageSrc: "/images/about.jpeg",
     imageAlt: "Kids collection preview",
   },
   ACCESSORIES: {
     layout: "simple",
     items: accessoriesDropdownItems,
-    imageSrc: "/images/about.png",
+    imageSrc: "/images/about.jpeg",
     imageAlt: "Accessories collection preview",
   },
   WOMAN: {
@@ -112,8 +121,17 @@ const navDropdowns: Partial<Record<string, NavDropdown>> = {
       { title: "Women", items: womenDropdownItems },
       { title: "Women - Denim & Essentials", items: womenEssentialsDropdownItems },
     ],
-    imageSrc: "/images/about.png",
+    imageSrc: "/images/woman.jpeg",
     imageAlt: "Women collection preview",
+  },
+  MAN: {
+    layout: "two-column",
+    columns: [
+      { title: "Denim", items: manDenimDropdownItems },
+      { title: "Man", items: manDropdownItems },
+    ],
+    imageSrc: "/images/man.jpeg",
+    imageAlt: "Men collection preview",
   },
 };
 
@@ -169,7 +187,7 @@ export default function Header() {
               alt="Logo"
               width={200}
               height={80}
-              className="object-contain absolute scale-[1] translate-y-3"
+              className="object-contain absolute scale-[1] -translate-x-10 translate-y-3"
               priority
             />
           </Link>
@@ -182,23 +200,22 @@ export default function Header() {
               if (dropdown) {
                 if (dropdown.layout === "two-column") {
                   return (
-                    <div key={link.label} className="relative group">
+                    <div key={link.label} className="group">
                       <Link
                         href={link.href}
-                        className={`text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"
+                        className={`relative inline-flex text-[15px] font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:transition-transform after:duration-200 after:content-[''] group-hover:after:scale-x-100 ${link.highlight ? "text-[#FFCC00] after:bg-[#FFCC00]" : "text-black after:bg-current"
                           }`}
                       >
                         <NavLabelWithArrow label={link.label} />
                       </Link>
-                      <div className="absolute left-1/2 top-full mt-0 w-[860px] -translate-x-1/2 rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50">
-                        <div className="grid grid-cols-[auto_1fr_1fr] gap-6 px-5 pb-5">
-                          <div className="flex-shrink-0">
+                      <div className="absolute left-0 right-0 top-full mt-0 w-screen rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50 before:absolute before:left-0 before:right-0 before:-top-10 before:h-10 before:content-[''] before:block">
+                        <div className="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-6 px-5 pb-5">
+                          <div className="relative min-w-0 self-stretch aspect-[4/5] justify-self-start">
                             <Image
                               src={dropdown.imageSrc}
                               alt={dropdown.imageAlt}
-                              width={170}
-                              height={210}
-                              className="rounded-md object-cover w-[170px] h-[210px]"
+                              fill
+                              className="rounded-md object-cover"
                             />
                           </div>
                           {dropdown.columns.map((column) => (
@@ -211,7 +228,7 @@ export default function Header() {
                                   <Link
                                     key={item.label}
                                     href={item.href}
-                                    className="text-sm font-semibold text-black hover:opacity-70"
+                                    className="text-sm font-semibold text-black hover:opacity-70 hover:underline underline-offset-4"
                                   >
                                     {item.label}
                                   </Link>
@@ -226,23 +243,22 @@ export default function Header() {
                 }
 
                 return (
-                  <div key={link.label} className="relative group">
+                  <div key={link.label} className="group">
                     <Link
                       href={link.href}
-                      className={`text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"
+                      className={`relative inline-flex text-[15px] font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:transition-transform after:duration-200 after:content-[''] group-hover:after:scale-x-100 ${link.highlight ? "text-[#FFCC00] after:bg-[#FFCC00]" : "text-black after:bg-current"
                         }`}
                     >
                       <NavLabelWithArrow label={link.label} />
                     </Link>
-                    <div className="absolute left-1/2 top-full mt-0 w-[420px] -translate-x-1/2 rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50">
-                      <div className="flex gap-5 px-5 pb-5">
-                        <div className="flex-shrink-0">
+                    <div className="absolute left-0 right-0 top-full mt-0 w-screen rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50 before:absolute before:left-0 before:right-0 before:-top-10 before:h-10 before:content-[''] before:block">
+                      <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-6 px-5 pb-5">
+                        <div className="relative min-w-0 self-stretch aspect-[4/5] justify-self-start">
                           <Image
                             src={dropdown.imageSrc}
                             alt={dropdown.imageAlt}
-                            width={140}
-                            height={170}
-                            className="rounded-md object-cover w-[140px] h-[170px]"
+                            fill
+                            className="rounded-md object-cover"
                           />
                         </div>
                         <div className="flex flex-col gap-2">
@@ -250,7 +266,7 @@ export default function Header() {
                             <Link
                               key={item.label}
                               href={item.href}
-                              className="text-sm font-semibold text-black hover:opacity-70 whitespace-nowrap"
+                              className="text-sm font-semibold text-black hover:opacity-70 hover:underline underline-offset-4 whitespace-nowrap"
                             >
                               {item.label}
                             </Link>

@@ -13,7 +13,7 @@ export default function Home() {
   return (
     <div className="flex flex-col flex-1">
       {/* Hero Banner */}
-      <section className="relative w-full h-[calc(100svh-88px)] md:h-[calc(100vh-88px)]">
+      <section className="relative w-full h-[calc(100svh-80px)] md:h-[calc(100vh-80px)]">
         {/* Background image (replaced video) */}
         <Image
           src="/images/cala-look-01.JPG.jpeg"
@@ -34,7 +34,7 @@ export default function Home() {
           <h1
             className="text-4xl md:text-7xl font-black uppercase italic tracking-tight leading-none"
             style={{
-              color: "#E8D96A",
+              color: "#000000",
               textShadow: "0 2px 12px rgba(0,0,0,0.15)",
             }}
           >
@@ -45,7 +45,7 @@ export default function Home() {
           <p
             className="text-3xl md:text-6xl leading-tight mt-1 font-script"
             style={{
-              color: "#E8D96A",
+              color: "#000000",
               textShadow: "0 2px 12px rgba(0,0,0,0.15)",
             }}
           >
@@ -56,7 +56,7 @@ export default function Home() {
       </section>
       <Category />
       <CategoryBanner
-        src="/images/cala-look-03.JPG.jpeg"
+        src="/images/cala-look-05.JPG.jpeg"
         category="Women's Universe"
         uppercase={false}
         href="/accessories"
@@ -64,7 +64,7 @@ export default function Home() {
       />
       <SectionDivider />
       <CategoryBanner
-        src="/images/cala-look-05.JPG.jpeg"
+        src="/images/cala-look-03.JPG.jpeg"
         category="Accessories"
         uppercase={false}
         href="/women-clothes"

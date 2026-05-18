@@ -20,6 +20,7 @@ export default function Newsletter() {
         BE THE FIRST TO KNOW
       </h2>
 
+
       {submitted ? (
         <p className="text-sm text-gray-300">Thank you for subscribing!</p>
       ) : (
@@ -47,6 +48,10 @@ export default function Newsletter() {
           </form>
         </>
       )}
+            <p className="text-sm text-white/80 mb-6">
+            <br></br>
+        10% off your first order. Subscribe to stay tuned.
+      </p>
     </section>
   );
 }

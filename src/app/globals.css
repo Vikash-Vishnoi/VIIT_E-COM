@@ -28,3 +28,26 @@ body {
 .font-script {
   font-family: var(--font-dancing-script), "Brush Script MT", cursive;
 }
+
+.carousel-scrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: #000000 #d9d9d9;
+}
+
+.carousel-scrollbar::-webkit-scrollbar {
+  height: 10px;
+}
+
+.carousel-scrollbar::-webkit-scrollbar-track {
+  background: #d9d9d9;
+}
+
+.carousel-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #000000;
+  border-radius: 2px;
+  border: 0;
+}
+
+.carousel-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: #000000;
+}
