@@ -11,7 +11,7 @@ type NavLink = {
 };
 
 const navLinks: NavLink[] = [
-  {label:"VIIT Exclusive", href:"/viit-exclusive"},
+  { label: "VIIT Exclusive", href: "/viit-exclusive" },
   { label: "WOMAN", href: "/woman-clothes" },
   { label: "MAN", href: "/man-clothes" },
   { label: "KIDS", href: "/kids-clothes" },
@@ -121,7 +121,7 @@ const navDropdowns: Partial<Record<string, NavDropdown>> = {
       { title: "Women", items: womenDropdownItems },
       { title: "Women - Denim & Essentials", items: womenEssentialsDropdownItems },
     ],
-    imageSrc: "/images/woman.jpeg",
+    imageSrc: "/images/woman-header.jpeg",
     imageAlt: "Women collection preview",
   },
   MAN: {
@@ -130,7 +130,7 @@ const navDropdowns: Partial<Record<string, NavDropdown>> = {
       { title: "Denim", items: manDenimDropdownItems },
       { title: "Man", items: manDropdownItems },
     ],
-    imageSrc: "/images/man.jpeg",
+    imageSrc: "/images/man-header.jpeg",
     imageAlt: "Men collection preview",
   },
 };
