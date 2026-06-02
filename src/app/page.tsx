@@ -1,6 +1,6 @@
-import Category from "@/components/Category";
+import Category from "@/components/ViitWorld";
 import CategoryBanner from "@/components/CategoryBanner";
-import Looks from "@/components/Looks";
+import Looks from "@/components/OwniT";
 import StorySection from "@/components/StorySection";
 import OurWorld from "@/components/OurWorld";
 import Newsletter from "@/components/Newsletter";
@@ -13,7 +13,7 @@ export default function Home() {
   return (
     <div className="flex flex-col flex-1">
       {/* Hero Banner */}
-      <section className="relative w-full h-[calc(100svh-80px)] md:h-[calc(100vh-80px)]">
+      <section className="relative w-full h-[calc(100svh-80px)] md:h-[calc(100vh-80px)] overflow-hidden">
         {/* Background image (replaced video) */}
         <Image
           src="/images/cala-look-01.JPG.jpeg"
@@ -21,7 +21,7 @@ export default function Home() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[center_40%]"
+          className="object-cover object-[center_39.6%] scale-[1.05] translate-x-[2%]"
           aria-hidden="true"
         />
 
@@ -56,19 +56,19 @@ export default function Home() {
       </section>
       <Category />
       <CategoryBanner
-        src="/images/cala-look-05.JPG.jpeg"
+        src="/images/Womens Universe.jpeg"
         category="Women's Universe"
         uppercase={false}
         href="/accessories"
-        objectPosition="center 20%"
+        objectPosition="center 32%"
       />
       <SectionDivider />
       <CategoryBanner
-        src="/images/cala-look-03.JPG.jpeg"
+        src="/images/Accessories.jpeg"
         category="Accessories"
         uppercase={false}
         href="/women-clothes"
-        objectPosition="center 30%"
+        objectPosition="center 5%"
       />
       <SectionDivider />
       <Looks />

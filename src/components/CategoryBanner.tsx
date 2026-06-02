@@ -21,7 +21,7 @@ export default function CategoryBanner({
   uppercase = true,
 }: CategoryBannerProps) {
   return (
-    <section className="relative w-full overflow-hidden" style={{ height: "clamp(390px, 57vw, 640px)" }}>
+    <section className="relative w-full overflow-hidden" style={{ height: "clamp(300px, 55vw, 650px)" }}>
       {/* Background image */}
       <Image
         src={src}

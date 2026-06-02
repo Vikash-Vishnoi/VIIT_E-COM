@@ -16,6 +16,7 @@ export default function Category() {
       title="VIIT World"
       sectionClassName="py-10 pl-6 md:pl-10 overflow-hidden"
       headerClassName="pr-6 md:pr-10"
+      autoScrollOnHover={true}
     >
       {products.map((product) => (
         <Link

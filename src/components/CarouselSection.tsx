@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 import CarouselArrows from "@/components/CarouselArrows";
 import { useHorizontalScroll } from "@/hooks/useHorizontalScroll";
 
@@ -10,6 +11,7 @@ type CarouselSectionProps = {
   sectionClassName?: string;
   headerClassName?: string;
   railClassName?: string;
+  autoScrollOnHover?: boolean;
 };
 
 const baseRailClassName =
@@ -21,6 +23,7 @@ export default function CarouselSection({
   sectionClassName = "",
   headerClassName = "",
   railClassName = "",
+  autoScrollOnHover = false,
 }: CarouselSectionProps) {
   const {
     scrollRef,
@@ -30,6 +33,36 @@ export default function CarouselSection({
     updateArrows,
     scrollProgress,
   } = useHorizontalScroll();
+
+  useEffect(() => {
+    let animationFrameId: number;
+    let isHovering = false;
+
+    const el = scrollRef.current;
+    if (!el || !autoScrollOnHover) return;
+
+    const handleMouseEnter = () => { isHovering = true; };
+    const handleMouseLeave = () => { isHovering = false; };
+
+    el.addEventListener("mouseenter", handleMouseEnter);
+    el.addEventListener("mouseleave", handleMouseLeave);
+
+    const scroll = () => {
+      if (isHovering && el) {
+        // Adjust scroll speed by changing this value (pixels per frame)
+        el.scrollLeft += 0.75; 
+      }
+      animationFrameId = requestAnimationFrame(scroll);
+    };
+
+    animationFrameId = requestAnimationFrame(scroll);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      el.removeEventListener("mouseenter", handleMouseEnter);
+      el.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, [autoScrollOnHover, scrollRef]);
 
   return (
     <section className={`w-full bg-white ${sectionClassName}`}>
@@ -50,7 +83,9 @@ export default function CarouselSection({
         <div
           ref={scrollRef}
           onScroll={updateArrows}
-          className={`${baseRailClassName} ${railClassName}`.trim()}
+          className={`${baseRailClassName} ${
+            autoScrollOnHover ? "hover:snap-none hover:scroll-auto" : ""
+          } ${railClassName}`.trim()}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {children}

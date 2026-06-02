@@ -210,7 +210,7 @@ export default function Header() {
                       </Link>
                       <div className="absolute left-0 right-0 top-full mt-0 w-screen rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50 before:absolute before:left-0 before:right-0 before:-top-10 before:h-10 before:content-[''] before:block">
                         <div className="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-6 px-5 pb-5">
-                          <div className="relative min-w-0 self-stretch aspect-[4/5] justify-self-start">
+                          <div className="relative min-w-0 w-[370px] aspect-[4/5] justify-self-start">
                             <Image
                               src={dropdown.imageSrc}
                               alt={dropdown.imageAlt}
@@ -253,7 +253,7 @@ export default function Header() {
                     </Link>
                     <div className="absolute left-0 right-0 top-full mt-0 w-screen rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50 before:absolute before:left-0 before:right-0 before:-top-10 before:h-10 before:content-[''] before:block">
                       <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-6 px-5 pb-5">
-                        <div className="relative min-w-0 self-stretch aspect-[4/5] justify-self-start">
+                        <div className="relative min-w-0 w-[370px] aspect-[4/5] justify-self-start">
                           <Image
                             src={dropdown.imageSrc}
                             alt={dropdown.imageAlt}

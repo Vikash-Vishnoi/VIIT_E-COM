@@ -11,7 +11,7 @@ const looks = [
 
 export default function Looks() {
   return (
-    <CarouselSection title="Own iT" sectionClassName="py-8 px-6 md:px-10">
+    <CarouselSection title="Own iT" sectionClassName="py-8 px-6 md:px-10" autoScrollOnHover={true}>
       {looks.map((look) => (
         <div
           key={look.src}

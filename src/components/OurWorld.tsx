@@ -53,7 +53,7 @@ function CardLink({ card, children }: CardLinkProps) {
 
 export default function OurWorld() {
   return (
-    <CarouselSection title="Our World" sectionClassName="py-8 px-6 md:px-10 overflow-hidden">
+    <CarouselSection title="Our World" sectionClassName="py-8 px-6 md:px-10 overflow-hidden" autoScrollOnHover={true}>
       {cards.map((card) => (
         <CardLink key={card.href} card={card}>
           <div className="relative w-full overflow-hidden bg-gray-100" style={{ aspectRatio: "3/4" }}>
