@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 type NavLink = {
   label: string;
@@ -159,6 +160,8 @@ export default function Header() {
   const cartCount = 0;
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const isAdmin = pathname.startsWith("/admin");
 
   return (
     <header className="w-full bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
@@ -166,19 +169,21 @@ export default function Header() {
         {/* Single row: Logo | Nav | Icons */}
         <div className="grid grid-cols-[auto_1fr_auto] items-center py-4 gap-3 md:flex md:justify-between md:gap-3">
 
-          {/* Mobile menu */}
-          <button
-            onClick={() => setMobileMenuOpen((open) => !open)}
-            aria-label="Open menu"
-            aria-expanded={mobileMenuOpen}
-            className="md:hidden justify-self-start text-black hover:opacity-60 transition-opacity"
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="4" y1="6" x2="20" y2="6" />
-              <line x1="4" y1="12" x2="20" y2="12" />
-              <line x1="4" y1="18" x2="20" y2="18" />
-            </svg>
-          </button>
+          {/* Mobile menu — hidden on admin */}
+          {!isAdmin && (
+            <button
+              onClick={() => setMobileMenuOpen((open) => !open)}
+              aria-label="Open menu"
+              aria-expanded={mobileMenuOpen}
+              className="md:hidden justify-self-start text-black hover:opacity-60 transition-opacity"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="18" x2="20" y2="18" />
+              </svg>
+            </button>
+          )}
 
           {/* LEFT — Logo */}
           <Link href="/" aria-label="Home" className="justify-self-center md:justify-self-auto flex-shrink-0 relative w-[120px] h-[48px] flex items-center justify-center">
@@ -192,13 +197,57 @@ export default function Header() {
             />
           </Link>
 
-          {/* CENTER — Nav links */}
-          <nav className="hidden md:flex items-center gap-7 mx-8">
-            {navLinks.map((link) => {
-              const dropdown = navDropdowns[link.label];
+          {/* CENTER — Nav links — hidden on admin */}
+          {!isAdmin && (
+            <nav className="hidden md:flex items-center gap-7 mx-8">
+              {navLinks.map((link) => {
+                const dropdown = navDropdowns[link.label];
 
-              if (dropdown) {
-                if (dropdown.layout === "two-column") {
+                if (dropdown) {
+                  if (dropdown.layout === "two-column") {
+                    return (
+                      <div key={link.label} className="group">
+                        <Link
+                          href={link.href}
+                          className={`relative inline-flex text-[15px] font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:transition-transform after:duration-200 after:content-[''] group-hover:after:scale-x-100 ${link.highlight ? "text-[#FFCC00] after:bg-[#FFCC00]" : "text-black after:bg-current"
+                            }`}
+                        >
+                          <NavLabelWithArrow label={link.label} />
+                        </Link>
+                        <div className="absolute left-0 right-0 top-full mt-0 w-screen rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50 before:absolute before:left-0 before:right-0 before:-top-10 before:h-10 before:content-[''] before:block">
+                          <div className="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-6 px-5 pb-5">
+                            <div className="relative min-w-0 w-[370px] aspect-[4/5] justify-self-start">
+                              <Image
+                                src={dropdown.imageSrc}
+                                alt={dropdown.imageAlt}
+                                fill
+                                className="rounded-md object-cover"
+                              />
+                            </div>
+                            {dropdown.columns.map((column) => (
+                              <div key={column.title} className="min-w-0">
+                                <div className="text-xs font-bold uppercase tracking-wider text-gray-600 mb-3">
+                                  {column.title}
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                  {column.items.map((item) => (
+                                    <Link
+                                      key={item.label}
+                                      href={item.href}
+                                      className="text-sm font-semibold text-black hover:opacity-70 hover:underline underline-offset-4"
+                                    >
+                                      {item.label}
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
                     <div key={link.label} className="group">
                       <Link
@@ -209,7 +258,7 @@ export default function Header() {
                         <NavLabelWithArrow label={link.label} />
                       </Link>
                       <div className="absolute left-0 right-0 top-full mt-0 w-screen rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50 before:absolute before:left-0 before:right-0 before:-top-10 before:h-10 before:content-[''] before:block">
-                        <div className="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-6 px-5 pb-5">
+                        <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-6 px-5 pb-5">
                           <div className="relative min-w-0 w-[370px] aspect-[4/5] justify-self-start">
                             <Image
                               src={dropdown.imageSrc}
@@ -218,24 +267,17 @@ export default function Header() {
                               className="rounded-md object-cover"
                             />
                           </div>
-                          {dropdown.columns.map((column) => (
-                            <div key={column.title} className="min-w-0">
-                              <div className="text-xs font-bold uppercase tracking-wider text-gray-600 mb-3">
-                                {column.title}
-                              </div>
-                              <div className="flex flex-col gap-2">
-                                {column.items.map((item) => (
-                                  <Link
-                                    key={item.label}
-                                    href={item.href}
-                                    className="text-sm font-semibold text-black hover:opacity-70 hover:underline underline-offset-4"
-                                  >
-                                    {item.label}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
+                          <div className="flex flex-col gap-2">
+                            {dropdown.items.map((item) => (
+                              <Link
+                                key={item.label}
+                                href={item.href}
+                                className="text-sm font-semibold text-black hover:opacity-70 hover:underline underline-offset-4 whitespace-nowrap"
+                              >
+                                {item.label}
+                              </Link>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -243,53 +285,18 @@ export default function Header() {
                 }
 
                 return (
-                  <div key={link.label} className="group">
-                    <Link
-                      href={link.href}
-                      className={`relative inline-flex text-[15px] font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:transition-transform after:duration-200 after:content-[''] group-hover:after:scale-x-100 ${link.highlight ? "text-[#FFCC00] after:bg-[#FFCC00]" : "text-black after:bg-current"
-                        }`}
-                    >
-                      <NavLabelWithArrow label={link.label} />
-                    </Link>
-                    <div className="absolute left-0 right-0 top-full mt-0 w-screen rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50 before:absolute before:left-0 before:right-0 before:-top-10 before:h-10 before:content-[''] before:block">
-                      <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-6 px-5 pb-5">
-                        <div className="relative min-w-0 w-[370px] aspect-[4/5] justify-self-start">
-                          <Image
-                            src={dropdown.imageSrc}
-                            alt={dropdown.imageAlt}
-                            fill
-                            className="rounded-md object-cover"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          {dropdown.items.map((item) => (
-                            <Link
-                              key={item.label}
-                              href={item.href}
-                              className="text-sm font-semibold text-black hover:opacity-70 hover:underline underline-offset-4 whitespace-nowrap"
-                            >
-                              {item.label}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    className={`group text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"
+                      }`}
+                  >
+                    <NavLabelWithArrow label={link.label} />
+                  </Link>
                 );
-              }
-
-              return (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className={`group text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"
-                    }`}
-                >
-                  <NavLabelWithArrow label={link.label} />
-                </Link>
-              );
-            })}
-          </nav>
+              })}
+            </nav>
+          )}
 
           {/* RIGHT — Icons */}
           <div className="col-start-3 flex items-center gap-4 md:gap-5 flex-shrink-0">
@@ -336,8 +343,8 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Expandable Search bar */}
-      {searchOpen && (
+      {/* Expandable Search bar — hidden on admin */}
+      {!isAdmin && searchOpen && (
         <div className="border-t border-gray-100 px-10 xl:px-16 py-3 bg-gray-50">
           <label htmlFor="site-search" className="sr-only">Search</label>
           <input
@@ -351,7 +358,8 @@ export default function Header() {
         </div>
       )}
 
-      {mobileMenuOpen && (
+      {/* Mobile menu drawer — hidden on admin */}
+      {!isAdmin && mobileMenuOpen && (
         <div className="md:hidden border-t border-gray-100 px-6 py-4 bg-white">
           <nav className="flex flex-col gap-4">
             {navLinks.map((link) => (
