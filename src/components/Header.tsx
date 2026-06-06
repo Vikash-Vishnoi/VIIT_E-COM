@@ -74,13 +74,13 @@ const womenEssentialsDropdownItems: DropdownItem[] = [
   { label: "Knitwear", href: "/woman-clothes" },
 ];
 const manDenimDropdownItems: DropdownItem[] = [
-  { label: "Denim Jacket", href: "/man-clothes" },
-  { label: "Denim Jeans", href: "/man-clothes" },
+  { label: "Denim Jacket", href: "/man-clothes/denim/denim-jacket" },
+  { label: "Denim Jeans", href: "/man-clothes/denim/denim-jeans" },
 ];
 
 const manDropdownItems: DropdownItem[] = [
-  { label: "Jeans", href: "/man-clothes" },
-  { label: "Linen", href: "/man-clothes" },
+  { label: "Jeans", href: "/man-clothes/man/jeans" },
+  { label: "Linen", href: "/man-clothes/man/linen" },
 ];
 
 type NavDropdownSimple = {
