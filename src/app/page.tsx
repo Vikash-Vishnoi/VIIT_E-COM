@@ -59,7 +59,7 @@ export default function Home() {
         src="/images/Womens Universe.jpeg"
         category="Women's Universe"
         uppercase={false}
-        href="/accessories"
+        href="/woman"
         objectPosition="center 32%"
       />
       <SectionDivider />
@@ -67,7 +67,7 @@ export default function Home() {
         src="/images/Accessories.jpeg"
         category="Accessories"
         uppercase={false}
-        href="/women-clothes"
+        href="/accessories"
         objectPosition="center 5%"
       />
       <SectionDivider />

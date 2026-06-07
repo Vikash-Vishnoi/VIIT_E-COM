@@ -13,9 +13,9 @@ type NavLink = {
 
 const navLinks: NavLink[] = [
   { label: "VIIT Exclusive", href: "/viit-exclusive" },
-  { label: "WOMAN", href: "/woman-clothes" },
-  { label: "MAN", href: "/man-clothes" },
-  { label: "KIDS", href: "/kids-clothes" },
+  { label: "WOMAN", href: "/woman" },
+  { label: "MAN", href: "/man" },
+  { label: "KIDS", href: "/kids" },
   { label: "ACCESSORIES", href: "/accessories" },
 ];
 
@@ -25,63 +25,63 @@ type DropdownItem = {
 };
 
 const kidsDropdownItems: DropdownItem[] = [
-  { label: "Girls' Dresses", href: "/kids-clothes" },
-  { label: "Party Princess", href: "/kids-clothes" },
-  { label: "Casual Cuties", href: "/kids-clothes" },
-  { label: "Mini Occasion Wear", href: "/kids-clothes" },
+  { label: "Girls' Dresses", href: "/kids/kids-clothing/girls-dresses" },
+  { label: "Party Princess", href: "/kids/kids-clothing/party-princess" },
+  { label: "Casual Cuties", href: "/kids/kids-clothing/casual-cuties" },
+  { label: "Mini Occasion Wear", href: "/kids/kids-clothing/mini-occasion" },
 ];
 
 const accessoriesDropdownItems: DropdownItem[] = [
-  { label: "Brooches", href: "/accessories" },
-  { label: "Silk Stories (scarves)", href: "/accessories" },
-  { label: "Leg Couture (stockings)", href: "/accessories" },
-  { label: "Hand Luxe (gloves)", href: "/accessories" },
+  { label: "Brooches", href: "/accessories/accessories-collection/brooches" },
+  { label: "Silk Stories (scarves)", href: "/accessories/accessories-collection/silk-stories" },
+  { label: "Leg Couture (stockings)", href: "/accessories/accessories-collection/leg-couture" },
+  { label: "Hand Luxe (gloves)", href: "/accessories/accessories-collection/hand-luxe" },
 ];
 
 const womenDropdownItems: DropdownItem[] = [
-  { label: "Casual Edit", href: "/woman-clothes" },
-  { label: "Summer Stories", href: "/woman-clothes" },
-  { label: "Winter Luxe", href: "/woman-clothes" },
-  { label: "Party Icons", href: "/woman-clothes" },
-  { label: "Street Muse", href: "/woman-clothes" },
-  { label: "Club Nights", href: "/woman-clothes" },
-  { label: "Mall Edit", href: "/woman-clothes" },
-  { label: "Date Night", href: "/woman-clothes" },
-  { label: "Dinner Glam", href: "/woman-clothes" },
-  { label: "Resort Escape", href: "/woman-clothes" },
-  { label: "Vacation Edit", href: "/woman-clothes" },
-  { label: "Lounge Luxe", href: "/woman-clothes" },
-  { label: "Work Chic", href: "/woman-clothes" },
-  { label: "Evening Affair", href: "/woman-clothes" },
-  { label: "Statement Looks", href: "/woman-clothes" },
-  { label: "New Arrivals", href: "/woman-clothes" },
+  { label: "Casual Edit", href: "/woman/woman-edits/casual-edit" },
+  { label: "Summer Stories", href: "/woman/woman-edits/summer-stories" },
+  { label: "Winter Luxe", href: "/woman/woman-edits/winter-luxe" },
+  { label: "Party Icons", href: "/woman/woman-edits/party-icons" },
+  { label: "Street Muse", href: "/woman/woman-edits/street-muse" },
+  { label: "Club Nights", href: "/woman/woman-edits/club-nights" },
+  { label: "Mall Edit", href: "/woman/woman-edits/mall-edit" },
+  { label: "Date Night", href: "/woman/woman-edits/date-night" },
+  { label: "Dinner Glam", href: "/woman/woman-edits/dinner-glam" },
+  { label: "Resort Escape", href: "/woman/woman-edits/resort-escape" },
+  { label: "Vacation Edit", href: "/woman/woman-edits/vacation-edit" },
+  { label: "Lounge Luxe", href: "/woman/woman-edits/lounge-luxe" },
+  { label: "Work Chic", href: "/woman/woman-edits/work-chic" },
+  { label: "Evening Affair", href: "/woman/woman-edits/evening-affair" },
+  { label: "Statement Looks", href: "/woman/woman-edits/statement-looks" },
+  { label: "New Arrivals", href: "/woman/woman-edits/new-arrivals" },
 ];
 
 const womenEssentialsDropdownItems: DropdownItem[] = [
-  { label: "Denim Edit", href: "/woman-clothes" },
-  { label: "Jeans", href: "/woman-clothes" },
-  { label: "Shorts", href: "/woman-clothes" },
-  { label: "Trousers", href: "/woman-clothes" },
-  { label: "Pants", href: "/woman-clothes" },
-  { label: "Skirts", href: "/woman-clothes" },
-  { label: "Bodysuits", href: "/woman-clothes" },
-  { label: "Tops", href: "/woman-clothes" },
-  { label: "Shirts", href: "/woman-clothes" },
-  { label: "Co-ord Sets", href: "/woman-clothes" },
-  { label: "Dresses", href: "/woman-clothes" },
-  { label: "Kaftans", href: "/woman-clothes" },
-  { label: "Jumpsuits", href: "/woman-clothes" },
-  { label: "Blazers", href: "/woman-clothes" },
-  { label: "Knitwear", href: "/woman-clothes" },
+  { label: "Denim Edit", href: "/woman/woman-essentials/denim" },
+  { label: "Jeans", href: "/woman/woman-essentials/womens-jeans" },
+  { label: "Shorts", href: "/woman/woman-essentials/shorts" },
+  { label: "Trousers", href: "/woman/woman-essentials/womens-trousers" },
+  { label: "Pants", href: "/woman/woman-essentials/pants" },
+  { label: "Skirts", href: "/woman/woman-essentials/skirts" },
+  { label: "Bodysuits", href: "/woman/woman-essentials/bodysuits" },
+  { label: "Tops", href: "/woman/woman-essentials/tops" },
+  { label: "Shirts", href: "/woman/woman-essentials/shirts" },
+  { label: "Co-ord Sets", href: "/woman/woman-essentials/coords" },
+  { label: "Dresses", href: "/woman/woman-essentials/dresses" },
+  { label: "Kaftans", href: "/woman/woman-essentials/kaftans" },
+  { label: "Jumpsuits", href: "/woman/woman-essentials/jumpsuits" },
+  { label: "Blazers", href: "/woman/woman-essentials/blazers" },
+  { label: "Knitwear", href: "/woman/woman-essentials/knitwear" },
 ];
 const manDenimDropdownItems: DropdownItem[] = [
-  { label: "Denim Jacket", href: "/man-clothes/denim/denim-jacket" },
-  { label: "Denim Jeans", href: "/man-clothes/denim/denim-jeans" },
+  { label: "Denim Jacket", href: "/man/man-denim/jacket" },
+  { label: "Denim Jeans", href: "/man/man-denim/mens-jeans" },
 ];
 
 const manDropdownItems: DropdownItem[] = [
-  { label: "Jeans", href: "/man-clothes/man/jeans" },
-  { label: "Linen", href: "/man-clothes/man/linen" },
+  { label: "T-Shirts", href: "/man/man-casual/tshirt" },
+  { label: "Linen Shirts", href: "/man/man-linen/shirt" },
 ];
 
 type NavDropdownSimple = {

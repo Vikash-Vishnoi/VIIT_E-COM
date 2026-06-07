@@ -4,9 +4,9 @@ import CarouselSection from "@/components/CarouselSection";
 
 const products = [
   { src: "/images/cala-look-01.JPG.jpeg", label: "VIIT Exclusive", href: "/viit-exclusive" },
-  { src: "/images/cala-look-02.JPG.jpeg", label: "MAN", href: "/man-clothes" },
-  { src: "/images/cala-look-03.JPG.jpeg", label: "WOMAN", href: "/woman-clothes" },
-  { src: "/images/cala-look-04.JPG.jpeg", label: "KIDS", href: "/kids-clothes" },
+  { src: "/images/cala-look-02.JPG.jpeg", label: "MAN", href: "/man" },
+  { src: "/images/cala-look-03.JPG.jpeg", label: "WOMAN", href: "/woman" },
+  { src: "/images/cala-look-04.JPG.jpeg", label: "KIDS", href: "/kids" },
   { src: "/images/cala-look-05.JPG.jpeg", label: "ACCESSORIES", href: "/accessories" },
 ];
 

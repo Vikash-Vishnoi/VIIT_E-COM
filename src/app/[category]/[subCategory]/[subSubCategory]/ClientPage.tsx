@@ -1,99 +1,47 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 
-/* ─────────────────────────────────────────────
-   Static data
-───────────────────────────────────────────── */
+/* ─── Types ────────────────────────────────────────────── */
 
-type SubItem = { label: string; slug: string };
-
-const categoryMap: Record<string, { title: string; items: SubItem[] }> = {
-  denim: {
-    title: "Denim",
-    items: [
-      { label: "Denim Jacket", slug: "denim-jacket" },
-      { label: "Denim Jeans", slug: "denim-jeans" },
-    ],
-  },
-  man: {
-    title: "Man",
-    items: [
-      { label: "Jeans", slug: "jeans" },
-      { label: "Linen", slug: "linen" },
-    ],
-  },
-};
-
-const subcategoryLabelMap: Record<string, string> = {
-  "denim-jacket": "Denim Jacket",
-  "denim-jeans": "Denim Jeans",
-  jeans: "Jeans",
-  linen: "Linen",
-};
-
-/* ─── Mock products ──────────────────────────────────────── */
-
-type Product = {
-  id: number;
+export type FormattedProduct = {
+  id: string;
   name: string;
   price: number;
+  originalPrice: number;
   image: string;
   badge?: string;
+  slug: string;
 };
 
-function getProducts(subcategory: string): Product[] {
-  const base: Record<string, Product[]> = {
-    "denim-jacket": [
-      { id: 1, name: "Classic Indigo Denim Jacket", price: 2899, image: "/images/man-header.jpeg", badge: "New" },
-      { id: 2, name: "Washed Trucker Jacket", price: 3499, image: "/images/man-header.jpeg" },
-      { id: 3, name: "Dark Rinse Slim Jacket", price: 3199, image: "/images/man-header.jpeg", badge: "Sale" },
-      { id: 4, name: "Distressed Heritage Jacket", price: 3799, image: "/images/man-header.jpeg" },
-      { id: 5, name: "Oversized Boxy Denim", price: 4199, image: "/images/man-header.jpeg", badge: "New" },
-      { id: 6, name: "Raw Edge Denim Jacket", price: 2699, image: "/images/man-header.jpeg" },
-      { id: 7, name: "Acid Wash Jacket", price: 3099, image: "/images/man-header.jpeg" },
-      { id: 8, name: "Sherpa-Lined Denim", price: 4599, image: "/images/man-header.jpeg", badge: "New" },
-    ],
-    "denim-jeans": [
-      { id: 1, name: "Slim Fit Indigo Jeans", price: 2199, image: "/images/man-header.jpeg", badge: "New" },
-      { id: 2, name: "Straight Cut Raw Denim", price: 2599, image: "/images/man-header.jpeg" },
-      { id: 3, name: "Tapered Dark Wash", price: 2399, image: "/images/man-header.jpeg" },
-      { id: 4, name: "Relaxed Fit Vintage Blue", price: 2799, image: "/images/man-header.jpeg", badge: "Sale" },
-      { id: 5, name: "Skinny Stretch Jeans", price: 1999, image: "/images/man-header.jpeg" },
-      { id: 6, name: "Baggy Low Rise Denim", price: 2999, image: "/images/man-header.jpeg", badge: "New" },
-    ],
-    jeans: [
-      { id: 1, name: "Classic Fit Chinos", price: 1899, image: "/images/man-header.jpeg" },
-      { id: 2, name: "Slim Cargo Pants", price: 2299, image: "/images/man-header.jpeg", badge: "New" },
-      { id: 3, name: "Jogger Trousers", price: 1799, image: "/images/man-header.jpeg" },
-      { id: 4, name: "Pleated Wide Leg", price: 2699, image: "/images/man-header.jpeg" },
-      { id: 5, name: "Utility Pants", price: 2499, image: "/images/man-header.jpeg", badge: "Sale" },
-    ],
-    linen: [
-      { id: 1, name: "Linen Relaxed Trousers", price: 2099, image: "/images/man-header.jpeg", badge: "New" },
-      { id: 2, name: "Linen Shorts", price: 1599, image: "/images/man-header.jpeg" },
-      { id: 3, name: "Linen Shirt Pants Set", price: 3499, image: "/images/man-header.jpeg" },
-      { id: 4, name: "Drawstring Linen Pants", price: 1899, image: "/images/man-header.jpeg", badge: "New" },
-    ],
-  };
-  return base[subcategory] ?? base["denim-jacket"];
-}
+export type SiblingCategory = {
+  label: string;
+  slug: string;
+};
+
+type ClientPageProps = {
+  products: FormattedProduct[];
+  categorySlug: string;
+  subCategorySlug: string;
+  subSubCategorySlug: string;
+  subSubCategoryLabel: string;
+  siblings: SiblingCategory[];
+};
 
 /* ─────────────────────────────────────────────
    Component
 ───────────────────────────────────────────── */
 
-export default function SubcategoryPage() {
-  const params = useParams();
-  const category = (params.category as string) ?? "denim";
-  const subcategory = (params.subcategory as string) ?? "denim-jacket";
-
-  const categoryData = categoryMap[category] ?? categoryMap["denim"];
-  const subcategoryLabel = subcategoryLabelMap[subcategory] ?? subcategory;
-
+export default function SubCategoryClient({
+  products,
+  categorySlug,
+  subCategorySlug,
+  subSubCategorySlug,
+  subSubCategoryLabel,
+  siblings,
+}: ClientPageProps) {
   /* scroll arrows */
   const navRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -117,6 +65,14 @@ export default function SubcategoryPage() {
     };
   }, []);
 
+  useEffect(() => {
+    // Auto-scroll the active pill into the center of the view
+    const activeEl = document.getElementById(`nav-item-${subSubCategorySlug}`);
+    if (activeEl && navRef.current) {
+      activeEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+  }, [subSubCategorySlug]);
+
   function scrollNav(dir: "left" | "right") {
     navRef.current?.scrollBy({ left: dir === "left" ? -220 : 220, behavior: "smooth" });
   }
@@ -125,20 +81,17 @@ export default function SubcategoryPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "new">("default");
 
-  const allProducts = getProducts(subcategory);
-  const minPrice = Math.min(...allProducts.map((p) => p.price));
-  const maxPrice = Math.max(...allProducts.map((p) => p.price));
+  // Handle case with 0 products
+  const minPrice = products.length > 0 ? Math.min(...products.map((p) => p.price)) : 0;
+  const maxPrice = products.length > 0 ? Math.max(...products.map((p) => p.price)) : 10000;
+  
   const [priceRange, setPriceRange] = useState<[number, number]>([minPrice, maxPrice]);
 
-  /* reset range when subcategory changes */
   useEffect(() => {
-    const prods = getProducts(subcategory);
-    const mn = Math.min(...prods.map((p) => p.price));
-    const mx = Math.max(...prods.map((p) => p.price));
-    setPriceRange([mn, mx]);
-  }, [subcategory]);
+    setPriceRange([minPrice, maxPrice]);
+  }, [minPrice, maxPrice]);
 
-  const filtered = allProducts
+  const filtered = products
     .filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1])
     .sort((a, b) => {
       if (sortBy === "price-asc") return a.price - b.price;
@@ -147,29 +100,21 @@ export default function SubcategoryPage() {
       return 0;
     });
 
-  /* all nav items (current category first) */
-  const currentItems = categoryData?.items ?? [];
-  const otherItems = Object.entries(categoryMap)
-    .filter(([key]) => key !== category)
-    .flatMap(([key, cat]) => cat.items.map((item) => ({ ...item, catKey: key })));
-
   return (
     <div className="min-h-screen bg-white">
-
       {/* ── Breadcrumb ────────────────────────── */}
       <div className="px-6 md:px-10 xl:px-16 pt-8 pb-2">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
           <Link href="/" className="hover:text-black transition-colors">Home</Link>
           <span className="text-gray-300">/</span>
-          <Link href="/man-clothes" className="hover:text-black transition-colors">Man</Link>
+          <span className="text-gray-400 capitalize">{categorySlug.replace(/-/g, ' ')}</span>
           <span className="text-gray-300">/</span>
-          <span className="text-black font-bold">{subcategoryLabel}</span>
+          <span className="text-black font-bold">{subSubCategoryLabel}</span>
         </nav>
       </div>
 
       {/* ── Sub-category scroll nav ───────────── */}
       <div className="relative border-b border-gray-100 bg-white">
-
         {/* Left Arrow */}
         <button
           aria-label="Scroll categories left"
@@ -189,37 +134,23 @@ export default function SubcategoryPage() {
           className="flex items-center gap-2 px-6 md:px-10 xl:px-16 py-3 overflow-x-auto"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {currentItems.map((item) => {
-            const isActive = item.slug === subcategory;
+          {siblings.map((item) => {
+            const isActive = item.slug === subSubCategorySlug;
             return (
               <Link
                 key={item.slug}
-                href={`/man-clothes/${category}/${item.slug}`}
+                id={`nav-item-${item.slug}`}
+                href={`/${categorySlug}/${subCategorySlug}/${item.slug}`}
                 className={`flex-shrink-0 px-5 py-1.5 rounded-full border text-[12px] tracking-widest uppercase transition-all duration-200 ${
                   isActive
                     ? "bg-black text-white border-black font-black"
-                    : "bg-white text-black border-gray-300 font-bold hover:border-black hover:bg-gray-50"
+                    : "bg-white text-gray-400 border-gray-100 font-bold hover:border-gray-300 hover:text-black"
                 }`}
               >
                 {item.label}
               </Link>
             );
           })}
-
-          {/* Divider */}
-          {otherItems.length > 0 && (
-            <span className="flex-shrink-0 w-px h-5 bg-gray-200 mx-1" />
-          )}
-
-          {otherItems.map((item) => (
-            <Link
-              key={`${item.catKey}-${item.slug}`}
-              href={`/man-clothes/${item.catKey}/${item.slug}`}
-              className="flex-shrink-0 px-5 py-1.5 rounded-full border text-[12px] tracking-widest uppercase font-bold bg-white text-gray-400 border-gray-100 hover:border-gray-300 hover:text-black transition-all duration-200"
-            >
-              {item.label}
-            </Link>
-          ))}
         </div>
 
         {/* Right Arrow */}
@@ -239,7 +170,6 @@ export default function SubcategoryPage() {
       {/* ── Filter + Sort bar ─────────────────── */}
       <div className="sticky top-[72px] z-30 bg-white border-b border-gray-100">
         <div className="px-6 md:px-10 xl:px-16 flex items-center justify-between py-3 gap-4 flex-wrap">
-
           {/* Filter button */}
           <button
             id="filter-toggle"
@@ -283,7 +213,7 @@ export default function SubcategoryPage() {
         </div>
 
         {/* Price range panel */}
-        {filterOpen && (
+        {filterOpen && products.length > 0 && (
           <div className="px-6 md:px-10 xl:px-16 pb-5 pt-1 border-t border-gray-100">
             <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
               <div className="flex flex-col gap-3 w-full max-w-xs">
@@ -294,7 +224,7 @@ export default function SubcategoryPage() {
                   </span>
                 </div>
 
-                {/* Dual range slider (visual only, single thumb for simplicity) */}
+                {/* Dual range slider */}
                 <div className="relative pt-1">
                   <div className="relative h-1 bg-gray-200 rounded-full">
                     <div
@@ -308,7 +238,6 @@ export default function SubcategoryPage() {
                   {/* Min slider */}
                   <input
                     type="range"
-                    id="price-min"
                     min={minPrice}
                     max={maxPrice}
                     step={100}
@@ -323,7 +252,6 @@ export default function SubcategoryPage() {
                   {/* Max slider */}
                   <input
                     type="range"
-                    id="price-max"
                     min={minPrice}
                     max={maxPrice}
                     step={100}
@@ -394,18 +322,14 @@ export default function SubcategoryPage() {
    Product card
 ───────────────────────────────────────────── */
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product }: { product: FormattedProduct }) {
   const [hovered, setHovered] = useState(false);
 
   return (
-    <article
-      className="group flex flex-col cursor-pointer"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <Link href={`/product/${product.slug}`} className="group flex flex-col cursor-pointer" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-50 rounded-sm mb-3">
         <Image
-          src={product.image}
+          src={product.image || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
           alt={product.name}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -436,10 +360,17 @@ function ProductCard({ product }: { product: Product }) {
         <h2 className="text-[13px] font-bold uppercase tracking-wide text-black leading-snug line-clamp-2 group-hover:underline underline-offset-2 transition-all">
           {product.name}
         </h2>
-        <p className="text-[13px] font-semibold text-gray-500">
-          ₹{product.price.toLocaleString("en-IN")}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-[13px] font-semibold text-black">
+            ₹{product.price.toLocaleString("en-IN")}
+          </p>
+          {product.originalPrice > product.price && (
+            <p className="text-[11px] font-semibold text-gray-400 line-through">
+              ₹{product.originalPrice.toLocaleString("en-IN")}
+            </p>
+          )}
+        </div>
       </div>
-    </article>
+    </Link>
   );
 }

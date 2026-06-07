@@ -58,49 +58,80 @@ export async function GET() {
       { slug: 'accessories', label: 'ACCESSORIES', level: 0, sortOrder: 3, isActive: true },
     ]);
 
-    // Level 1 — sub-categories under MAN
-    const [manDenim, manLinen, manCasual] = await SubCategory.insertMany([
+    // Level 1 — sub-categories
+    const [manDenim, manCasual, manLinen, womanEdits, womanEssentials, kidsClothing, accCollection] = await SubCategory.insertMany([
       { slug: 'man-denim', label: 'Denim', parentId: man._id, level: 1, sortOrder: 0, isActive: true },
-      { slug: 'man-linen', label: 'Linen', parentId: man._id, level: 1, sortOrder: 1, isActive: true },
-      { slug: 'man-casual', label: 'Casual', parentId: man._id, level: 1, sortOrder: 2, isActive: true },
+      { slug: 'man-casual', label: 'Casual', parentId: man._id, level: 1, sortOrder: 1, isActive: true },
+      { slug: 'man-linen', label: 'Linen', parentId: man._id, level: 1, sortOrder: 2, isActive: true },
+      { slug: 'woman-edits', label: 'Collections & Edits', parentId: woman._id, level: 1, sortOrder: 0, isActive: true },
+      { slug: 'woman-essentials', label: 'Essentials', parentId: woman._id, level: 1, sortOrder: 1, isActive: true },
+      { slug: 'kids-clothing', label: 'Clothing', parentId: kids._id, level: 1, sortOrder: 0, isActive: true },
+      { slug: 'accessories-collection', label: 'Collections', parentId: accessories._id, level: 1, sortOrder: 0, isActive: true },
     ]);
 
-    // Level 1 — sub-categories under WOMAN
-    const [womanWestern, womanEthnic, womanDenim] = await SubCategory.insertMany([
-      { slug: 'woman-western', label: 'Western', parentId: woman._id, level: 1, sortOrder: 0, isActive: true },
-      { slug: 'woman-ethnic', label: 'Ethnic', parentId: woman._id, level: 1, sortOrder: 1, isActive: true },
-      { slug: 'woman-denim', label: 'Denim', parentId: woman._id, level: 1, sortOrder: 2, isActive: true },
-    ]);
-
-    // Level 2 — sub-sub-categories under MAN > Denim
+    // Level 2 — MAN
     await SubCategory.insertMany([
-      { slug: 'man-denim-jacket', label: 'Denim Jacket', parentId: manDenim._id, level: 2, sortOrder: 0, isActive: true },
-      { slug: 'man-denim-jeans', label: 'Denim Jeans', parentId: manDenim._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'jacket', label: 'Denim Jacket', parentId: manDenim._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 'mens-jeans', label: 'Denim Jeans', parentId: manDenim._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'tshirt', label: 'T-Shirts', parentId: manCasual._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 'polo', label: 'Polo', parentId: manCasual._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'shirt', label: 'Linen Shirts', parentId: manLinen._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 'mens-trousers', label: 'Linen Trousers', parentId: manLinen._id, level: 2, sortOrder: 1, isActive: true },
     ]);
 
-    // Level 2 — sub-sub-categories under MAN > Linen
+    // Level 2 — KIDS
     await SubCategory.insertMany([
-      { slug: 'man-linen-shirt', label: 'Linen Shirt', parentId: manLinen._id, level: 2, sortOrder: 0, isActive: true },
-      { slug: 'man-linen-trousers', label: 'Linen Trousers', parentId: manLinen._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'girls-dresses', label: "Girls' Dresses", parentId: kidsClothing._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 'party-princess', label: 'Party Princess', parentId: kidsClothing._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'casual-cuties', label: 'Casual Cuties', parentId: kidsClothing._id, level: 2, sortOrder: 2, isActive: true },
+      { slug: 'mini-occasion', label: 'Mini Occasion Wear', parentId: kidsClothing._id, level: 2, sortOrder: 3, isActive: true },
     ]);
 
-    // Level 2 — sub-sub-categories under MAN > Casual
+    // Level 2 — ACCESSORIES
     await SubCategory.insertMany([
-      { slug: 'man-casual-tshirt', label: 'T-Shirt', parentId: manCasual._id, level: 2, sortOrder: 0, isActive: true },
-      { slug: 'man-casual-polo', label: 'Polo', parentId: manCasual._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'brooches', label: 'Brooches', parentId: accCollection._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 'silk-stories', label: 'Silk Stories (scarves)', parentId: accCollection._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'leg-couture', label: 'Leg Couture (stockings)', parentId: accCollection._id, level: 2, sortOrder: 2, isActive: true },
+      { slug: 'hand-luxe', label: 'Hand Luxe (gloves)', parentId: accCollection._id, level: 2, sortOrder: 3, isActive: true },
     ]);
 
-    // Level 2 — sub-sub-categories under WOMAN > Western
+    // Level 2 — WOMAN (Edits)
     await SubCategory.insertMany([
-      { slug: 'woman-western-tops', label: 'Tops', parentId: womanWestern._id, level: 2, sortOrder: 0, isActive: true },
-      { slug: 'woman-western-dresses', label: 'Dresses', parentId: womanWestern._id, level: 2, sortOrder: 1, isActive: true },
-      { slug: 'woman-western-skirts', label: 'Skirts', parentId: womanWestern._id, level: 2, sortOrder: 2, isActive: true },
+      { slug: 'casual-edit', label: 'Casual Edit', parentId: womanEdits._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 'summer-stories', label: 'Summer Stories', parentId: womanEdits._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'winter-luxe', label: 'Winter Luxe', parentId: womanEdits._id, level: 2, sortOrder: 2, isActive: true },
+      { slug: 'party-icons', label: 'Party Icons', parentId: womanEdits._id, level: 2, sortOrder: 3, isActive: true },
+      { slug: 'street-muse', label: 'Street Muse', parentId: womanEdits._id, level: 2, sortOrder: 4, isActive: true },
+      { slug: 'club-nights', label: 'Club Nights', parentId: womanEdits._id, level: 2, sortOrder: 5, isActive: true },
+      { slug: 'mall-edit', label: 'Mall Edit', parentId: womanEdits._id, level: 2, sortOrder: 6, isActive: true },
+      { slug: 'date-night', label: 'Date Night', parentId: womanEdits._id, level: 2, sortOrder: 7, isActive: true },
+      { slug: 'dinner-glam', label: 'Dinner Glam', parentId: womanEdits._id, level: 2, sortOrder: 8, isActive: true },
+      { slug: 'resort-escape', label: 'Resort Escape', parentId: womanEdits._id, level: 2, sortOrder: 9, isActive: true },
+      { slug: 'vacation-edit', label: 'Vacation Edit', parentId: womanEdits._id, level: 2, sortOrder: 10, isActive: true },
+      { slug: 'lounge-luxe', label: 'Lounge Luxe', parentId: womanEdits._id, level: 2, sortOrder: 11, isActive: true },
+      { slug: 'work-chic', label: 'Work Chic', parentId: womanEdits._id, level: 2, sortOrder: 12, isActive: true },
+      { slug: 'evening-affair', label: 'Evening Affair', parentId: womanEdits._id, level: 2, sortOrder: 13, isActive: true },
+      { slug: 'statement-looks', label: 'Statement Looks', parentId: womanEdits._id, level: 2, sortOrder: 14, isActive: true },
+      { slug: 'new-arrivals', label: 'New Arrivals', parentId: womanEdits._id, level: 2, sortOrder: 15, isActive: true },
     ]);
 
-    // Level 2 — sub-sub-categories under WOMAN > Denim
+    // Level 2 — WOMAN (Essentials)
     await SubCategory.insertMany([
-      { slug: 'woman-denim-jacket', label: 'Denim Jacket', parentId: womanDenim._id, level: 2, sortOrder: 0, isActive: true },
-      { slug: 'woman-denim-jeans', label: 'Denim Jeans', parentId: womanDenim._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'denim', label: 'Denim Edit', parentId: womanEssentials._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 'womens-jeans', label: 'Jeans', parentId: womanEssentials._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'shorts', label: 'Shorts', parentId: womanEssentials._id, level: 2, sortOrder: 2, isActive: true },
+      { slug: 'womens-trousers', label: 'Trousers', parentId: womanEssentials._id, level: 2, sortOrder: 3, isActive: true },
+      { slug: 'pants', label: 'Pants', parentId: womanEssentials._id, level: 2, sortOrder: 4, isActive: true },
+      { slug: 'skirts', label: 'Skirts', parentId: womanEssentials._id, level: 2, sortOrder: 5, isActive: true },
+      { slug: 'bodysuits', label: 'Bodysuits', parentId: womanEssentials._id, level: 2, sortOrder: 6, isActive: true },
+      { slug: 'tops', label: 'Tops', parentId: womanEssentials._id, level: 2, sortOrder: 7, isActive: true },
+      { slug: 'shirts', label: 'Shirts', parentId: womanEssentials._id, level: 2, sortOrder: 8, isActive: true },
+      { slug: 'coords', label: 'Co-ord Sets', parentId: womanEssentials._id, level: 2, sortOrder: 9, isActive: true },
+      { slug: 'dresses', label: 'Dresses', parentId: womanEssentials._id, level: 2, sortOrder: 10, isActive: true },
+      { slug: 'kaftans', label: 'Kaftans', parentId: womanEssentials._id, level: 2, sortOrder: 11, isActive: true },
+      { slug: 'jumpsuits', label: 'Jumpsuits', parentId: womanEssentials._id, level: 2, sortOrder: 12, isActive: true },
+      { slug: 'blazers', label: 'Blazers', parentId: womanEssentials._id, level: 2, sortOrder: 13, isActive: true },
+      { slug: 'knitwear', label: 'Knitwear', parentId: womanEssentials._id, level: 2, sortOrder: 14, isActive: true },
     ]);
 
     const subCategoryCount = await SubCategory.countDocuments();
@@ -109,7 +140,7 @@ export async function GET() {
     const productsData = [
       // ── MAN > Denim > Denim Jacket ──
       {
-        category: 'man', subCategory: 'man-denim', subSubCategory: 'man-denim-jacket',
+        category: 'man', subCategory: 'man-denim', subSubCategory: 'jacket',
         title: 'Classic Indigo Denim Jacket',
         slug: slugify('Classic Indigo Denim Jacket'),
         description: 'A timeless denim jacket crafted from premium 12oz indigo-dyed cotton. Features a classic trucker silhouette with antique brass buttons and dual chest pockets.',
@@ -140,7 +171,7 @@ export async function GET() {
         ratings: { average: 4.5, count: 218 },
       },
       {
-        category: 'man', subCategory: 'man-denim', subSubCategory: 'man-denim-jacket',
+        category: 'man', subCategory: 'man-denim', subSubCategory: 'jacket',
         title: 'Distressed Trucker Denim Jacket',
         slug: slugify('Distressed Trucker Denim Jacket'),
         description: 'Rugged distressed denim jacket with a relaxed fit. Hand-faded finish gives each piece a unique vintage character.',
@@ -161,7 +192,7 @@ export async function GET() {
       },
       // ── MAN > Denim > Denim Jeans ──
       {
-        category: 'man', subCategory: 'man-denim', subSubCategory: 'man-denim-jeans',
+        category: 'man', subCategory: 'man-denim', subSubCategory: 'mens-jeans',
         title: 'Slim Fit Washed Jeans',
         slug: slugify('Slim Fit Washed Jeans'),
         description: 'Modern slim-fit jeans with a mid-rise waist and subtle whisker wash. Made from stretch denim for all-day comfort without compromising style.',
@@ -191,7 +222,7 @@ export async function GET() {
         ratings: { average: 4.3, count: 175 },
       },
       {
-        category: 'man', subCategory: 'man-denim', subSubCategory: 'man-denim-jeans',
+        category: 'man', subCategory: 'man-denim', subSubCategory: 'mens-jeans',
         title: 'Relaxed Taper Raw Denim Jeans',
         slug: slugify('Relaxed Taper Raw Denim Jeans'),
         description: 'Raw selvedge denim jeans with a relaxed tapered fit. Crafted from Japanese 14oz denim that develops a beautiful fade pattern over time.',
@@ -213,7 +244,7 @@ export async function GET() {
       },
       // ── MAN > Linen > Linen Shirt ──
       {
-        category: 'man', subCategory: 'man-linen', subSubCategory: 'man-linen-shirt',
+        category: 'man', subCategory: 'man-linen', subSubCategory: 'shirt',
         title: 'Pure Linen Mandarin Collar Shirt',
         slug: slugify('Pure Linen Mandarin Collar Shirt'),
         description: 'Breathable 100% European linen shirt with a mandarin collar. Perfect for Indian summers — stays cool and looks effortlessly refined.',
@@ -253,7 +284,7 @@ export async function GET() {
       },
       // ── MAN > Linen > Linen Trousers ──
       {
-        category: 'man', subCategory: 'man-linen', subSubCategory: 'man-linen-trousers',
+        category: 'man', subCategory: 'man-linen', subSubCategory: 'mens-trousers',
         title: 'Linen Relaxed Trousers',
         slug: slugify('Linen Relaxed Trousers'),
         description: 'Lightweight linen trousers with an elastic waistband and drawstring. Features a relaxed straight-leg cut ideal for casual outings and weekend brunches.',
@@ -283,7 +314,7 @@ export async function GET() {
       },
       // ── MAN > Casual > T-Shirt ──
       {
-        category: 'man', subCategory: 'man-casual', subSubCategory: 'man-casual-tshirt',
+        category: 'man', subCategory: 'man-casual', subSubCategory: 'tshirt',
         title: 'Oversized Drop Shoulder Tee',
         slug: slugify('Oversized Drop Shoulder Tee'),
         description: 'Premium 240 GSM cotton oversized tee with a drop-shoulder cut. Pre-washed for an ultra-soft hand feel right out of the box.',
@@ -325,7 +356,7 @@ export async function GET() {
       },
       // ── MAN > Casual > Polo ──
       {
-        category: 'man', subCategory: 'man-casual', subSubCategory: 'man-casual-polo',
+        category: 'man', subCategory: 'man-casual', subSubCategory: 'polo',
         title: 'Piqué Cotton Polo',
         slug: slugify('Pique Cotton Polo'),
         description: 'Classic fit piqué cotton polo with a ribbed collar and two-button placket. Features embroidered VIIT logo on the chest.',
@@ -356,7 +387,7 @@ export async function GET() {
       },
       // ── WOMAN > Western > Tops ──
       {
-        category: 'woman', subCategory: 'woman-western', subSubCategory: 'woman-western-tops',
+        category: 'woman', subCategory: 'woman-essentials', subSubCategory: 'tops',
         title: 'Ruffle Sleeve Crop Top',
         slug: slugify('Ruffle Sleeve Crop Top'),
         description: 'A flirty crop top with statement ruffle sleeves in breezy georgette. Pair it with high-waisted jeans or a skirt for an effortless look.',
@@ -387,7 +418,7 @@ export async function GET() {
       },
       // ── WOMAN > Western > Dresses ──
       {
-        category: 'woman', subCategory: 'woman-western', subSubCategory: 'woman-western-dresses',
+        category: 'woman', subCategory: 'woman-essentials', subSubCategory: 'dresses',
         title: 'Floral Midi Wrap Dress',
         slug: slugify('Floral Midi Wrap Dress'),
         description: 'A flattering wrap-style midi dress in a vibrant floral print. Crafted from soft viscose with a tie waist and flared skirt.',
@@ -409,7 +440,7 @@ export async function GET() {
       },
       // ── WOMAN > Western > Skirts ──
       {
-        category: 'woman', subCategory: 'woman-western', subSubCategory: 'woman-western-skirts',
+        category: 'woman', subCategory: 'woman-essentials', subSubCategory: 'skirts',
         title: 'Pleated A-Line Midi Skirt',
         slug: slugify('Pleated A-Line Midi Skirt'),
         description: 'Elegant pleated midi skirt with an A-line silhouette. Features a concealed side zip and satin-finish fabric that drapes beautifully.',
@@ -440,7 +471,7 @@ export async function GET() {
       },
       // ── WOMAN > Denim > Denim Jacket ──
       {
-        category: 'woman', subCategory: 'woman-denim', subSubCategory: 'woman-denim-jacket',
+        category: 'woman', subCategory: 'woman-essentials', subSubCategory: 'denim',
         title: 'Cropped Denim Jacket',
         slug: slugify('Cropped Denim Jacket'),
         description: 'A cropped denim jacket with a boxy fit, perfect for layering over dresses and jumpsuits. Finished with silver-tone hardware and frayed hems.',
@@ -470,7 +501,7 @@ export async function GET() {
       },
       // ── WOMAN > Denim > Denim Jeans ──
       {
-        category: 'woman', subCategory: 'woman-denim', subSubCategory: 'woman-denim-jeans',
+        category: 'woman', subCategory: 'woman-essentials', subSubCategory: 'womens-jeans',
         title: 'High Rise Straight Leg Jeans',
         slug: slugify('High Rise Straight Leg Jeans'),
         description: 'Flattering high-rise jeans with a straight-leg cut. Made from premium stretch denim with a touch of elastane for a comfortable, sculpted fit.',
@@ -501,7 +532,7 @@ export async function GET() {
       },
       // ── MAN > Casual > T-Shirt (another one) ──
       {
-        category: 'man', subCategory: 'man-casual', subSubCategory: 'man-casual-tshirt',
+        category: 'man', subCategory: 'man-casual', subSubCategory: 'tshirt',
         title: 'Acid Wash Graphic Tee',
         slug: slugify('Acid Wash Graphic Tee'),
         description: 'Streetwear-inspired acid wash tee with a bold back graphic print. Made from heavy-weight cotton for a premium, structured drape.',
@@ -523,7 +554,7 @@ export async function GET() {
       },
       // ── WOMAN > Ethnic (no sub-sub, but still valid product) ──
       {
-        category: 'woman', subCategory: 'woman-western', subSubCategory: 'woman-western-tops',
+        category: 'woman', subCategory: 'woman-essentials', subSubCategory: 'tops',
         title: 'Embroidered Peplum Top',
         slug: slugify('Embroidered Peplum Top'),
         description: 'A statement peplum top with intricate thread embroidery along the neckline. The flared hem creates a flattering silhouette for all body types.',
@@ -554,7 +585,7 @@ export async function GET() {
       },
       // ── MAN > Linen > Linen Shirt (another) ──
       {
-        category: 'man', subCategory: 'man-linen', subSubCategory: 'man-linen-shirt',
+        category: 'man', subCategory: 'man-linen', subSubCategory: 'shirt',
         title: 'Camp Collar Linen Shirt',
         slug: slugify('Camp Collar Linen Shirt'),
         description: 'Resort-ready camp collar shirt in lightweight Italian linen. Features a relaxed box cut, chest pocket, and coconut shell buttons.',
@@ -584,6 +615,43 @@ export async function GET() {
         ratings: { average: 4.8, count: 19 },
       },
     ];
+
+    // Add 18 extra dummy jackets to check UI UX for /man/man-denim/jacket
+    for (let i = 1; i <= 18; i++) {
+      productsData.push({
+        category: 'man', subCategory: 'man-denim', subSubCategory: 'jacket',
+        title: `Test Denim Jacket ${i}`,
+        slug: slugify(`Test Denim Jacket ${i}`),
+        description: `This is a test denim jacket (${i}) to help check the UI/UX layout. Features standard denim construction.`,
+        price: 2999 + i * 100, sellingPrice: 1999 + i * 100,
+        colors: [
+          {
+            colorName: 'Standard Wash',
+            images: [{ url: IMG((i % 60) + 1), order: 0 }],
+            sizes: [
+              { size: 'M', quantity: 10, sku: `TEST-DJ-${i}-M` },
+              { size: 'L', quantity: 10, sku: `TEST-DJ-${i}-L` }
+            ],
+          }
+        ],
+        badge: i % 4 === 0 ? 'New' : (i % 5 === 0 ? 'Sale' : null), 
+        isFeatured: i % 3 === 0, 
+        isActive: true,
+        ratings: { average: 4.2 + (i % 10) * 0.05, count: i * 8 },
+      });
+    }
+
+    // Manually generate product IDs since insertMany bypasses pre-save hooks
+    const Counter = mongoose.models.Counter ?? mongoose.model('Counter', new mongoose.Schema({ _id: String, seq: Number }));
+    const counter = await Counter.findByIdAndUpdate(
+      'pro_seq',
+      { $inc: { seq: productsData.length } },
+      { new: true, upsert: true }
+    );
+    let startSeq = counter.seq - productsData.length + 1;
+    for (const p of productsData) {
+      (p as any).productId = `PID_${String(startSeq++).padStart(3, '0')}`;
+    }
 
     const products = await Product.insertMany(productsData);
 
