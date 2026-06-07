@@ -26,6 +26,7 @@ export default function LoginPage() {
       const data = await res.json();
       
       if (data.success) {
+        window.dispatchEvent(new Event('auth-change'));
         // Find where to redirect the user back to
         let returnUrl = '/';
         const searchParams = new URLSearchParams(window.location.search);

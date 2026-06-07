@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     await OTP.deleteOne({ _id: otpRecord._id });
 
     // Generate JWT and set HttpOnly Cookie to auto-login
-    const token = await signToken({ userId: user._id, email: user.email, role: user.role, name: user.name });
+    const token = await signToken({ userId: user._id.toString(), email: user.email, role: user.role, name: user.name });
     
     const response = NextResponse.json({ success: true, message: 'Password reset successfully! You are now logged in.' });
     

@@ -31,13 +31,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate JWT and set HttpOnly Cookie
-    const token = await signToken({ userId: user._id, email: user.email, role: user.role, name: user.name });
+    const token = await signToken({ userId: user._id.toString(), email: user.email, role: user.role, name: user.name });
     
     const response = NextResponse.json({ 
       success: true, 
       message: 'Logged in successfully', 
       user: {
-        id: user._id,
+        id: user._id.toString(),
         name: user.name,
         email: user.email,
         role: user.role

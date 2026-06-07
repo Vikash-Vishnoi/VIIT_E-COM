@@ -13,6 +13,7 @@ const AddressSchema = new Schema(
     state: { type: String, required: true },
     pincode: { type: String, required: true },
     country: { type: String, default: 'India' },
+    isDefault: { type: Boolean, default: false },
   },
   { _id: true }
 );
@@ -40,6 +41,7 @@ export interface IUser extends Document {
     state: string;
     pincode: string;
     country: string;
+    isDefault: boolean;
   }[];
   createdAt: Date;
   updatedAt: Date;

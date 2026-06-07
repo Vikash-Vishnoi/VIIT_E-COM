@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     await OTP.deleteOne({ _id: otpRecord._id });
 
     // Generate JWT and set HttpOnly Cookie
-    const token = await signToken({ userId: newUser._id, email: newUser.email, role: newUser.role });
+    const token = await signToken({ userId: newUser._id.toString(), email: newUser.email, role: newUser.role, name: newUser.name });
     
     const response = NextResponse.json({ success: true, message: 'Registration successful! You are now logged in.', userId: newUser._id });
     

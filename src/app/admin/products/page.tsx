@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -97,7 +97,7 @@ function badgeColor(badge: string): string {
    Component
 ───────────────────────────────────────────── */
 
-export default function AdminProductsPage() {
+function AdminProductsContent() {
   const searchParams = useSearchParams();
 
   // ── Initialize from URL on mount ───────────
@@ -791,5 +791,13 @@ export default function AdminProductsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminProductsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-sm font-bold text-gray-500 uppercase tracking-widest">Loading Interface...</div>}>
+      <AdminProductsContent />
+    </Suspense>
   );
 }

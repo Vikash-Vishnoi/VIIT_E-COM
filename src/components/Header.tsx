@@ -166,16 +166,25 @@ export default function Header() {
   const isAdmin = pathname.startsWith("/admin");
 
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setUser(data.user);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoadingAuth(false));
-  }, [pathname]);
+    const fetchAuth = () => {
+      fetch('/api/auth/me')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setUser(data.user);
+          } else {
+            setUser(null);
+          }
+        })
+        .catch(() => {})
+        .finally(() => setLoadingAuth(false));
+    };
+
+    fetchAuth();
+
+    window.addEventListener('auth-change', fetchAuth);
+    return () => window.removeEventListener('auth-change', fetchAuth);
+  }, []);
 
   return (
     <header className="w-full bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
