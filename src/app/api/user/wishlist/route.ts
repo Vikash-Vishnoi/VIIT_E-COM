@@ -1,0 +1,125 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { connectDB } from '@/lib/db';
+import { Wishlist, Product } from '@/models';
+import { verifyToken } from '@/lib/jwt';
+import mongoose from 'mongoose';
+
+// Helper to authenticate request
+async function getAuthUser(req: NextRequest) {
+  const token = req.cookies.get('auth_token')?.value;
+  if (!token) return null;
+  const payload = await verifyToken(token);
+  if (!payload || !payload.userId) return null;
+  if (typeof payload.userId !== 'string') return null;
+  return payload.userId;
+}
+
+// GET: Fetch user's wishlist items
+export async function GET(req: NextRequest) {
+  try {
+    const userId = await getAuthUser(req);
+    if (!userId) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+
+    await connectDB();
+    
+    // Fetch and populate the product details
+    const wishlist = await Wishlist.find({ userId })
+      .populate({
+        path: 'productId',
+        select: 'title slug price sellingPrice colors badge isActive',
+      })
+      .sort({ addedAt: -1 })
+      .lean();
+
+    return NextResponse.json({ success: true, data: wishlist });
+  } catch (error: any) {
+    console.error('GET /api/user/wishlist error:', error);
+    return NextResponse.json({ success: false, message: 'Failed to fetch wishlist' }, { status: 500 });
+  }
+}
+
+// POST: Add or Toggle an item in the wishlist
+export async function POST(req: NextRequest) {
+  try {
+    const userId = await getAuthUser(req);
+    if (!userId) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+
+    await connectDB();
+    const body = await req.json();
+    let { productId, colorName, size } = body;
+
+    if (!productId) {
+      return NextResponse.json({ success: false, message: 'Product ID is required' }, { status: 400 });
+    }
+
+    // If color or size isn't provided (e.g. from a generic Product Card click), find the defaults
+    if (!colorName || !size) {
+      const product = await Product.findById(productId);
+      if (!product) {
+        return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
+      }
+      
+      // Pick first color
+      if (!colorName && product.colors && product.colors.length > 0) {
+        colorName = product.colors[0].name;
+      }
+      // Pick first size
+      if (!size && product.sizes && product.sizes.length > 0) {
+        size = product.sizes[0].name;
+      }
+      
+      // Fallbacks in case the product has no colors/sizes array defined
+      if (!colorName) colorName = "Default";
+      if (!size) size = "Default";
+    }
+
+    // Check if it already exists to toggle it off (remove) or prevent duplicates
+    const existing = await Wishlist.findOne({ userId, productId, colorName, size });
+    
+    if (existing) {
+      // Toggle off -> Remove it
+      await Wishlist.deleteOne({ _id: existing._id });
+      return NextResponse.json({ success: true, message: 'Removed from wishlist', action: 'removed' });
+    }
+
+    // Add it
+    const newItem = await Wishlist.create({
+      userId,
+      productId,
+      colorName,
+      size
+    });
+
+    return NextResponse.json({ success: true, message: 'Added to wishlist', action: 'added', data: newItem });
+  } catch (error: any) {
+    console.error('POST /api/user/wishlist error:', error);
+    return NextResponse.json({ success: false, message: 'Failed to update wishlist' }, { status: 500 });
+  }
+}
+
+// DELETE: Remove a specific wishlist item by its own ID
+export async function DELETE(req: NextRequest) {
+  try {
+    const userId = await getAuthUser(req);
+    if (!userId) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ success: false, message: 'Wishlist Item ID is required' }, { status: 400 });
+    }
+
+    await connectDB();
+    const result = await Wishlist.deleteOne({ _id: id, userId });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ success: false, message: 'Item not found in your wishlist' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: 'Removed from wishlist' });
+  } catch (error: any) {
+    console.error('DELETE /api/user/wishlist error:', error);
+    return NextResponse.json({ success: false, message: 'Failed to remove from wishlist' }, { status: 500 });
+  }
+}

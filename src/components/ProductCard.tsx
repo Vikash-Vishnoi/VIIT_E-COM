@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Heart } from "lucide-react";
 
 export type FormattedProduct = {
   id: string;
@@ -16,13 +17,61 @@ export type FormattedProduct = {
 
 export default function ProductCard({ product }: { product: FormattedProduct }) {
   const [hovered, setHovered] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [loadingWishlist, setLoadingWishlist] = useState(false);
+
+  useEffect(() => {
+    // Fire and forget check
+    fetch(`/api/user/wishlist/check?productId=${product.id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setIsWishlisted(data.isWishlisted);
+      })
+      .catch(() => {});
+  }, [product.id]);
+
+  const toggleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Stop navigation
+    e.stopPropagation();
+    
+    if (loadingWishlist) return;
+    setLoadingWishlist(true);
+    
+    // Optimistic UI
+    const previousState = isWishlisted;
+    setIsWishlisted(!previousState);
+
+    try {
+      const res = await fetch('/api/user/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product.id })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        window.dispatchEvent(new CustomEvent('wishlist-change', { detail: { action: data.action, productId: product.id } }));
+      } else if (data.message === 'Unauthorized') {
+        // Revert optimistic update and redirect
+        setIsWishlisted(previousState);
+        sessionStorage.setItem('pendingWishlistAction', product.id);
+        window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+      } else {
+        setIsWishlisted(previousState);
+      }
+    } catch (err) {
+      setIsWishlisted(previousState);
+    } finally {
+      setLoadingWishlist(false);
+    }
+  };
 
   return (
     <Link href={`/products/${product.slug}`} className="group flex flex-col cursor-pointer" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-50 rounded-sm mb-3">
         <Image
           src={product.image || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
-          alt={product.name}
+          alt={product.name || "Product image"}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className={`object-cover transition-transform duration-500 ${hovered ? "scale-105" : "scale-100"}`}
@@ -38,14 +87,18 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
           </span>
         )}
 
-        {/* Quick add */}
-        <div
-          className={`absolute bottom-0 left-0 right-0 bg-black/90 text-white text-[11px] font-black uppercase tracking-widest text-center py-3 transition-transform duration-300 ${
-            hovered ? "translate-y-0" : "translate-y-full"
-          }`}
+        {/* Wishlist Button */}
+        <button
+          onClick={toggleWishlist}
+          disabled={loadingWishlist}
+          className="absolute top-3 right-3 p-2 bg-white/80 hover:bg-white rounded-full text-black shadow-sm transition-all z-10"
         >
-          + Quick Add
-        </div>
+          <Heart 
+            size={16} 
+            className={`transition-colors ${isWishlisted ? "fill-black text-black" : "fill-transparent"}`} 
+          />
+        </button>
+
       </div>
 
       <div className="flex flex-col gap-1">

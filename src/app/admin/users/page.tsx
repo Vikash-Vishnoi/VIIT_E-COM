@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Search,
@@ -112,7 +112,7 @@ const getAvatarColor = (name: string) => {
    Page Component
 ───────────────────────────────────────────── */
 
-export default function AdminUsersPage() {
+function AdminUsersContent() {
   const searchParams = useSearchParams();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -639,5 +639,13 @@ export default function AdminUsersPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminUsersPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-xs font-bold text-gray-500 uppercase tracking-widest">Loading...</div>}>
+      <AdminUsersContent />
+    </Suspense>
   );
 }

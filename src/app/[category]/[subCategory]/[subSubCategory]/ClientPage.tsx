@@ -39,6 +39,10 @@ export default function SubCategoryClient({
   const navRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  
+  /* Pagination */
+  const [currentPage, setCurrentPage] = useState(0);
+  const limit = 20;
 
   function checkScroll() {
     const el = navRef.current;
@@ -84,6 +88,11 @@ export default function SubCategoryClient({
     setPriceRange([minPrice, maxPrice]);
   }, [minPrice, maxPrice]);
 
+  // Reset page to 0 if filters change
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [priceRange]);
+
   const filtered = products
     .filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1])
     .sort((a, b) => {
@@ -92,6 +101,9 @@ export default function SubCategoryClient({
       if (sortBy === "new") return (b.badge === "New" ? 1 : 0) - (a.badge === "New" ? 1 : 0);
       return 0;
     });
+
+  const totalPages = Math.ceil(filtered.length / limit);
+  const paginated = filtered.slice(currentPage * limit, (currentPage + 1) * limit);
 
   return (
     <div className="min-h-screen bg-white">
@@ -300,11 +312,50 @@ export default function SubCategoryClient({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-10">
-            {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-10">
+              {paginated.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+
+            {/* Pagination UI */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-16">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                  disabled={currentPage === 0}
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-gray-200 disabled:opacity-30 hover:bg-black hover:text-white transition-colors"
+                >
+                  Prev
+                </button>
+                
+                <div className="flex gap-1">
+                  {Array.from({ length: totalPages }).map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentPage(i)}
+                      className={`w-8 h-8 flex items-center justify-center text-[11px] font-black transition-colors ${
+                        currentPage === i 
+                          ? "bg-black text-white" 
+                          : "text-gray-500 hover:bg-gray-100"
+                      }`}
+                    >
+                      {i}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                  disabled={currentPage === totalPages - 1}
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-gray-200 disabled:opacity-30 hover:bg-black hover:text-white transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

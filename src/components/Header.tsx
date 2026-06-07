@@ -158,6 +158,7 @@ function NavLabelWithArrow({ label }: NavLabelWithArrowProps) {
 
 export default function Header() {
   const cartCount = 0;
+  const [wishlistCount, setWishlistCount] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -165,15 +166,43 @@ export default function Header() {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
 
+  const fetchWishlistCount = () => {
+    fetch('/api/user/wishlist')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setWishlistCount(data.data.length);
+        }
+      })
+      .catch(() => {});
+  };
+
   useEffect(() => {
     const fetchAuth = () => {
       fetch('/api/auth/me')
         .then(res => res.json())
-        .then(data => {
+        .then(async data => {
           if (data.success) {
             setUser(data.user);
+            
+            // Process pending wishlist action if exists
+            const pendingProductId = sessionStorage.getItem('pendingWishlistAction');
+            if (pendingProductId) {
+              sessionStorage.removeItem('pendingWishlistAction');
+              try {
+                await fetch('/api/user/wishlist', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ productId: pendingProductId })
+                });
+                window.dispatchEvent(new Event('wishlist-change'));
+              } catch (err) {}
+            }
+            
+            fetchWishlistCount();
           } else {
             setUser(null);
+            setWishlistCount(0);
           }
         })
         .catch(() => {})
@@ -182,8 +211,24 @@ export default function Header() {
 
     fetchAuth();
 
-    window.addEventListener('auth-change', fetchAuth);
-    return () => window.removeEventListener('auth-change', fetchAuth);
+    const handleAuthChange = () => fetchAuth();
+    
+    // Listen for custom event payloads to update counter instantly without an API call
+    const handleWishlistChange = (e: any) => {
+      if (e.detail && e.detail.action) {
+        setWishlistCount(prev => e.detail.action === 'added' ? prev + 1 : Math.max(0, prev - 1));
+      } else {
+        fetchWishlistCount();
+      }
+    };
+    
+    window.addEventListener('auth-change', handleAuthChange);
+    window.addEventListener('wishlist-change', handleWishlistChange);
+    
+    return () => {
+      window.removeEventListener('auth-change', handleAuthChange);
+      window.removeEventListener('wishlist-change', handleWishlistChange);
+    };
   }, []);
 
   return (
@@ -222,7 +267,7 @@ export default function Header() {
 
           {/* CENTER — Nav links — hidden on admin */}
           {!isAdmin && (
-            <nav className="hidden md:flex items-center gap-7 mx-8">
+            <nav key={pathname} className="hidden md:flex items-center gap-7 mx-8">
               {navLinks.map((link) => {
                 const dropdown = navDropdowns[link.label];
 
@@ -337,11 +382,16 @@ export default function Header() {
             </button>
 
             {/* Wishlist */}
-            <button aria-label="Wishlist" className="text-black hover:opacity-60 transition-opacity">
+            <Link href="/wishlist" aria-label="Wishlist" className="relative text-black hover:opacity-60 transition-opacity">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
-            </button>
+              {wishlistCount > 0 && (
+                <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 rounded-full bg-black text-white text-[9px] font-bold leading-none">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
 
             {/* Cart */}
             <button aria-label="Cart" className="relative text-black hover:opacity-60 transition-opacity">
