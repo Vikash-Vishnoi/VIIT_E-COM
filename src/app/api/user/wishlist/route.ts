@@ -61,11 +61,11 @@ export async function POST(req: NextRequest) {
       
       // Pick first color
       if (!colorName && product.colors && product.colors.length > 0) {
-        colorName = product.colors[0].name;
+        colorName = product.colors[0].colorName;
       }
-      // Pick first size
-      if (!size && product.sizes && product.sizes.length > 0) {
-        size = product.sizes[0].name;
+      // Pick first size from the selected color
+      if (!size && product.colors && product.colors.length > 0 && product.colors[0].sizes && product.colors[0].sizes.length > 0) {
+        size = product.colors[0].sizes[0].size;
       }
       
       // Fallbacks in case the product has no colors/sizes array defined
