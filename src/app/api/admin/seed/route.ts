@@ -24,7 +24,7 @@ function slugify(text: string): string {
 
 // ── placeholder image URL ───────────────────────────────────────────
 const IMG = (n: number) =>
-  `https://res.cloudinary.com/demo/image/upload/v1/viit/products/placeholder-${n}.jpg`;
+  `https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa`;
 
 // ─────────────────────────────────────────────────────────────────────
 // GET /api/admin/seed
@@ -105,7 +105,7 @@ export async function GET() {
     const productsData = [
       // ── MAN > Denim > Denim Jacket ──
       {
-        category: 'MAN', subCategory: 'Denim', subSubCategory: 'Denim Jacket',
+        category: 'man', subCategory: 'man-denim', subSubCategory: 'man-denim-jacket',
         title: 'Classic Indigo Denim Jacket',
         slug: slugify('Classic Indigo Denim Jacket'),
         description: 'A timeless denim jacket crafted from premium 12oz indigo-dyed cotton. Features a classic trucker silhouette with antique brass buttons and dual chest pockets.',
@@ -136,7 +136,7 @@ export async function GET() {
         ratings: { average: 4.5, count: 218 },
       },
       {
-        category: 'MAN', subCategory: 'Denim', subSubCategory: 'Denim Jacket',
+        category: 'man', subCategory: 'man-denim', subSubCategory: 'man-denim-jacket',
         title: 'Distressed Trucker Denim Jacket',
         slug: slugify('Distressed Trucker Denim Jacket'),
         description: 'Rugged distressed denim jacket with a relaxed fit. Hand-faded finish gives each piece a unique vintage character.',
@@ -157,7 +157,7 @@ export async function GET() {
       },
       // ── MAN > Denim > Denim Jeans ──
       {
-        category: 'MAN', subCategory: 'Denim', subSubCategory: 'Denim Jeans',
+        category: 'man', subCategory: 'man-denim', subSubCategory: 'man-denim-jeans',
         title: 'Slim Fit Washed Jeans',
         slug: slugify('Slim Fit Washed Jeans'),
         description: 'Modern slim-fit jeans with a mid-rise waist and subtle whisker wash. Made from stretch denim for all-day comfort without compromising style.',
@@ -187,7 +187,7 @@ export async function GET() {
         ratings: { average: 4.3, count: 175 },
       },
       {
-        category: 'MAN', subCategory: 'Denim', subSubCategory: 'Denim Jeans',
+        category: 'man', subCategory: 'man-denim', subSubCategory: 'man-denim-jeans',
         title: 'Relaxed Taper Raw Denim Jeans',
         slug: slugify('Relaxed Taper Raw Denim Jeans'),
         description: 'Raw selvedge denim jeans with a relaxed tapered fit. Crafted from Japanese 14oz denim that develops a beautiful fade pattern over time.',
@@ -209,7 +209,7 @@ export async function GET() {
       },
       // ── MAN > Linen > Linen Shirt ──
       {
-        category: 'MAN', subCategory: 'Linen', subSubCategory: 'Linen Shirt',
+        category: 'man', subCategory: 'man-linen', subSubCategory: 'man-linen-shirt',
         title: 'Pure Linen Mandarin Collar Shirt',
         slug: slugify('Pure Linen Mandarin Collar Shirt'),
         description: 'Breathable 100% European linen shirt with a mandarin collar. Perfect for Indian summers — stays cool and looks effortlessly refined.',
@@ -249,7 +249,7 @@ export async function GET() {
       },
       // ── MAN > Linen > Linen Trousers ──
       {
-        category: 'MAN', subCategory: 'Linen', subSubCategory: 'Linen Trousers',
+        category: 'man', subCategory: 'man-linen', subSubCategory: 'man-linen-trousers',
         title: 'Linen Relaxed Trousers',
         slug: slugify('Linen Relaxed Trousers'),
         description: 'Lightweight linen trousers with an elastic waistband and drawstring. Features a relaxed straight-leg cut ideal for casual outings and weekend brunches.',
@@ -279,7 +279,7 @@ export async function GET() {
       },
       // ── MAN > Casual > T-Shirt ──
       {
-        category: 'MAN', subCategory: 'Casual', subSubCategory: 'T-Shirt',
+        category: 'man', subCategory: 'man-casual', subSubCategory: 'man-casual-tshirt',
         title: 'Oversized Drop Shoulder Tee',
         slug: slugify('Oversized Drop Shoulder Tee'),
         description: 'Premium 240 GSM cotton oversized tee with a drop-shoulder cut. Pre-washed for an ultra-soft hand feel right out of the box.',
@@ -321,7 +321,7 @@ export async function GET() {
       },
       // ── MAN > Casual > Polo ──
       {
-        category: 'MAN', subCategory: 'Casual', subSubCategory: 'Polo',
+        category: 'man', subCategory: 'man-casual', subSubCategory: 'man-casual-polo',
         title: 'Piqué Cotton Polo',
         slug: slugify('Pique Cotton Polo'),
         description: 'Classic fit piqué cotton polo with a ribbed collar and two-button placket. Features embroidered VIIT logo on the chest.',
@@ -352,7 +352,7 @@ export async function GET() {
       },
       // ── WOMAN > Western > Tops ──
       {
-        category: 'WOMAN', subCategory: 'Western', subSubCategory: 'Tops',
+        category: 'woman', subCategory: 'woman-western', subSubCategory: 'woman-western-tops',
         title: 'Ruffle Sleeve Crop Top',
         slug: slugify('Ruffle Sleeve Crop Top'),
         description: 'A flirty crop top with statement ruffle sleeves in breezy georgette. Pair it with high-waisted jeans or a skirt for an effortless look.',
@@ -383,7 +383,7 @@ export async function GET() {
       },
       // ── WOMAN > Western > Dresses ──
       {
-        category: 'WOMAN', subCategory: 'Western', subSubCategory: 'Dresses',
+        category: 'woman', subCategory: 'woman-western', subSubCategory: 'woman-western-dresses',
         title: 'Floral Midi Wrap Dress',
         slug: slugify('Floral Midi Wrap Dress'),
         description: 'A flattering wrap-style midi dress in a vibrant floral print. Crafted from soft viscose with a tie waist and flared skirt.',
@@ -405,7 +405,7 @@ export async function GET() {
       },
       // ── WOMAN > Western > Skirts ──
       {
-        category: 'WOMAN', subCategory: 'Western', subSubCategory: 'Skirts',
+        category: 'woman', subCategory: 'woman-western', subSubCategory: 'woman-western-skirts',
         title: 'Pleated A-Line Midi Skirt',
         slug: slugify('Pleated A-Line Midi Skirt'),
         description: 'Elegant pleated midi skirt with an A-line silhouette. Features a concealed side zip and satin-finish fabric that drapes beautifully.',
@@ -436,7 +436,7 @@ export async function GET() {
       },
       // ── WOMAN > Denim > Denim Jacket ──
       {
-        category: 'WOMAN', subCategory: 'Denim', subSubCategory: 'Denim Jacket',
+        category: 'woman', subCategory: 'woman-denim', subSubCategory: 'woman-denim-jacket',
         title: 'Cropped Denim Jacket',
         slug: slugify('Cropped Denim Jacket'),
         description: 'A cropped denim jacket with a boxy fit, perfect for layering over dresses and jumpsuits. Finished with silver-tone hardware and frayed hems.',
@@ -466,7 +466,7 @@ export async function GET() {
       },
       // ── WOMAN > Denim > Denim Jeans ──
       {
-        category: 'WOMAN', subCategory: 'Denim', subSubCategory: 'Denim Jeans',
+        category: 'woman', subCategory: 'woman-denim', subSubCategory: 'woman-denim-jeans',
         title: 'High Rise Straight Leg Jeans',
         slug: slugify('High Rise Straight Leg Jeans'),
         description: 'Flattering high-rise jeans with a straight-leg cut. Made from premium stretch denim with a touch of elastane for a comfortable, sculpted fit.',
@@ -497,7 +497,7 @@ export async function GET() {
       },
       // ── MAN > Casual > T-Shirt (another one) ──
       {
-        category: 'MAN', subCategory: 'Casual', subSubCategory: 'T-Shirt',
+        category: 'man', subCategory: 'man-casual', subSubCategory: 'man-casual-tshirt',
         title: 'Acid Wash Graphic Tee',
         slug: slugify('Acid Wash Graphic Tee'),
         description: 'Streetwear-inspired acid wash tee with a bold back graphic print. Made from heavy-weight cotton for a premium, structured drape.',
@@ -519,7 +519,7 @@ export async function GET() {
       },
       // ── WOMAN > Ethnic (no sub-sub, but still valid product) ──
       {
-        category: 'WOMAN', subCategory: 'Western', subSubCategory: 'Tops',
+        category: 'woman', subCategory: 'woman-western', subSubCategory: 'woman-western-tops',
         title: 'Embroidered Peplum Top',
         slug: slugify('Embroidered Peplum Top'),
         description: 'A statement peplum top with intricate thread embroidery along the neckline. The flared hem creates a flattering silhouette for all body types.',
@@ -550,7 +550,7 @@ export async function GET() {
       },
       // ── MAN > Linen > Linen Shirt (another) ──
       {
-        category: 'MAN', subCategory: 'Linen', subSubCategory: 'Linen Shirt',
+        category: 'man', subCategory: 'man-linen', subSubCategory: 'man-linen-shirt',
         title: 'Camp Collar Linen Shirt',
         slug: slugify('Camp Collar Linen Shirt'),
         description: 'Resort-ready camp collar shirt in lightweight Italian linen. Features a relaxed box cut, chest pocket, and coconut shell buttons.',
