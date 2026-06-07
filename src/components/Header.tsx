@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -160,8 +160,22 @@ export default function Header() {
   const cartCount = 0;
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loadingAuth, setLoadingAuth] = useState(true);
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setUser(data.user);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingAuth(false));
+  }, [pathname]);
 
   return (
     <header className="w-full bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
@@ -313,14 +327,6 @@ export default function Header() {
               </svg>
             </button>
 
-            {/* Account */}
-            <button aria-label="Account" className="text-black hover:opacity-60 transition-opacity">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </button>
-
             {/* Wishlist */}
             <button aria-label="Wishlist" className="text-black hover:opacity-60 transition-opacity">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -339,6 +345,22 @@ export default function Header() {
                 {cartCount}
               </span>
             </button>
+            
+            {/* Account */}
+            {!loadingAuth && user ? (
+              <Link href="/profile" aria-label="Account" className="text-black hover:opacity-60 transition-opacity flex items-center justify-center min-w-[40px]">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </Link>
+            ) : !loadingAuth && !user ? (
+              <Link href={`/login?returnTo=${encodeURIComponent(pathname)}`} aria-label="Login / Register" className="flex items-center gap-2 text-black hover:opacity-60 transition-opacity">
+                <span className="text-[12px] font-bold uppercase tracking-widest whitespace-nowrap">Login / Register</span>
+              </Link>
+            ) : (
+              <div className="w-[120px] h-[20px] animate-pulse bg-gray-100 rounded"></div>
+            )}
           </div>
         </div>
       </div>

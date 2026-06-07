@@ -1,0 +1,95 @@
+import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { connectDB } from '@/lib/db';
+import { User, OTP } from '@/models';
+import { signToken } from '@/lib/jwt';
+
+export async function POST(req: NextRequest) {
+  try {
+    await connectDB();
+    const { email, otp, name, mobile, password } = await req.json();
+
+    if (!email || !otp || !name || !password) {
+      return NextResponse.json({ success: false, message: 'All fields are required' }, { status: 400 });
+    }
+
+    // Find the OTP record
+    const otpRecord = await OTP.findOne({ email });
+
+    if (!otpRecord) {
+      return NextResponse.json({ success: false, message: 'OTP has expired or was not sent. Please request a new one.' }, { status: 400 });
+    }
+
+    // Check for brute-force attempts
+    if (otpRecord.attempts >= 3) {
+      await OTP.deleteOne({ _id: otpRecord._id });
+      return NextResponse.json({ success: false, message: 'Too many failed attempts. For security, this OTP has been invalidated. Please request a new one.' }, { status: 400 });
+    }
+
+    // Validate OTP match
+    if (otpRecord.otp !== otp) {
+      otpRecord.attempts += 1;
+      await otpRecord.save();
+      
+      const attemptsLeft = 3 - otpRecord.attempts;
+      if (attemptsLeft <= 0) {
+        await OTP.deleteOne({ _id: otpRecord._id });
+        return NextResponse.json({ success: false, message: 'Too many failed attempts. Please request a new OTP.' }, { status: 400 });
+      }
+      
+      return NextResponse.json({ success: false, message: `Invalid OTP. You have ${attemptsLeft} attempt(s) left.` }, { status: 400 });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return NextResponse.json({ success: false, message: 'Email is already registered' }, { status: 400 });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    // Create user
+    const newUser = await User.create({
+      name,
+      email,
+      mobile: mobile || '',
+      passwordHash,
+      role: 'customer',
+      isVerified: true, // They just verified via OTP
+      isActive: true,
+    });
+
+    // Delete the used OTP
+    await OTP.deleteOne({ _id: otpRecord._id });
+
+    // Generate JWT and set HttpOnly Cookie
+    const token = await signToken({ userId: newUser._id, email: newUser.email, role: newUser.role });
+    
+    const response = NextResponse.json({ success: true, message: 'Registration successful! You are now logged in.', userId: newUser._id });
+    
+    response.cookies.set('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+    });
+
+    return response;
+  } catch (error: any) {
+    console.error('Registration error:', error);
+    
+    // Handle MongoDB duplicate key errors elegantly
+    if (error.code === 11000) {
+      const duplicateField = Object.keys(error.keyPattern)[0];
+      const message = duplicateField === 'mobile' 
+        ? 'This mobile number is already registered.' 
+        : `This ${duplicateField} is already in use.`;
+      return NextResponse.json({ success: false, message }, { status: 400 });
+    }
+    
+    return NextResponse.json({ success: false, message: 'Registration failed' }, { status: 500 });
+  }
+}
