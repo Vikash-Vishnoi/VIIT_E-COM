@@ -48,16 +48,17 @@ export async function POST(request: Request) {
     }
 
     // Calculate level
-    let level = 0;
+    let level: 0 | 1 | 2 = 0;
     if (parentId) {
       const parent = await SubCategory.findById(parentId);
       if (!parent) {
         return NextResponse.json({ success: false, message: 'Parent category not found' }, { status: 400 });
       }
-      level = parent.level + 1;
-      if (level > 2) {
+      const newLevel = parent.level + 1;
+      if (newLevel > 2) {
         return NextResponse.json({ success: false, message: 'Cannot create beyond sub-sub-category (level 2 max)' }, { status: 400 });
       }
+      level = newLevel as 0 | 1 | 2;
     } else {
       // Restriction: Main Categories (Level 0) cannot be created via the UI
       return NextResponse.json({ success: false, message: 'Creating new Main Categories is restricted. Please select a Parent Category.' }, { status: 400 });
