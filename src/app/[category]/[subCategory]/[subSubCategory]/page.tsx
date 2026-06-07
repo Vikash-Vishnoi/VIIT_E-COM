@@ -1,7 +1,8 @@
 import { connectDB } from "@/lib/db";
 import { Product, SubCategory } from "@/models";
 import { notFound } from "next/navigation";
-import ClientPage, { FormattedProduct, SiblingCategory } from "./ClientPage";
+import ClientPage, { SiblingCategory } from "./ClientPage";
+import { FormattedProduct } from "@/components/ProductCard";
 
 type RouteParams = {
   category: string;
