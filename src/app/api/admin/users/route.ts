@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { User, Order } from '@/models';
+import { User, Cart, Wishlist } from '@/models';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,29 +43,24 @@ export async function GET(req: NextRequest) {
     };
     const sortOrder = sortMap[sortParam] ?? sortMap.newest;
 
-    // Projection — exclude sensitive data
-    const projection = {
-      _id: 1,
-      name: 1,
-      email: 1,
-      mobile: 1,
-      role: 1,
-      isVerified: 1,
-      isActive: 1,
-      lastLoginAt: 1,
-      createdAt: 1,
-      // Return counts only
-      cart: { $size: '$cart' },
-      wishlist: { $size: '$wishlist' },
-      address: { $size: '$address' },
-    };
-
-    // Use aggregation for $size
+    // Use aggregation with $lookup for cart/wishlist counts from separate collections
     const pipeline: any[] = [
       { $match: filter },
+      { $lookup: {
+        from: 'carts',
+        localField: '_id',
+        foreignField: 'userId',
+        as: '_carts',
+      }},
+      { $lookup: {
+        from: 'wishlists',
+        localField: '_id',
+        foreignField: 'userId',
+        as: '_wishlists',
+      }},
       { $addFields: {
-        cartCount: { $size: { $ifNull: ['$cart', []] } },
-        wishlistCount: { $size: { $ifNull: ['$wishlist', []] } },
+        cartCount: { $size: '$_carts' },
+        wishlistCount: { $size: '$_wishlists' },
         addressCount: { $size: { $ifNull: ['$address', []] } },
       }},
       { $project: {

@@ -8,6 +8,8 @@ import {
   InventoryLog,
   SubCategory,
   Notification,
+  Cart,
+  Wishlist,
 } from '@/models';
 import mongoose from 'mongoose';
 
@@ -43,6 +45,8 @@ export async function GET() {
       InventoryLog.deleteMany({}),
       SubCategory.deleteMany({}),
       Notification.deleteMany({}),
+      Cart.deleteMany({}),
+      Wishlist.deleteMany({}),
     ]);
 
     // ── 2. Seed SubCategories ─────────────────────────────────────
@@ -606,12 +610,6 @@ export async function GET() {
             country: 'India',
           },
         ],
-        cart: [
-          { productId: products[0]._id, colorName: 'Indigo Blue', size: 'M', quantity: 1 },
-        ],
-        wishlist: [
-          { productId: products[4]._id, colorName: 'Classic White', size: 'L' },
-        ],
       },
       {
         name: 'Priya Patel',
@@ -644,13 +642,6 @@ export async function GET() {
             country: 'India',
           },
         ],
-        cart: [
-          { productId: products[8]._id, colorName: 'Blush Pink', size: 'S', quantity: 1 },
-          { productId: products[9]._id, colorName: 'Teal Floral', size: 'M', quantity: 1 },
-        ],
-        wishlist: [
-          { productId: products[11]._id, colorName: 'Light Blue', size: 'M' },
-        ],
       },
       {
         name: 'Rohan Mehta',
@@ -672,11 +663,6 @@ export async function GET() {
             pincode: '400050',
             country: 'India',
           },
-        ],
-        cart: [],
-        wishlist: [
-          { productId: products[2]._id, colorName: 'Mid Blue', size: '32' },
-          { productId: products[6]._id, colorName: 'Black', size: 'L' },
         ],
       },
       {
@@ -710,8 +696,6 @@ export async function GET() {
             country: 'India',
           },
         ],
-        cart: [],
-        wishlist: [],
       },
       {
         name: 'Vikram Singh',
@@ -734,14 +718,25 @@ export async function GET() {
             country: 'India',
           },
         ],
-        cart: [
-          { productId: products[7]._id, colorName: 'Navy Blue', size: 'L', quantity: 2 },
-        ],
-        wishlist: [],
       },
     ];
 
     const users = await User.insertMany(usersData);
+
+    // ── 4b. Seed Cart & Wishlist (separate collections) ───────────
+    await Cart.insertMany([
+      { userId: users[0]._id, productId: products[0]._id, colorName: 'Indigo Blue', size: 'M', quantity: 1 },
+      { userId: users[1]._id, productId: products[8]._id, colorName: 'Blush Pink', size: 'S', quantity: 1 },
+      { userId: users[1]._id, productId: products[9]._id, colorName: 'Teal Floral', size: 'M', quantity: 1 },
+      { userId: users[4]._id, productId: products[7]._id, colorName: 'Navy Blue', size: 'L', quantity: 2 },
+    ]);
+
+    await Wishlist.insertMany([
+      { userId: users[0]._id, productId: products[4]._id, colorName: 'Classic White', size: 'L' },
+      { userId: users[1]._id, productId: products[11]._id, colorName: 'Light Blue', size: 'M' },
+      { userId: users[2]._id, productId: products[2]._id, colorName: 'Mid Blue', size: '32' },
+      { userId: users[2]._id, productId: products[6]._id, colorName: 'Black', size: 'L' },
+    ]);
 
     // ── 5. Seed Orders ────────────────────────────────────────────
     const ordersData = [

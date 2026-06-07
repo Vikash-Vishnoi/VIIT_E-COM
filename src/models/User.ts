@@ -17,26 +17,7 @@ const AddressSchema = new Schema(
   { _id: true }
 );
 
-const CartItemSchema = new Schema(
-  {
-    productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
-    colorName: { type: String, required: true },
-    size: { type: String, required: true },
-    quantity: { type: Number, required: true, min: 1, default: 1 },
-    addedAt: { type: Date, default: Date.now },
-  },
-  { _id: false }
-);
 
-const WishlistItemSchema = new Schema(
-  {
-    productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
-    colorName: { type: String, required: true },
-    size: { type: String, required: true },
-    addedAt: { type: Date, default: Date.now },
-  },
-  { _id: false }
-);
 
 // ─── Main interface ────────────────────────────────────────────────
 
@@ -60,19 +41,6 @@ export interface IUser extends Document {
     pincode: string;
     country: string;
   }[];
-  cart: {
-    productId: Types.ObjectId;
-    colorName: string;
-    size: string;
-    quantity: number;
-    addedAt: Date;
-  }[];
-  wishlist: {
-    productId: Types.ObjectId;
-    colorName: string;
-    size: string;
-    addedAt: Date;
-  }[];
   createdAt: Date;
   updatedAt: Date;
   lastLoginAt?: Date;
@@ -92,8 +60,6 @@ const UserSchema = new Schema<IUser>(
     isActive: { type: Boolean, default: true },
 
     address: { type: [AddressSchema], default: [] },
-    cart: { type: [CartItemSchema], default: [] },
-    wishlist: { type: [WishlistItemSchema], default: [] },
 
     lastLoginAt: { type: Date },
   },

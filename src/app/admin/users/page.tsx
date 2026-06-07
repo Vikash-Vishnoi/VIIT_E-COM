@@ -129,11 +129,12 @@ export default function AdminUsersPage() {
     sort: searchParams.get("sort") || "newest",
   });
   const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
-  const [deactivateModal, setDeactivateModal] = useState<{ open: boolean; user: User | null }>({
+  const [actionModal, setActionModal] = useState<{ open: boolean; user: User | null; action: "block" | "unblock" }>({
     open: false,
     user: null,
+    action: "block",
   });
-  const [deactivating, setDeactivating] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Debounce search
   useEffect(() => {
@@ -227,24 +228,27 @@ export default function AdminUsersPage() {
     }
   };
 
-  // Soft delete (deactivate)
-  const handleDeactivate = async () => {
-    if (!deactivateModal.user) return;
-    setDeactivating(true);
+  // Block / Unblock user
+  const handleAction = async () => {
+    if (!actionModal.user) return;
+    setActionLoading(true);
+    const newActive = actionModal.action === "unblock";
     try {
-      const res = await fetch(`/api/admin/users/${deactivateModal.user._id}`, {
-        method: "DELETE",
+      const res = await fetch(`/api/admin/users/${actionModal.user._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: newActive }),
       });
       if (res.ok) {
         setUsers((prev) =>
-          prev.map((u) => (u._id === deactivateModal.user!._id ? { ...u, isActive: false } : u))
+          prev.map((u) => (u._id === actionModal.user!._id ? { ...u, isActive: newActive } : u))
         );
       }
     } catch (err) {
-      console.error("Deactivate failed:", err);
+      console.error(`${actionModal.action} failed:`, err);
     } finally {
-      setDeactivating(false);
-      setDeactivateModal({ open: false, user: null });
+      setActionLoading(false);
+      setActionModal({ open: false, user: null, action: "block" });
     }
   };
 
@@ -469,19 +473,18 @@ export default function AdminUsersPage() {
                       </span>
                     </td>
 
-                    {/* Verified Toggle */}
+                    {/* Verified Badge */}
                     <td className="px-3 py-3 text-center">
-                      <button
-                        onClick={() => toggleField(user._id, "isVerified", user.isVerified)}
-                        className={`inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md border transition-colors cursor-pointer ${
+                      <span
+                        className={`inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md border ${
                           user.isVerified
-                            ? "text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
-                            : "text-red-500 bg-red-50 border-red-200 hover:bg-red-100"
+                            ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                            : "text-red-500 bg-red-50 border-red-200"
                         }`}
                       >
                         {user.isVerified ? <UserCheck size={10} /> : <UserX size={10} />}
                         {user.isVerified ? "Yes" : "No"}
-                      </button>
+                      </span>
                     </td>
 
 
@@ -511,13 +514,23 @@ export default function AdminUsersPage() {
 
                     {/* Actions */}
                     <td className="px-3 pr-5 py-3 text-right">
-                      {user.isActive && (
+                      {user.isActive ? (
                         <button
-                          onClick={() => setDeactivateModal({ open: true, user })}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                          title="Deactivate user"
+                          onClick={() => setActionModal({ open: true, user, action: "block" })}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[9px] font-black uppercase tracking-widest text-red-500 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:text-red-600 transition-colors"
+                          title="Block user"
                         >
-                          <UserX size={16} />
+                          <UserX size={12} />
+                          Block
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setActionModal({ open: true, user, action: "unblock" })}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 hover:text-emerald-700 transition-colors"
+                          title="Unblock user"
+                        >
+                          <UserCheck size={12} />
+                          Unblock
                         </button>
                       )}
                     </td>
@@ -580,35 +593,46 @@ export default function AdminUsersPage() {
         )}
       </div>
 
-      {/* ── Deactivate Confirmation Modal ───────── */}
-      {deactivateModal.open && deactivateModal.user && (
+      {/* ── Block / Unblock Confirmation Modal ───────── */}
+      {actionModal.open && actionModal.user && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-red-50 text-red-500 rounded-xl">
+              <div className={`p-2 rounded-xl ${actionModal.action === "block" ? "bg-red-50 text-red-500" : "bg-emerald-50 text-emerald-500"}`}>
                 <AlertTriangle size={20} />
               </div>
               <div>
-                <h3 className="text-sm font-black text-black">Deactivate User</h3>
+                <h3 className="text-sm font-black text-black">
+                  {actionModal.action === "block" ? "Block User" : "Unblock User"}
+                </h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  Are you sure you want to deactivate{" "}
-                  <strong className="text-black">{deactivateModal.user.name}</strong>? They will no longer be able to log in.
+                  Are you sure you want to {actionModal.action}{" "}
+                  <strong className="text-black">{actionModal.user.name}</strong>?
+                  {actionModal.action === "block"
+                    ? " They will no longer be able to log in."
+                    : " They will regain access to their account."}
                 </p>
               </div>
             </div>
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
-                onClick={() => setDeactivateModal({ open: false, user: null })}
+                onClick={() => setActionModal({ open: false, user: null, action: "block" })}
                 className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black rounded-lg hover:bg-gray-100 transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={handleDeactivate}
-                disabled={deactivating}
-                className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                onClick={handleAction}
+                disabled={actionLoading}
+                className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white rounded-lg transition-colors disabled:opacity-50 ${
+                  actionModal.action === "block"
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-emerald-500 hover:bg-emerald-600"
+                }`}
               >
-                {deactivating ? "Deactivating…" : "Deactivate"}
+                {actionLoading
+                  ? (actionModal.action === "block" ? "Blocking…" : "Unblocking…")
+                  : (actionModal.action === "block" ? "Block" : "Unblock")}
               </button>
             </div>
           </div>

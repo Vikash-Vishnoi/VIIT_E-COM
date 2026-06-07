@@ -30,7 +30,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
   }
 }
 
-// PATCH — only allow toggling isActive, isVerified, role
+// PATCH — only allow toggling isActive
 export async function PATCH(req: NextRequest, { params }: RouteContext) {
   try {
     await connectDB();
@@ -45,8 +45,6 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     // Only allow specific fields
     const allowed: Record<string, any> = {};
     if (typeof body.isActive === 'boolean') allowed.isActive = body.isActive;
-    if (typeof body.isVerified === 'boolean') allowed.isVerified = body.isVerified;
-    if (body.role === 'customer' || body.role === 'admin') allowed.role = body.role;
 
     if (Object.keys(allowed).length === 0) {
       return Response.json({ success: false, message: 'No valid fields to update' }, { status: 400 });
