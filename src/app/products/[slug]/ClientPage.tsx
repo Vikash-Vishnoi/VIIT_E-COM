@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Heart } from "lucide-react";
 import ProductCard, { FormattedProduct } from "@/components/ProductCard";
 
 type ProductDetails = {
@@ -32,6 +33,107 @@ type ClientPageProps = {
 export default function ClientPage({ product, similarProducts }: ClientPageProps) {
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState<number | "">(1);
+  const [addingToCart, setAddingToCart] = useState(false);
+  
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [loadingWishlist, setLoadingWishlist] = useState(false);
+
+  // Sync with global wishlist cache
+  useEffect(() => {
+    const checkStatus = () => {
+      const ids = (window as any).__wishlistIds;
+      if (ids) {
+        setIsWishlisted(ids.has(product._id));
+      }
+    };
+    checkStatus();
+    window.addEventListener('wishlist-loaded', checkStatus);
+    window.addEventListener('wishlist-change', checkStatus);
+    return () => {
+      window.removeEventListener('wishlist-loaded', checkStatus);
+      window.removeEventListener('wishlist-change', checkStatus);
+    };
+  }, [product._id]);
+
+  const toggleWishlist = async () => {
+    setLoadingWishlist(true);
+    
+    // Optimistic update
+    const previousState = isWishlisted;
+    setIsWishlisted(!previousState);
+
+    try {
+      const res = await fetch('/api/user/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          productId: product._id,
+          // If they haven't explicitly picked a color/size yet, the API handles fallbacks, 
+          // but let's pass what we have
+          colorName: product.colors[selectedColorIndex]?.colorName,
+          size: selectedSize || undefined
+        })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        if ((window as any).__wishlistIds) {
+          if (data.action === 'added') {
+            (window as any).__wishlistIds.add(product._id);
+          } else {
+            (window as any).__wishlistIds.delete(product._id);
+          }
+        }
+        window.dispatchEvent(new CustomEvent('wishlist-change', { detail: { action: data.action, productId: product._id } }));
+      } else if (data.message === 'Unauthorized') {
+        setIsWishlisted(previousState);
+        sessionStorage.setItem('pendingWishlistAction', product._id);
+        window.location.href = `/login?returnTo=/products/${product.slug}`;
+      } else {
+        setIsWishlisted(previousState);
+      }
+    } catch (error) {
+      setIsWishlisted(previousState);
+    } finally {
+      setLoadingWishlist(false);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (!selectedSize) return;
+    
+    setAddingToCart(true);
+    
+    const payload = {
+      productId: product._id,
+      colorName: product.colors[selectedColorIndex]?.colorName,
+      size: selectedSize,
+      quantity: typeof quantity === "number" ? quantity : 1
+    };
+
+    try {
+      const res = await fetch('/api/user/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        window.dispatchEvent(new Event('cart-change'));
+        // Keep button disabled briefly to show feedback
+        setTimeout(() => setAddingToCart(false), 500);
+      } else if (data.message === 'Unauthorized') {
+        sessionStorage.setItem('pendingCartAction', JSON.stringify(payload));
+        window.location.href = `/login?returnTo=/products/${product.slug}`;
+      } else {
+        setAddingToCart(false);
+      }
+    } catch (error) {
+      setAddingToCart(false);
+    }
+  };
 
   // Accordion state
   const [openAccordion, setOpenAccordion] = useState<string>("details");
@@ -229,17 +331,78 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
               )}
             </div>
 
-            {/* Add to Bag */}
-            <button
-              disabled={!selectedSize}
-              className={`w-full py-4 text-[13px] font-black uppercase tracking-[0.2em] transition-all mt-4 ${
-                selectedSize
-                  ? "bg-black text-white hover:bg-gray-800"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              Add To Bag
-            </button>
+            {/* Quantity Selector */}
+            <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                Quantity
+              </span>
+              <div className="flex items-center border border-gray-200 w-32 h-12">
+                <button
+                  disabled={quantity === "" || quantity <= 1}
+                  onClick={() => setQuantity(q => q === "" ? 1 : Math.max(1, q - 1))}
+                  className="w-10 h-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+                <input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => {
+                    if (e.target.value === "") {
+                      setQuantity("");
+                    } else {
+                      const val = parseInt(e.target.value);
+                      if (!isNaN(val) && val > 0) setQuantity(val);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (quantity === "") setQuantity(1);
+                  }}
+                  className="flex-1 h-full w-full text-center text-[13px] font-bold focus:outline-none focus:bg-gray-50 transition-colors [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  style={{ MozAppearance: 'textfield' }}
+                />
+                <button
+                  onClick={() => setQuantity(q => q === "" ? 2 : q + 1)}
+                  className="w-10 h-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 transition-colors"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={handleAddToCart}
+                disabled={!selectedSize || addingToCart}
+                className={`flex-1 py-4 text-[13px] font-black uppercase tracking-[0.2em] transition-all ${
+                  selectedSize && !addingToCart
+                    ? "bg-black text-white hover:bg-gray-800"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                {addingToCart ? "ADDING..." : "Add To Bag"}
+              </button>
+              
+              <button
+                onClick={toggleWishlist}
+                disabled={loadingWishlist}
+                className={`w-14 flex items-center justify-center border transition-all ${
+                  isWishlisted 
+                    ? "bg-black border-black text-white" 
+                    : "bg-white border-gray-200 text-black hover:border-black"
+                }`}
+                aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              >
+                <Heart size={20} className={isWishlisted ? "fill-white" : "fill-transparent"} />
+              </button>
+            </div>
 
             {/* Features (Shipping/Fashion) */}
             <div className="grid grid-cols-2 divide-x divide-gray-100 border-y border-gray-100 py-6 mt-4">

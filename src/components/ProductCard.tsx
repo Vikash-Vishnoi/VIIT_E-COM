@@ -21,13 +21,20 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
   const [loadingWishlist, setLoadingWishlist] = useState(false);
 
   useEffect(() => {
-    // Fire and forget check
-    fetch(`/api/user/wishlist/check?productId=${product.id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) setIsWishlisted(data.isWishlisted);
-      })
-      .catch(() => {});
+    // Check global variable for zero-network validation
+    const checkStatus = () => {
+      const ids = (window as any).__wishlistIds;
+      if (ids) {
+        setIsWishlisted(ids.has(product.id));
+      }
+    };
+    
+    // Check immediately in case it's already loaded
+    checkStatus();
+    
+    // Listen for when it loads
+    window.addEventListener('wishlist-loaded', checkStatus);
+    return () => window.removeEventListener('wishlist-loaded', checkStatus);
   }, [product.id]);
 
   const toggleWishlist = async (e: React.MouseEvent) => {
@@ -50,6 +57,13 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
       const data = await res.json();
       
       if (data.success) {
+        if ((window as any).__wishlistIds) {
+          if (data.action === 'added') {
+            (window as any).__wishlistIds.add(product.id);
+          } else {
+            (window as any).__wishlistIds.delete(product.id);
+          }
+        }
         window.dispatchEvent(new CustomEvent('wishlist-change', { detail: { action: data.action, productId: product.id } }));
       } else if (data.message === 'Unauthorized') {
         // Revert optimistic update and redirect

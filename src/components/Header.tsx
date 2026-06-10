@@ -107,13 +107,13 @@ const navDropdowns: Partial<Record<string, NavDropdown>> = {
   KIDS: {
     layout: "simple",
     items: kidsDropdownItems,
-    imageSrc: "/images/about.jpeg",
+    imageSrc: "/images/kids.PNG",
     imageAlt: "Kids collection preview",
   },
   ACCESSORIES: {
     layout: "simple",
     items: accessoriesDropdownItems,
-    imageSrc: "/images/about.jpeg",
+    imageSrc: "/images/accessories.PNG",
     imageAlt: "Accessories collection preview",
   },
   WOMAN: {
@@ -157,7 +157,7 @@ function NavLabelWithArrow({ label }: NavLabelWithArrowProps) {
 }
 
 export default function Header() {
-  const cartCount = 0;
+  const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -172,6 +172,23 @@ export default function Header() {
       .then(data => {
         if (data.success && data.data) {
           setWishlistCount(data.data.length);
+          // Cache the IDs globally for zero-network ProductCard checks
+          const ids = data.data.map((item: any) => item.productId?._id || item.productId);
+          (window as any).__wishlistIds = new Set(ids);
+          window.dispatchEvent(new Event('wishlist-loaded'));
+        }
+      })
+      .catch(() => {});
+  };
+
+  const fetchCartCount = () => {
+    fetch('/api/user/cart')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          // Calculate total items (sum of quantities)
+          const total = data.data.reduce((acc: number, item: any) => acc + item.quantity, 0);
+          setCartCount(total);
         }
       })
       .catch(() => {});
@@ -198,11 +215,27 @@ export default function Header() {
                 window.dispatchEvent(new Event('wishlist-change'));
               } catch (err) {}
             }
+
+            // Process pending cart action if exists
+            const pendingCartAction = sessionStorage.getItem('pendingCartAction');
+            if (pendingCartAction) {
+              sessionStorage.removeItem('pendingCartAction');
+              try {
+                await fetch('/api/user/cart', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: pendingCartAction
+                });
+                window.dispatchEvent(new Event('cart-change'));
+              } catch (err) {}
+            }
             
             fetchWishlistCount();
+            fetchCartCount();
           } else {
             setUser(null);
             setWishlistCount(0);
+            setCartCount(0);
           }
         })
         .catch(() => {})
@@ -221,13 +254,24 @@ export default function Header() {
         fetchWishlistCount();
       }
     };
+
+    const handleCartChange = (e: any) => {
+      if (e.detail && e.detail.quantity) {
+         // Just a simple refresh for cart since quantity logic is complex (added vs updated vs removed)
+         fetchCartCount();
+      } else {
+         fetchCartCount();
+      }
+    };
     
     window.addEventListener('auth-change', handleAuthChange);
     window.addEventListener('wishlist-change', handleWishlistChange);
+    window.addEventListener('cart-change', handleCartChange);
     
     return () => {
       window.removeEventListener('auth-change', handleAuthChange);
       window.removeEventListener('wishlist-change', handleWishlistChange);
+      window.removeEventListener('cart-change', handleCartChange);
     };
   }, []);
 
@@ -394,7 +438,7 @@ export default function Header() {
             </Link>
 
             {/* Cart */}
-            <button aria-label="Cart" className="relative text-black hover:opacity-60 transition-opacity">
+            <Link href="/cart" aria-label="Cart" className="relative text-black hover:opacity-60 transition-opacity">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                 <line x1="3" y1="6" x2="21" y2="6" />
@@ -403,7 +447,7 @@ export default function Header() {
               <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 rounded-full bg-black text-white text-[9px] font-bold leading-none">
                 {cartCount}
               </span>
-            </button>
+            </Link>
             
             {/* Account */}
             {!loadingAuth && user ? (
