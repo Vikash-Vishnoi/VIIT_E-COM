@@ -92,6 +92,10 @@ export default function CartPage() {
     return items.reduce((sum, item) => sum + (item.productId.sellingPrice * item.quantity), 0);
   }, [items]);
 
+  // Calculate tax breakdown (Assuming 18% GST is included in the selling price)
+  const taxAmount = useMemo(() => Math.round(subtotal - (subtotal / 1.18)), [subtotal]);
+  const subtotalExclTax = subtotal - taxAmount;
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white pt-[120px]">
@@ -101,7 +105,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pt-[120px] pb-20 px-6 xl:px-16">
+    <div className="min-h-screen bg-white pt-[10px] pb-20 px-6 xl:px-16">
       <div className="max-w-[1200px] mx-auto">
         
         {/* Header */}
@@ -232,41 +236,51 @@ export default function CartPage() {
 
             {/* Right: Order Summary */}
             <div className="lg:col-span-4 sticky top-24">
-              <div className="bg-gray-50 p-6 md:p-8 flex flex-col gap-6 border border-gray-100">
-                <h2 className="text-sm font-black uppercase tracking-widest text-black border-b border-gray-200 pb-4">
+              <div className="bg-white p-6 md:p-8 flex flex-col gap-6 border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-sm">
+                <h2 className="text-lg font-black uppercase tracking-widest text-black mb-2">
                   Order Summary
                 </h2>
                 
-                <div className="flex flex-col gap-4 text-[13px] font-semibold text-gray-600">
+                <div className="flex flex-col gap-5 text-[13px] font-semibold text-gray-500">
                   <div className="flex justify-between items-center">
-                    <span>Subtotal</span>
-                    <span className="text-black">₹{subtotal.toLocaleString("en-IN")}</span>
+                    <span>Subtotal (Excl. Tax)</span>
+                    <span className="text-black font-bold">₹{subtotalExclTax.toLocaleString("en-IN")}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Estimated Tax (18% GST)</span>
+                    <span className="text-black font-bold">₹{taxAmount.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Estimated Shipping</span>
-                    <span className="text-black uppercase tracking-wider text-[11px] font-black">Free</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Taxes</span>
-                    <span className="text-black uppercase tracking-wider text-[11px] font-black">Calculated at checkout</span>
+                    <span className="text-green-600 uppercase tracking-wider text-[11px] font-black bg-green-50 px-2 py-1 rounded-sm">Free</span>
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-4 border-t border-gray-200 text-base font-black uppercase tracking-wide text-black">
-                  <span>Total</span>
-                  <span>₹{subtotal.toLocaleString("en-IN")}</span>
+                <div className="flex justify-between items-end pt-6 border-t border-gray-100 mt-2">
+                  <div className="flex flex-col">
+                    <span className="text-base font-black uppercase tracking-wide text-black">Total</span>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Incl. of all taxes</span>
+                  </div>
+                  <span className="text-2xl font-black text-black leading-none">₹{subtotal.toLocaleString("en-IN")}</span>
                 </div>
 
-                <button 
-                  className="w-full flex items-center justify-center gap-2 bg-black text-white px-4 py-4 mt-2 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-colors"
+                <Link 
+                  href="/checkout"
+                  className="w-full flex items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-[12px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg group"
                 >
-                  Checkout
-                  <ArrowRight size={14} />
-                </button>
+                  Proceed to Checkout
+                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
 
-                <p className="text-[10px] text-center text-gray-400 font-semibold mt-2">
-                  Secure checkout powered by Razorpay
-                </p>
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                    Secure checkout powered by Razorpay
+                  </p>
+                </div>
               </div>
             </div>
 

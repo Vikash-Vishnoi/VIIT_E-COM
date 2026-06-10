@@ -64,8 +64,7 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pt-[120px] pb-20 px-6 xl:px-16">
-      <div className="max-w-[1000px] mx-auto">
+    <div className="min-h-screen bg-white pt-[10px] pb-20 px-6 xl:px-16">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-6 mb-10">
@@ -111,7 +110,6 @@ export default function WishlistPage() {
             return <ProductCard key={item._id} product={formattedProduct} />;
           })}
         </div>
-      </div>
     </div>
   );
 }

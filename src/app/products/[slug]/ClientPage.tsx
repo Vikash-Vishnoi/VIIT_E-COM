@@ -389,19 +389,6 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
               >
                 {addingToCart ? "ADDING..." : "Add To Bag"}
               </button>
-              
-              <button
-                onClick={toggleWishlist}
-                disabled={loadingWishlist}
-                className={`w-14 flex items-center justify-center border transition-all ${
-                  isWishlisted 
-                    ? "bg-black border-black text-white" 
-                    : "bg-white border-gray-200 text-black hover:border-black"
-                }`}
-                aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-              >
-                <Heart size={20} className={isWishlisted ? "fill-white" : "fill-transparent"} />
-              </button>
             </div>
 
             {/* Features (Shipping/Fashion) */}
