@@ -5,136 +5,45 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
+// ── Level-0 nav links are HARDCODED (these are the fixed top-level categories) ──
 type NavLink = {
   label: string;
   href: string;
+  slug: string;          // matches SubCategory.slug for DB tree lookup
   highlight?: boolean;
 };
 
 const navLinks: NavLink[] = [
-  { label: "VIIT Exclusive", href: "/viit-exclusive" },
-  { label: "WOMAN", href: "/woman" },
-  { label: "MAN", href: "/man" },
-  { label: "KIDS", href: "/kids" },
-  { label: "ACCESSORIES", href: "/accessories" },
+  { label: "VIIT Exclusive", href: "/viit-exclusive", slug: "viit-exclusive" },
+  { label: "WOMAN",          href: "/woman",          slug: "woman" },
+  { label: "MAN",            href: "/man",            slug: "man" },
+  { label: "KIDS",           href: "/kids",           slug: "kids" },
+  { label: "ACCESSORIES",    href: "/accessories",    slug: "accessories" },
 ];
 
-type DropdownItem = {
-  label: string;
-  href: string;
+// ── Hardcoded header images per level-0 slug ──
+const HEADER_IMAGES: Record<string, { src: string; alt: string }> = {
+  woman:       { src: '/images/woman-header.jpeg', alt: 'Women collection' },
+  man:         { src: '/images/man-header.jpeg',   alt: 'Men collection'   },
+  kids:        { src: '/images/kids.PNG',          alt: 'Kids collection'  },
+  accessories: { src: '/images/accessories.PNG',   alt: 'Accessories'      },
 };
 
-const kidsDropdownItems: DropdownItem[] = [
-  { label: "Girls' Dresses", href: "/kids/kids-clothing/girls-dresses" },
-  { label: "Party Princess", href: "/kids/kids-clothing/party-princess" },
-  { label: "Casual Cuties", href: "/kids/kids-clothing/casual-cuties" },
-  { label: "Mini Occasion Wear", href: "/kids/kids-clothing/mini-occasion" },
-];
-
-const accessoriesDropdownItems: DropdownItem[] = [
-  { label: "Brooches", href: "/accessories/accessories-collection/brooches" },
-  { label: "Silk Stories (scarves)", href: "/accessories/accessories-collection/silk-stories" },
-  { label: "Leg Couture (stockings)", href: "/accessories/accessories-collection/leg-couture" },
-  { label: "Hand Luxe (gloves)", href: "/accessories/accessories-collection/hand-luxe" },
-];
-
-const womenDropdownItems: DropdownItem[] = [
-  { label: "Casual Edit", href: "/woman/woman-edits/casual-edit" },
-  { label: "Summer Stories", href: "/woman/woman-edits/summer-stories" },
-  { label: "Winter Luxe", href: "/woman/woman-edits/winter-luxe" },
-  { label: "Party Icons", href: "/woman/woman-edits/party-icons" },
-  { label: "Street Muse", href: "/woman/woman-edits/street-muse" },
-  { label: "Club Nights", href: "/woman/woman-edits/club-nights" },
-  { label: "Mall Edit", href: "/woman/woman-edits/mall-edit" },
-  { label: "Date Night", href: "/woman/woman-edits/date-night" },
-  { label: "Dinner Glam", href: "/woman/woman-edits/dinner-glam" },
-  { label: "Resort Escape", href: "/woman/woman-edits/resort-escape" },
-  { label: "Vacation Edit", href: "/woman/woman-edits/vacation-edit" },
-  { label: "Lounge Luxe", href: "/woman/woman-edits/lounge-luxe" },
-  { label: "Work Chic", href: "/woman/woman-edits/work-chic" },
-  { label: "Evening Affair", href: "/woman/woman-edits/evening-affair" },
-  { label: "Statement Looks", href: "/woman/woman-edits/statement-looks" },
-  { label: "New Arrivals", href: "/woman/woman-edits/new-arrivals" },
-];
-
-const womenEssentialsDropdownItems: DropdownItem[] = [
-  { label: "Denim Edit", href: "/woman/woman-essentials/denim" },
-  { label: "Jeans", href: "/woman/woman-essentials/womens-jeans" },
-  { label: "Shorts", href: "/woman/woman-essentials/shorts" },
-  { label: "Trousers", href: "/woman/woman-essentials/womens-trousers" },
-  { label: "Pants", href: "/woman/woman-essentials/pants" },
-  { label: "Skirts", href: "/woman/woman-essentials/skirts" },
-  { label: "Bodysuits", href: "/woman/woman-essentials/bodysuits" },
-  { label: "Tops", href: "/woman/woman-essentials/tops" },
-  { label: "Shirts", href: "/woman/woman-essentials/shirts" },
-  { label: "Co-ord Sets", href: "/woman/woman-essentials/coords" },
-  { label: "Dresses", href: "/woman/woman-essentials/dresses" },
-  { label: "Kaftans", href: "/woman/woman-essentials/kaftans" },
-  { label: "Jumpsuits", href: "/woman/woman-essentials/jumpsuits" },
-  { label: "Blazers", href: "/woman/woman-essentials/blazers" },
-  { label: "Knitwear", href: "/woman/woman-essentials/knitwear" },
-];
-const manDenimDropdownItems: DropdownItem[] = [
-  { label: "Denim Jacket", href: "/man/man-denim/jacket" },
-  { label: "Denim Jeans", href: "/man/man-denim/mens-jeans" },
-];
-
-const manDropdownItems: DropdownItem[] = [
-  { label: "T-Shirts", href: "/man/man-casual/tshirt" },
-  { label: "Linen Shirts", href: "/man/man-linen/shirt" },
-];
-
-type NavDropdownSimple = {
-  layout: "simple";
-  items: DropdownItem[];
-  imageSrc: string;
-  imageAlt: string;
+// ── Types returned by /api/categories/nav ──
+type NavSubSubCategory = {
+  _id: string; slug: string; label: string; level: 2; parentId: string;
 };
 
-type NavDropdownTwoColumn = {
-  layout: "two-column";
-  columns: {
-    title: string;
-    items: DropdownItem[];
-  }[];
-  imageSrc: string;
-  imageAlt: string;
+type NavSubCategory = {
+  _id: string; slug: string; label: string; level: 1; parentId: string; image?: string;
+  children: NavSubSubCategory[];
 };
 
-type NavDropdown = NavDropdownSimple | NavDropdownTwoColumn;
-
-const navDropdowns: Partial<Record<string, NavDropdown>> = {
-  KIDS: {
-    layout: "simple",
-    items: kidsDropdownItems,
-    imageSrc: "/images/kids.PNG",
-    imageAlt: "Kids collection preview",
-  },
-  ACCESSORIES: {
-    layout: "simple",
-    items: accessoriesDropdownItems,
-    imageSrc: "/images/accessories.PNG",
-    imageAlt: "Accessories collection preview",
-  },
-  WOMAN: {
-    layout: "two-column",
-    columns: [
-      { title: "Women", items: womenDropdownItems },
-      { title: "Women - Denim & Essentials", items: womenEssentialsDropdownItems },
-    ],
-    imageSrc: "/images/woman-header.jpeg",
-    imageAlt: "Women collection preview",
-  },
-  MAN: {
-    layout: "two-column",
-    columns: [
-      { title: "Denim", items: manDenimDropdownItems },
-      { title: "Man", items: manDropdownItems },
-    ],
-    imageSrc: "/images/man-header.jpeg",
-    imageAlt: "Men collection preview",
-  },
+type NavCategory = {
+  _id: string; slug: string; label: string; level: 0; image?: string;
+  children: NavSubCategory[];
 };
+
 
 type NavLabelWithArrowProps = {
   label: string;
@@ -163,6 +72,8 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+  // ── Dynamic category tree fetched from DB ──
+  const [navTree, setNavTree] = useState<NavCategory[]>([]);
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
 
@@ -275,6 +186,17 @@ export default function Header() {
     };
   }, []);
 
+  // Fetch dynamic nav tree once on mount
+  useEffect(() => {
+    fetch('/api/categories/nav')
+      .then(res => res.json())
+      .then(data => { if (data.success) setNavTree(data.data); })
+      .catch(() => {});
+  }, []);
+
+  // Build a quick lookup: level-0 slug → NavCategory
+  const navTreeBySlug = new Map(navTree.map(c => [c.slug, c]));
+
   return (
     <header className="w-full bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
       <div className="w-full px-10 xl:px-16">
@@ -313,98 +235,89 @@ export default function Header() {
           {!isAdmin && (
             <nav key={pathname} className="hidden md:flex items-center gap-7 mx-8">
               {navLinks.map((link) => {
-                const dropdown = navDropdowns[link.label];
+                // Look up this level-0 slug in the dynamic tree
+                const cat = navTreeBySlug.get(link.slug);
+                const hasChildren = cat && cat.children.length > 0;
 
-                if (dropdown) {
-                  if (dropdown.layout === "two-column") {
-                    return (
-                      <div key={link.label} className="group">
-                        <Link
-                          href={link.href}
-                          className={`relative inline-flex text-[15px] font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:transition-transform after:duration-200 after:content-[''] group-hover:after:scale-x-100 ${link.highlight ? "text-[#FFCC00] after:bg-[#FFCC00]" : "text-black after:bg-current"
-                            }`}
-                        >
-                          <NavLabelWithArrow label={link.label} />
-                        </Link>
-                        <div className="absolute left-0 right-0 top-full mt-0 w-screen rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50 before:absolute before:left-0 before:right-0 before:-top-10 before:h-10 before:content-[''] before:block">
-                          <div className="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-6 px-5 pb-5">
-                            <div className="relative min-w-0 w-[370px] aspect-[4/5] justify-self-start">
-                              <Image
-                                src={dropdown.imageSrc}
-                                alt={dropdown.imageAlt}
-                                fill
-                                className="rounded-md object-cover"
-                              />
-                            </div>
-                            {dropdown.columns.map((column) => (
-                              <div key={column.title} className="min-w-0">
-                                <div className="text-xs font-bold uppercase tracking-wider text-gray-600 mb-3">
-                                  {column.title}
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                  {column.items.map((item) => (
-                                    <Link
-                                      key={item.label}
-                                      href={item.href}
-                                      className="text-sm font-semibold text-black hover:opacity-70 hover:underline underline-offset-4"
-                                    >
-                                      {item.label}
-                                    </Link>
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-
+                if (!hasChildren) {
+                  // No dropdown (VIIT Exclusive, or if DB has no children yet)
                   return (
-                    <div key={link.label} className="group">
-                      <Link
-                        href={link.href}
-                        className={`relative inline-flex text-[15px] font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:transition-transform after:duration-200 after:content-[''] group-hover:after:scale-x-100 ${link.highlight ? "text-[#FFCC00] after:bg-[#FFCC00]" : "text-black after:bg-current"
-                          }`}
-                      >
-                        <NavLabelWithArrow label={link.label} />
-                      </Link>
-                      <div className="absolute left-0 right-0 top-full mt-0 w-screen rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50 before:absolute before:left-0 before:right-0 before:-top-10 before:h-10 before:content-[''] before:block">
+                    <Link
+                      key={link.label}
+                      href={link.href}
+                      className={`group text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"}`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                }
+
+                const headerImg = HEADER_IMAGES[link.slug];
+
+                // Determine layout: if any sub-category has children → two-column, else simple
+                const hasSubSub = cat.children.some(sub => sub.children.length > 0);
+
+                return (
+                  <div key={link.label} className="group">
+                    <Link
+                      href={link.href}
+                      className={`relative inline-flex text-[15px] font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:transition-transform after:duration-200 after:content-[''] group-hover:after:scale-x-100 ${link.highlight ? "text-[#FFCC00] after:bg-[#FFCC00]" : "text-black after:bg-current"}`}
+                    >
+                      <NavLabelWithArrow label={link.label} />
+                    </Link>
+
+                    <div className="absolute left-0 right-0 top-full mt-0 w-screen rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50 before:absolute before:left-0 before:right-0 before:-top-10 before:h-10 before:content-[''] before:block">
+                      {hasSubSub ? (
+                        // ── Two-column layout: each level-1 becomes a column ──
+                        <div className="grid gap-6 px-5 pb-5" style={{ gridTemplateColumns: `auto repeat(${cat.children.length}, minmax(0,1fr))` }}>
+                          {/* Header image */}
+                          {headerImg && (
+                            <div className="relative min-w-0 w-[370px] aspect-[4/5] justify-self-start">
+                              <Image src={headerImg.src} alt={headerImg.alt} fill className="rounded-md object-cover" />
+                            </div>
+                          )}
+                          {cat.children.map(sub => (
+                            <div key={sub._id} className="min-w-0">
+                              <div className="text-xs font-bold uppercase tracking-wider text-gray-600 mb-3">
+                                <Link href={`/${link.slug}/${sub.slug}`} className="hover:underline">{sub.label}</Link>
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                {sub.children.map(subsub => (
+                                  <Link
+                                    key={subsub._id}
+                                    href={`/${link.slug}/${sub.slug}/${subsub.slug}`}
+                                    className="text-sm font-semibold text-black hover:opacity-70 hover:underline underline-offset-4"
+                                  >
+                                    {subsub.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        // ── Simple layout: flat list of level-1 sub-categories ──
                         <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-6 px-5 pb-5">
-                          <div className="relative min-w-0 w-[370px] aspect-[4/5] justify-self-start">
-                            <Image
-                              src={dropdown.imageSrc}
-                              alt={dropdown.imageAlt}
-                              fill
-                              className="rounded-md object-cover"
-                            />
-                          </div>
+                          {headerImg && (
+                            <div className="relative min-w-0 w-[370px] aspect-[4/5] justify-self-start">
+                              <Image src={headerImg.src} alt={headerImg.alt} fill className="rounded-md object-cover" />
+                            </div>
+                          )}
                           <div className="flex flex-col gap-2">
-                            {dropdown.items.map((item) => (
+                            {cat.children.map(sub => (
                               <Link
-                                key={item.label}
-                                href={item.href}
+                                key={sub._id}
+                                href={`/${link.slug}/${sub.slug}`}
                                 className="text-sm font-semibold text-black hover:opacity-70 hover:underline underline-offset-4 whitespace-nowrap"
                               >
-                                {item.label}
+                                {sub.label}
                               </Link>
                             ))}
                           </div>
                         </div>
-                      </div>
+                      )}
                     </div>
-                  );
-                }
-
-                return (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className={`group text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"
-                      }`}
-                  >
-                    <NavLabelWithArrow label={link.label} />
-                  </Link>
+                  </div>
                 );
               })}
             </nav>
