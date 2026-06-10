@@ -71,7 +71,7 @@ export default function CheckoutSuccessPage() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-[400px]">
           <Link 
-            href="/profile/orders"
+            href="/profile?tab=orders"
             className="w-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-black text-black hover:bg-gray-50 transition-colors"
           >
             Track Order

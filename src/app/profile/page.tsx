@@ -14,6 +14,40 @@ import {
   Edit2
 } from "lucide-react";
 
+type OrderItem = {
+  productId: string;
+  title: string;
+  colorName: string;
+  size: string;
+  quantity: number;
+  priceAtOrder: number;
+};
+
+type Order = {
+  _id: string;
+  orderId: string;
+  items: OrderItem[];
+  shippingAddress: {
+    fullName: string;
+    line1: string;
+    city: string;
+    state: string;
+    pincode: string;
+    mobile: string;
+  };
+  pricing: {
+    subtotal: number;
+    tax: number;
+    shippingFee: number;
+    total: number;
+  };
+  paymentMethod: string;
+  paymentStatus: string;
+  status: string;
+  timeline: { status: string; message: string; timestamp: string }[];
+  createdAt: string;
+};
+
 type Address = {
   _id: string;
   label: string;
@@ -50,6 +84,11 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   
+  // Orders state
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+
   // Forms loading state
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -83,6 +122,7 @@ export default function ProfilePage() {
     const tab = params.get("tab");
     if (tab && ["overview", "addresses", "orders", "security"].includes(tab)) {
       setActiveTab(tab);
+      if (tab === 'orders') fetchOrders();
     }
     
     fetchProfile();
@@ -96,6 +136,22 @@ export default function ProfilePage() {
     const params = new URLSearchParams(window.location.search);
     params.set("tab", tabId);
     router.replace(`/profile?${params.toString()}`, { scroll: false });
+
+    // Fetch orders when switching to orders tab
+    if (tabId === 'orders') fetchOrders();
+  };
+
+  const fetchOrders = async () => {
+    setOrdersLoading(true);
+    try {
+      const res = await fetch('/api/user/orders');
+      const data = await res.json();
+      if (data.success) setOrders(data.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setOrdersLoading(false);
+    }
   };
 
   const fetchProfile = async () => {
@@ -571,25 +627,193 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* ORDERS TAB (Minimal Placeholder) */}
+            {/* ORDERS TAB */}
             {activeTab === "orders" && (
-              <div className="animate-in fade-in duration-500 h-full flex flex-col">
+              <div className="animate-in fade-in duration-500">
                 <h2 className="text-lg font-black uppercase tracking-widest text-black mb-8 border-b border-gray-100 pb-4">My Orders</h2>
-                <div className="flex-1 flex flex-col items-center justify-center text-center py-20">
-                  <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-                    <Package size={32} className="text-gray-300" />
+
+                {ordersLoading ? (
+                  <div className="flex items-center justify-center py-24">
+                    <div className="animate-pulse text-xs font-bold uppercase tracking-widest text-gray-400">Loading Orders...</div>
                   </div>
-                  <h3 className="text-sm font-black uppercase tracking-widest text-black mb-2">No Orders Yet</h3>
-                  <p className="text-xs text-gray-500 max-w-sm leading-relaxed">
-                    When you place an order, it will appear here. Start shopping to fill this space!
-                  </p>
-                  <button 
-                    onClick={() => router.push("/")}
-                    className="mt-8 px-8 py-3 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors"
-                  >
-                    Start Shopping
-                  </button>
-                </div>
+                ) : orders.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center text-center py-20">
+                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+                      <Package size={32} className="text-gray-300" />
+                    </div>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-black mb-2">No Orders Yet</h3>
+                    <p className="text-xs text-gray-500 max-w-sm leading-relaxed mb-8">
+                      When you place an order, it will appear here.
+                    </p>
+                    <button
+                      onClick={() => router.push('/')}
+                      className="px-8 py-3 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors"
+                    >
+                      Start Shopping
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {orders.map((order) => {
+                      const isExpanded = expandedOrder === order._id;
+                      const statusColor: Record<string, string> = {
+                        Placed:    'bg-blue-50 text-blue-600 border-blue-100',
+                        Confirmed: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+                        Shipped:   'bg-yellow-50 text-yellow-600 border-yellow-100',
+                        Delivered: 'bg-green-50 text-green-600 border-green-100',
+                        Cancelled: 'bg-red-50 text-red-500 border-red-100',
+                        Returned:  'bg-gray-50 text-gray-500 border-gray-200',
+                      };
+                      const paymentColor: Record<string, string> = {
+                        Paid:    'text-green-600',
+                        Pending: 'text-yellow-600',
+                        Failed:  'text-red-500',
+                        Refunded:'text-gray-500',
+                      };
+
+                      return (
+                        <div key={order._id} className="border border-gray-200 hover:border-gray-300 transition-colors overflow-hidden">
+                          {/* Order Header Row */}
+                          <button
+                            onClick={() => setExpandedOrder(isExpanded ? null : order._id)}
+                            className="w-full flex flex-wrap items-center justify-between gap-4 px-6 py-5 text-left hover:bg-gray-50 transition-colors"
+                          >
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Order ID</span>
+                              <span className="text-sm font-black text-black">{order.orderId}</span>
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Date</span>
+                              <span className="text-sm font-semibold text-black">
+                                {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total</span>
+                              <span className="text-sm font-black text-black">₹{order.pricing.total.toLocaleString('en-IN')}</span>
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Payment</span>
+                              <span className={`text-xs font-black uppercase ${paymentColor[order.paymentStatus] || 'text-gray-500'}`}>
+                                {order.paymentStatus}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 border rounded-full ${statusColor[order.status] || 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+                                {order.status}
+                              </span>
+                              <svg
+                                className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                              >
+                                <polyline points="6 9 12 15 18 9" />
+                              </svg>
+                            </div>
+                          </button>
+
+                          {/* Expanded Detail Panel */}
+                          {isExpanded && (
+                            <div className="border-t border-gray-100 px-6 py-6 bg-gray-50 flex flex-col gap-8">
+
+                              {/* Items */}
+                              <div>
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Items Ordered</h4>
+                                <div className="flex flex-col gap-3">
+                                  {order.items.map((item, i) => (
+                                    <div key={i} className="flex justify-between items-start bg-white border border-gray-100 p-4">
+                                      <div className="flex flex-col gap-1">
+                                        <span className="text-sm font-bold text-black">{item.title}</span>
+                                        <div className="flex items-center gap-2 text-[11px] text-gray-500 font-semibold uppercase tracking-wider">
+                                          {item.colorName !== 'Default' && <span>Color: {item.colorName}</span>}
+                                          {item.size !== 'Default' && <span>Size: {item.size}</span>}
+                                          <span>Qty: {item.quantity}</span>
+                                        </div>
+                                      </div>
+                                      <span className="text-sm font-black text-black whitespace-nowrap">
+                                        ₹{(item.priceAtOrder * item.quantity).toLocaleString('en-IN')}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Pricing + Address split */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+
+                                {/* Pricing Breakdown */}
+                                <div>
+                                  <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Pricing</h4>
+                                  <div className="flex flex-col gap-2 text-[13px]">
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-500 font-semibold">Subtotal</span>
+                                      <span className="font-bold">₹{(order.pricing.total - order.pricing.tax).toLocaleString('en-IN')}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-500 font-semibold">GST (18%)</span>
+                                      <span className="font-bold">₹{order.pricing.tax.toLocaleString('en-IN')}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-500 font-semibold">Shipping</span>
+                                      <span className="text-green-600 font-black text-[11px] uppercase">Free</span>
+                                    </div>
+                                    <div className="flex justify-between border-t border-gray-200 pt-2 mt-1">
+                                      <span className="font-black uppercase tracking-wider text-black">Total</span>
+                                      <span className="font-black text-black">₹{order.pricing.total.toLocaleString('en-IN')}</span>
+                                    </div>
+                                    <div className="flex justify-between text-[11px] mt-1">
+                                      <span className="text-gray-400 font-semibold">Payment Method</span>
+                                      <span className="font-bold uppercase">{order.paymentMethod}</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Shipping Address */}
+                                <div>
+                                  <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Delivery Address</h4>
+                                  <div className="text-[13px] text-gray-600 leading-relaxed">
+                                    <p className="font-bold text-black">{order.shippingAddress.fullName}</p>
+                                    <p>{order.shippingAddress.line1}</p>
+                                    <p>{order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}</p>
+                                    <p className="text-gray-400 text-[11px] mt-1">Ph: {order.shippingAddress.mobile}</p>
+                                  </div>
+                                </div>
+
+                              </div>
+
+                              {/* Timeline */}
+                              {order.timeline && order.timeline.length > 0 && (
+                                <div>
+                                  <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Order Timeline</h4>
+                                  <div className="flex flex-col gap-3">
+                                    {[...order.timeline].reverse().map((event, i) => (
+                                      <div key={i} className="flex items-start gap-4">
+                                        <div className={`mt-1 w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                                          i === 0 ? 'bg-black' : 'bg-gray-300'
+                                        }`} />
+                                        <div className="flex flex-col gap-0.5">
+                                          <span className="text-[11px] font-black uppercase tracking-wider text-black">{event.status}</span>
+                                          <span className="text-[11px] text-gray-500">{event.message}</span>
+                                          <span className="text-[10px] text-gray-400">
+                                            {new Date(event.timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
