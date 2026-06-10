@@ -1,20 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
 import { CheckCircle2, ChevronRight, Package, Truck, Calendar } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
-export default function CheckoutSuccessPage() {
+function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
 
   // Calculate an estimated delivery date (e.g., 5 days from now)
   const deliveryDate = new Date();
@@ -61,7 +54,7 @@ export default function CheckoutSuccessPage() {
                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
                   <Truck size={12} /> Estimated Delivery
                 </span>
-                <span className="text-base font-black text-black text-green-600">By {formattedDate}</span>
+                <span className="text-base font-black text-green-600">By {formattedDate}</span>
               </div>
             </div>
 
@@ -72,7 +65,7 @@ export default function CheckoutSuccessPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-[400px]">
           <Link 
             href="/profile?tab=orders"
-            className="w-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-black text-black hover:bg-gray-50 transition-colors"
+            className="w-full py-4 text-center text-[11px] font-black uppercase tracking-widest border-2 border-black text-black hover:bg-gray-50 transition-colors"
           >
             Track Order
           </Link>
@@ -87,5 +80,17 @@ export default function CheckoutSuccessPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-xs font-bold uppercase tracking-widest text-gray-400">Loading...</div>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   );
 }
