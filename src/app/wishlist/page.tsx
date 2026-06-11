@@ -47,7 +47,7 @@ export default function WishlistPage() {
     // Listen for global wishlist toggles to instantly remove items from the grid
     const handleWishlistChange = (e: any) => {
       if (e.detail && e.detail.action === 'removed' && e.detail.productId) {
-        setItems(prev => prev.filter(item => item.productId._id !== e.detail.productId));
+        setItems(prev => prev.filter(item => item.productId && item.productId._id !== e.detail.productId));
       }
     };
     
@@ -97,7 +97,7 @@ export default function WishlistPage() {
 
         {/* Wishlist Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-10">
-          {items.map((item) => {
+          {items.filter(item => item.productId).map((item) => {
             const formattedProduct: FormattedProduct = {
               id: item.productId._id,
               name: item.productId.title,
