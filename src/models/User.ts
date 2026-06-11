@@ -46,6 +46,8 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   lastLoginAt?: Date;
+  failedLoginAttempts: number;
+  lockUntil?: Date;
 }
 
 // ─── Main schema ───────────────────────────────────────────────────
@@ -64,6 +66,8 @@ const UserSchema = new Schema<IUser>(
     address: { type: [AddressSchema], default: [] },
 
     lastLoginAt: { type: Date },
+    failedLoginAttempts: { type: Number, required: true, default: 0 },
+    lockUntil: { type: Date },
   },
   {
     timestamps: true,

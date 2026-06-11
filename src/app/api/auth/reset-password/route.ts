@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/db';
 import { User, OTP } from '@/models';
 import { signToken } from '@/lib/jwt';
+import { validatePassword, passwordErrorMsg } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +12,14 @@ export async function POST(req: NextRequest) {
 
     if (!email || !otp || !newPassword) {
       return NextResponse.json({ success: false, message: 'All fields are required' }, { status: 400 });
+    }
+
+    if (typeof email !== 'string' || typeof otp !== 'string' || typeof newPassword !== 'string') {
+      return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
+    }
+
+    if (!validatePassword(newPassword)) {
+      return NextResponse.json({ success: false, message: passwordErrorMsg }, { status: 400 });
     }
 
     // Find the OTP record

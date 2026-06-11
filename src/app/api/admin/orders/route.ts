@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { Order } from '@/models';
+import { escapeRegExp } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
 
     const search = searchParams.get('search');
     if (search) {
-      const regex = new RegExp(search, 'i');
+      const regex = new RegExp(escapeRegExp(search), 'i');
       filter.$or = [{ orderId: regex }];
     }
 

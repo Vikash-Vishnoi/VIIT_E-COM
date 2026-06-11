@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { User, Cart, Wishlist } from '@/models';
+import { escapeRegExp } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
     
     const search = searchParams.get('search');
     if (search) {
-      const regex = new RegExp(search, 'i');
+      const regex = new RegExp(escapeRegExp(search), 'i');
       filter.$or = [{ name: regex }, { email: regex }, { mobile: regex }];
     }
 
@@ -46,6 +47,9 @@ export async function GET(req: NextRequest) {
     // Use aggregation with $lookup for cart/wishlist counts from separate collections
     const pipeline: any[] = [
       { $match: filter },
+      { $sort: sortOrder },
+      { $skip: skip },
+      { $limit: limit },
       { $lookup: {
         from: 'carts',
         localField: '_id',
@@ -75,10 +79,7 @@ export async function GET(req: NextRequest) {
         cartCount: 1,
         wishlistCount: 1,
         addressCount: 1,
-      }},
-      { $sort: sortOrder },
-      { $skip: skip },
-      { $limit: limit },
+      }}
     ];
 
     const [users, totalArr] = await Promise.all([

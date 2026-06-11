@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { validatePassword, passwordErrorMsg } from "@/lib/validation";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -61,8 +62,8 @@ export default function ForgotPasswordPage() {
     if (otp.length !== 5) {
       return setError("OTP must be exactly 5 digits");
     }
-    if (newPassword.length < 6) {
-      return setError("Password must be at least 6 characters");
+    if (!validatePassword(newPassword)) {
+      return setError(passwordErrorMsg);
     }
     
     setLoading(true);
@@ -82,7 +83,7 @@ export default function ForgotPasswordPage() {
         const searchParams = new URLSearchParams(window.location.search);
         const returnToParam = searchParams.get('returnTo');
 
-        if (returnToParam) {
+        if (returnToParam && returnToParam.startsWith('/') && !returnToParam.startsWith('//')) {
           returnUrl = returnToParam;
         } else if (document.referrer) {
           try {

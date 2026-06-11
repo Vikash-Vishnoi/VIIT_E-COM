@@ -43,20 +43,50 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Invalid shipping address' }, { status: 400 });
     }
 
-    // 2. Fetch Cart Items and populate Product details securely
+    // 2. Fetch Cart Items and populate Product details securely (including colors for inventory check)
     const cartItems = await Cart.find({ userId })
-      .populate({ path: 'productId', select: 'title slug price sellingPrice' });
+      .populate({ path: 'productId', select: 'title slug price sellingPrice colors' });
 
     if (cartItems.length === 0) {
       return NextResponse.json({ success: false, message: 'Your cart is empty' }, { status: 400 });
     }
 
-    // 3. Build Order Items and Calculate Totals securely on the backend
+    // 3. Validate Stock, Build Order Items, and Prepare Bulk Operations
     let subtotal = 0;
     const orderItems = [];
+    const bulkOperations: any[] = [];
 
     for (const item of cartItems) {
       const product = item.productId as any;
+      
+      // Find the specific variant to check stock
+      let variantStock = 0;
+      for (const color of product.colors) {
+        if (color.colorName === item.colorName) {
+          for (const size of color.sizes) {
+            if (size.size === item.size) {
+              variantStock = size.quantity;
+              break;
+            }
+          }
+        }
+      }
+
+      if (item.quantity > variantStock) {
+        return NextResponse.json({ 
+          success: false, 
+          message: `Insufficient stock for ${product.title} (${item.colorName}, Size ${item.size}). Only ${variantStock} left.` 
+        }, { status: 400 });
+      }
+
+      // Add to bulk operations to decrement inventory
+      bulkOperations.push({
+        updateOne: {
+          filter: { _id: product._id },
+          update: { $inc: { 'colors.$[c].sizes.$[s].quantity': -item.quantity } },
+          arrayFilters: [{ 'c.colorName': item.colorName }, { 's.size': item.size }]
+        }
+      });
       
       // Price at order is locked in
       const priceAtOrder = product.sellingPrice;
@@ -98,7 +128,12 @@ export async function POST(req: NextRequest) {
       timeline: [{ status: 'Placed', message: 'Order placed successfully' }],
     });
 
-    // 5. Clear the User's Cart
+    // 5. Deduct Inventory
+    if (bulkOperations.length > 0) {
+      await Product.bulkWrite(bulkOperations);
+    }
+
+    // 6. Clear the User's Cart
     await Cart.deleteMany({ userId });
 
     return NextResponse.json({ success: true, message: 'Order placed successfully', orderId: newOrder.orderId });

@@ -18,6 +18,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'No file uploaded' }, { status: 400 });
     }
 
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedMimeTypes.includes(file.type)) {
+      return NextResponse.json({ success: false, message: 'Invalid file type. Only JPG, PNG, WEBP, and GIF are allowed.' }, { status: 400 });
+    }
+
+    const maxFileSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxFileSize) {
+      return NextResponse.json({ success: false, message: 'File is too large. Maximum size is 5MB.' }, { status: 400 });
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 

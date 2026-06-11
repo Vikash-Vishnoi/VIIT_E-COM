@@ -13,15 +13,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Email and password are required' }, { status: 400 });
     }
 
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
+    }
+
     // Find the user
     const user = await User.findOne({ email });
     if (!user) {
       return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401 });
     }
 
+    // Check if account is locked
+    if (user.lockUntil && user.lockUntil > new Date()) {
+      const waitMinutes = Math.ceil((user.lockUntil.getTime() - Date.now()) / 60000);
+      return NextResponse.json({ 
+        success: false, 
+        message: `Account is temporarily locked due to multiple failed login attempts. Please try again in ${waitMinutes} minutes.` 
+      }, { status: 429 });
+    }
+
     // Check if password matches
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
+      user.failedLoginAttempts += 1;
+      if (user.failedLoginAttempts >= 5) {
+        // Lock account for 15 minutes
+        user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
+      }
+      await user.save();
       return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401 });
     }
 
@@ -29,6 +48,12 @@ export async function POST(req: NextRequest) {
     if (!user.isActive) {
       return NextResponse.json({ success: false, message: 'Your account has been deactivated. Please contact support.' }, { status: 403 });
     }
+
+    // Reset failed attempts and update last login
+    user.failedLoginAttempts = 0;
+    user.lockUntil = undefined;
+    user.lastLoginAt = new Date();
+    await user.save();
 
     // Generate JWT and set HttpOnly Cookie
     const token = await signToken({ userId: user._id.toString(), email: user.email, role: user.role, name: user.name });

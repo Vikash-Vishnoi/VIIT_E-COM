@@ -1,27 +1,46 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifyToken } from '@/lib/jwt';
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Protect Admin Routes (Frontend and API)
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
+    const token = request.cookies.get('auth_token')?.value;
+    
+    // 1. Check if token exists
+    if (!token) {
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+      }
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('returnTo', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // 2. Verify token validity and role
+    const payload = await verifyToken(token);
+    if (!payload || payload.role !== 'admin') {
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json({ success: false, message: 'Forbidden: Admin access required' }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
 
   // Protect Profile Routes
   if (pathname.startsWith('/profile')) {
     const token = request.cookies.get('auth_token')?.value;
     
-    // If no token exists, immediately redirect to login before the page even renders
     if (!token) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('returnTo', pathname);
       return NextResponse.redirect(loginUrl);
     }
-  }
 
-  // Protect Admin Routes
-  if (pathname.startsWith('/admin')) {
-    const token = request.cookies.get('auth_token')?.value;
-    
-    // If no token exists, immediately redirect to login
-    if (!token) {
+    const payload = await verifyToken(token);
+    if (!payload || !payload.userId) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('returnTo', pathname);
       return NextResponse.redirect(loginUrl);
@@ -31,7 +50,7 @@ export function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Only run middleware on specific paths to keep the application lightning fast
+// Only run proxy on specific paths to keep the application lightning fast
 export const config = {
-  matcher: ['/profile/:path*', '/admin/:path*'],
+  matcher: ['/profile/:path*', '/admin/:path*', '/api/admin/:path*'],
 };

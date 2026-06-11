@@ -32,7 +32,7 @@ export default function LoginPage() {
         const searchParams = new URLSearchParams(window.location.search);
         const returnToParam = searchParams.get('returnTo');
 
-        if (returnToParam) {
+        if (returnToParam && returnToParam.startsWith('/') && !returnToParam.startsWith('//')) {
           returnUrl = returnToParam;
         } else if (document.referrer) {
           try {

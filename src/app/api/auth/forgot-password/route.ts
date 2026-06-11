@@ -12,6 +12,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Email is required' }, { status: 400 });
     }
 
+    if (typeof email !== 'string') {
+      return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (!existingUser) {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { validatePassword, passwordErrorMsg } from "@/lib/validation";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -65,6 +66,9 @@ export default function RegisterPage() {
     if (otp.length !== 5) {
       return setError("OTP must be exactly 5 digits");
     }
+    if (!validatePassword(password)) {
+      return setError(passwordErrorMsg);
+    }
     
     setLoading(true);
     setError("");
@@ -83,7 +87,7 @@ export default function RegisterPage() {
         const searchParams = new URLSearchParams(window.location.search);
         const returnToParam = searchParams.get('returnTo');
 
-        if (returnToParam) {
+        if (returnToParam && returnToParam.startsWith('/') && !returnToParam.startsWith('//')) {
           returnUrl = returnToParam;
         } else if (document.referrer) {
           try {

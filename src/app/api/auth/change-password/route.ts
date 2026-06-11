@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/db';
 import { User } from '@/models';
 import { verifyToken } from '@/lib/jwt';
+import { validatePassword, passwordErrorMsg } from '@/lib/validation';
 
 // Helper to authenticate request
 async function getAuthUser(req: NextRequest) {
@@ -24,6 +25,14 @@ export async function POST(req: NextRequest) {
 
     if (!currentPassword || !newPassword) {
       return NextResponse.json({ success: false, message: 'Current and new passwords are required' }, { status: 400 });
+    }
+
+    if (typeof currentPassword !== 'string' || typeof newPassword !== 'string') {
+      return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
+    }
+
+    if (!validatePassword(newPassword)) {
+      return NextResponse.json({ success: false, message: passwordErrorMsg }, { status: 400 });
     }
 
     const user = await User.findById(userId);

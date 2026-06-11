@@ -13,6 +13,7 @@ import {
   Trash2,
   Edit2
 } from "lucide-react";
+import { validatePassword, passwordErrorMsg } from "@/lib/validation";
 
 type OrderItem = {
   productId: string;
@@ -296,8 +297,8 @@ export default function ProfilePage() {
     if (newPassword !== confirmPassword) {
       return setError("New passwords do not match");
     }
-    if (newPassword.length < 6) {
-      return setError("New password must be at least 6 characters");
+    if (!validatePassword(newPassword)) {
+      return setError(passwordErrorMsg);
     }
 
     setSaving(true);
