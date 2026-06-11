@@ -51,15 +51,17 @@ export async function GET() {
 
     // ── 2. Seed SubCategories ─────────────────────────────────────
     // Level 0 — top-level categories
-    const [man, woman, kids, accessories] = await SubCategory.insertMany([
+    const [man, woman, kids, accessories, handbag, viitExclusive] = await SubCategory.insertMany([
       { slug: 'man', label: 'MAN', level: 0, sortOrder: 0, isActive: true },
       { slug: 'woman', label: 'WOMAN', level: 0, sortOrder: 1, isActive: true },
       { slug: 'kids', label: 'KIDS', level: 0, sortOrder: 2, isActive: true },
       { slug: 'accessories', label: 'ACCESSORIES', level: 0, sortOrder: 3, isActive: true },
+      { slug: 'handbag', label: 'HANDBAG', level: 0, sortOrder: 4, isActive: true },
+      { slug: 'viit-exclusive', label: 'VIIT EXCLUSIVE', level: 0, sortOrder: 5, isActive: true },
     ]);
 
     // Level 1 — sub-categories
-    const [manDenim, manCasual, manLinen, womanEdits, womanEssentials, kidsClothing, accCollection] = await SubCategory.insertMany([
+    const [manDenim, manCasual, manLinen, womanEdits, womanEssentials, kidsClothing, accCollection, hbLuxury, hbEveryday, hbMini, veSignature, veLimited, veCollabs] = await SubCategory.insertMany([
       { slug: 'man-denim', label: 'Denim', parentId: man._id, level: 1, sortOrder: 0, isActive: true },
       { slug: 'man-casual', label: 'Casual', parentId: man._id, level: 1, sortOrder: 1, isActive: true },
       { slug: 'man-linen', label: 'Linen', parentId: man._id, level: 1, sortOrder: 2, isActive: true },
@@ -67,6 +69,12 @@ export async function GET() {
       { slug: 'woman-essentials', label: 'Essentials', parentId: woman._id, level: 1, sortOrder: 1, isActive: true },
       { slug: 'kids-clothing', label: 'Clothing', parentId: kids._id, level: 1, sortOrder: 0, isActive: true },
       { slug: 'accessories-collection', label: 'Collections', parentId: accessories._id, level: 1, sortOrder: 0, isActive: true },
+      { slug: 'handbag-luxury', label: 'Luxury', parentId: handbag._id, level: 1, sortOrder: 0, isActive: true },
+      { slug: 'handbag-everyday', label: 'Everyday', parentId: handbag._id, level: 1, sortOrder: 1, isActive: true },
+      { slug: 'handbag-mini', label: 'Mini Bags', parentId: handbag._id, level: 1, sortOrder: 2, isActive: true },
+      { slug: 've-signature', label: 'Signature Drops', parentId: viitExclusive._id, level: 1, sortOrder: 0, isActive: true },
+      { slug: 've-limited', label: 'Limited Editions', parentId: viitExclusive._id, level: 1, sortOrder: 1, isActive: true },
+      { slug: 've-collabs', label: 'Collabs & Capsules', parentId: viitExclusive._id, level: 1, sortOrder: 2, isActive: true },
     ]);
 
     // Level 2 — MAN
@@ -93,6 +101,32 @@ export async function GET() {
       { slug: 'silk-stories', label: 'Silk Stories (scarves)', parentId: accCollection._id, level: 2, sortOrder: 1, isActive: true },
       { slug: 'leg-couture', label: 'Leg Couture (stockings)', parentId: accCollection._id, level: 2, sortOrder: 2, isActive: true },
       { slug: 'hand-luxe', label: 'Hand Luxe (gloves)', parentId: accCollection._id, level: 2, sortOrder: 3, isActive: true },
+    ]);
+
+    // Level 2 — HANDBAG
+    await SubCategory.insertMany([
+      { slug: 'tote-bags', label: 'Tote Bags', parentId: hbLuxury._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 'clutch-bags', label: 'Clutch Bags', parentId: hbLuxury._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'structured-bags', label: 'Structured Bags', parentId: hbLuxury._id, level: 2, sortOrder: 2, isActive: true },
+      { slug: 'shoulder-bags', label: 'Shoulder Bags', parentId: hbEveryday._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 'crossbody-bags', label: 'Crossbody Bags', parentId: hbEveryday._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'bucket-bags', label: 'Bucket Bags', parentId: hbEveryday._id, level: 2, sortOrder: 2, isActive: true },
+      { slug: 'mini-totes', label: 'Mini Totes', parentId: hbMini._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 'micro-bags', label: 'Micro Bags', parentId: hbMini._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 'mini-clutch', label: 'Mini Clutch', parentId: hbMini._id, level: 2, sortOrder: 2, isActive: true },
+    ]);
+
+    // Level 2 — VIIT EXCLUSIVE
+    await SubCategory.insertMany([
+      { slug: 've-womens-wear', label: "Women's Wear", parentId: veSignature._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 've-mens-wear', label: "Men's Wear", parentId: veSignature._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 've-co-ords', label: 'Exclusive Co-ords', parentId: veSignature._id, level: 2, sortOrder: 2, isActive: true },
+      { slug: 've-numbered', label: 'Numbered Pieces', parentId: veLimited._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 've-seasonal', label: 'Seasonal Drops', parentId: veLimited._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 've-archive', label: 'Archive Vault', parentId: veLimited._id, level: 2, sortOrder: 2, isActive: true },
+      { slug: 've-artist', label: 'Artist Collabs', parentId: veCollabs._id, level: 2, sortOrder: 0, isActive: true },
+      { slug: 've-brand', label: 'Brand Collabs', parentId: veCollabs._id, level: 2, sortOrder: 1, isActive: true },
+      { slug: 've-capsule', label: 'Capsule Collections', parentId: veCollabs._id, level: 2, sortOrder: 2, isActive: true },
     ]);
 
     // Level 2 — WOMAN (Edits)

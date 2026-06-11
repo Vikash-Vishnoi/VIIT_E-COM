@@ -14,19 +14,22 @@ type NavLink = {
 };
 
 const navLinks: NavLink[] = [
-  { label: "VIIT Exclusive", href: "/viit-exclusive", slug: "viit-exclusive" },
+  { label: "VIIT EXCLUSIVE", href: "/viit-exclusive", slug: "viit-exclusive" },
   { label: "WOMAN",          href: "/woman",          slug: "woman" },
   { label: "MAN",            href: "/man",            slug: "man" },
   { label: "KIDS",           href: "/kids",           slug: "kids" },
   { label: "ACCESSORIES",    href: "/accessories",    slug: "accessories" },
+  { label: "HANDBAG",        href: "/handbag",        slug: "handbag" },
 ];
 
 // ── Hardcoded header images per level-0 slug ──
 const HEADER_IMAGES: Record<string, { src: string; alt: string }> = {
-  woman:       { src: '/images/woman-header.jpeg', alt: 'Women collection' },
-  man:         { src: '/images/man-header.jpeg',   alt: 'Men collection'   },
-  kids:        { src: '/images/kids.PNG',          alt: 'Kids collection'  },
-  accessories: { src: '/images/accessories.PNG',   alt: 'Accessories'      },
+  woman:          { src: '/images/woman-header.jpeg',    alt: 'Women collection'    },
+  man:            { src: '/images/man-header.jpeg',      alt: 'Men collection'      },
+  kids:           { src: '/images/kids.PNG',             alt: 'Kids collection'     },
+  accessories:    { src: '/images/accessories.PNG',      alt: 'Accessories'         },
+  handbag:        { src: '/images/hand-bag.PNG',         alt: 'Hand Bags'           },
+  'viit-exclusive': { src: '/images/viit-exclusive.PNG', alt: 'VIIT Exclusive'      },
 };
 
 // ── Types returned by /api/categories/nav ──

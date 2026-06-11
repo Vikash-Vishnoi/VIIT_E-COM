@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect } from "react";
+import { useRef, useEffect } from "react";
 import CarouselArrows from "@/components/CarouselArrows";
 import { useHorizontalScroll } from "@/hooks/useHorizontalScroll";
 
@@ -11,11 +11,12 @@ type CarouselSectionProps = {
   sectionClassName?: string;
   headerClassName?: string;
   railClassName?: string;
+  /** @deprecated No longer used */
   autoScrollOnHover?: boolean;
 };
 
 const baseRailClassName =
-  "-ml-6 md:-ml-40 pl-6 md:pl-40 flex gap-4 md:gap-6 overflow-x-auto scroll-smooth scrollbar-hide snap-x snap-mandatory";
+  "-ml-6 md:-ml-40 pl-6 md:pl-40 flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide";
 
 export default function CarouselSection({
   title,
@@ -23,46 +24,65 @@ export default function CarouselSection({
   sectionClassName = "",
   headerClassName = "",
   railClassName = "",
-  autoScrollOnHover = false,
 }: CarouselSectionProps) {
   const {
     scrollRef,
     canScrollLeft,
     canScrollRight,
-    scrollBy,
     updateArrows,
     scrollProgress,
   } = useHorizontalScroll();
 
-  useEffect(() => {
-    let animationFrameId: number;
-    let isHovering = false;
+  const rafRef = useRef<number | null>(null);
+  const dirRef = useRef<number>(0); // -1 left | 0 stop | 1 right
 
-    const el = scrollRef.current;
-    if (!el || !autoScrollOnHover) return;
+  const stopLoop = () => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    dirRef.current = 0;
+  };
 
-    const handleMouseEnter = () => { isHovering = true; };
-    const handleMouseLeave = () => { isHovering = false; };
+  const startLoop = (direction: number) => {
+    // Update direction immediately
+    dirRef.current = direction;
 
-    el.addEventListener("mouseenter", handleMouseEnter);
-    el.addEventListener("mouseleave", handleMouseLeave);
+    // Only start one loop at a time
+    if (rafRef.current !== null) return;
 
-    const scroll = () => {
-      if (isHovering && el) {
-        // Adjust scroll speed by changing this value (pixels per frame)
-        el.scrollLeft += 0.75; 
+    const tick = () => {
+      const el = scrollRef.current;
+      const dir = dirRef.current;
+
+      if (!el || dir === 0) {
+        // stopped externally — exit without scheduling another frame
+        rafRef.current = null;
+        return;
       }
-      animationFrameId = requestAnimationFrame(scroll);
+
+      el.scrollLeft += dir * 3;
+
+      // Auto-stop at boundaries
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
+      const atStart = el.scrollLeft <= 2;
+      if ((dir > 0 && atEnd) || (dir < 0 && atStart)) {
+        stopLoop();
+        updateArrows(); // final arrow state update
+        return;
+      }
+
+      rafRef.current = requestAnimationFrame(tick);
     };
 
-    animationFrameId = requestAnimationFrame(scroll);
+    rafRef.current = requestAnimationFrame(tick);
+  };
 
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      el.removeEventListener("mouseenter", handleMouseEnter);
-      el.removeEventListener("mouseleave", handleMouseLeave);
-    };
-  }, [autoScrollOnHover, scrollRef]);
+  // Sync arrow visibility after each programmatic scroll
+  const handleScroll = () => updateArrows();
+
+  // Cleanup on unmount
+  useEffect(() => () => stopLoop(), []);
 
   return (
     <section className={`w-full bg-white ${sectionClassName}`}>
@@ -76,20 +96,21 @@ export default function CarouselSection({
         <CarouselArrows
           canScrollLeft={canScrollLeft}
           canScrollRight={canScrollRight}
-          onScrollLeft={() => scrollBy("left")}
-          onScrollRight={() => scrollBy("right")}
+          onMouseEnterLeft={() => startLoop(-1)}
+          onMouseLeaveLeft={stopLoop}
+          onMouseEnterRight={() => startLoop(1)}
+          onMouseLeaveRight={stopLoop}
         />
 
         <div
           ref={scrollRef}
-          onScroll={updateArrows}
-          className={`${baseRailClassName} ${
-            autoScrollOnHover ? "hover:snap-none hover:scroll-auto" : ""
-          } ${railClassName}`.trim()}
+          onScroll={handleScroll}
+          className={`${baseRailClassName} ${railClassName}`.trim()}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {children}
         </div>
+
         <div className="mt-4 mr-6 md:mr-10" aria-hidden="true">
           <div className="h-[3px] w-full rounded-full bg-black/10 overflow-hidden">
             <div
