@@ -444,7 +444,7 @@ export default function ProfilePage() {
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
                       required
-                      className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+                      className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
                     />
                   </div>
 
@@ -454,7 +454,7 @@ export default function ProfilePage() {
                       type="text" 
                       value={editMobile}
                       onChange={(e) => setEditMobile(e.target.value.replace(/\D/g, ''))} // only numbers
-                      className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+                      className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
                       placeholder="Enter mobile number"
                     />
                   </div>
@@ -831,7 +831,7 @@ export default function ProfilePage() {
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       required
-                      className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+                      className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
                     />
                   </div>
 
@@ -842,7 +842,7 @@ export default function ProfilePage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
-                      className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+                      className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
                     />
                   </div>
 
@@ -853,7 +853,7 @@ export default function ProfilePage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
-                      className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+                      className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
                     />
                   </div>
 

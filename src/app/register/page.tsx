@@ -138,7 +138,7 @@ export default function RegisterPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+                className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
                 placeholder="John Doe"
               />
             </div>
@@ -150,7 +150,7 @@ export default function RegisterPage() {
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
                 required
-                className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+                className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
                 placeholder="+91 98765 43210"
               />
             </div>
@@ -167,7 +167,7 @@ export default function RegisterPage() {
                   setOtpSent(false); // Reset OTP status if email changes
                 }}
                 required
-                className="flex-1 border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+                className="flex-1 border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
                 placeholder="you@example.com"
               />
               <button 
@@ -189,7 +189,7 @@ export default function RegisterPage() {
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} // only numbers
               required
-              className="w-full border-b-2 border-gray-200 py-2 text-sm tracking-[0.5em] focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+              className="w-full border-b-2 border-gray-200 py-2 text-sm tracking-[0.5em] focus:outline-none focus:border-black transition-colors bg-transparent"
               placeholder="00000"
             />
             {otpSent && <span className="text-[10px] font-bold text-gray-400 mt-1">Please check your email for the code.</span>}
@@ -202,7 +202,7 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+              className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
               placeholder="••••••••"
             />
           </div>

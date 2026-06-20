@@ -394,7 +394,7 @@ export default function Header() {
             type="text"
             name="q"
             placeholder="Search..."
-            className="w-full bg-transparent text-sm outline-none text-black placeholder-gray-400"
+            className="w-full bg-transparent text-sm outline-none text-black"
           />
         </div>
       )}

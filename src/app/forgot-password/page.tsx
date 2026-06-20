@@ -142,7 +142,7 @@ export default function ForgotPasswordPage() {
                   setOtpSent(false); // Reset OTP status if email changes
                 }}
                 required
-                className="flex-1 border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+                className="flex-1 border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
                 placeholder="you@example.com"
               />
               <button 
@@ -167,7 +167,7 @@ export default function ForgotPasswordPage() {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} // only numbers
                   required
-                  className="w-full border-b-2 border-gray-200 py-2 text-sm tracking-[0.5em] focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+                  className="w-full border-b-2 border-gray-200 py-2 text-sm tracking-[0.5em] focus:outline-none focus:border-black transition-colors bg-transparent"
                   placeholder="00000"
                 />
               </div>
@@ -179,7 +179,7 @@ export default function ForgotPasswordPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+                  className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
                   placeholder="••••••••"
                 />
               </div>

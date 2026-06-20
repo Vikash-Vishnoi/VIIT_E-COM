@@ -291,7 +291,7 @@ function AdminProductsContent() {
             placeholder="Search by title, slug, or SKU..."
             value={filters.search}
             onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-            className="flex-1 text-[13px] font-medium text-black placeholder-gray-400 outline-none bg-transparent"
+            className="flex-1 text-[13px] font-medium text-black outline-none bg-transparent"
           />
           {filters.search && (
             <button
