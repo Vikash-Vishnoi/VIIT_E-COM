@@ -9,59 +9,50 @@ import { FeedSortKey, SORT_OPTIONS } from "@/lib/feedTypes";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
-export type SiblingCategory = {
-  label: string;
-  slug: string;
-};
+export type SubCatCard = { label: string; slug: string; image: string | null };
 
-type ClientPageProps = {
+type Props = {
   products: FormattedProduct[];
   categorySlug: string;
-  subCategorySlug: string;
-  subSubCategorySlug: string;
-  subSubCategoryLabel: string;
-  siblings: SiblingCategory[];
+  categoryLabel: string;
+  categoryImage: string | null;
+  /** Level-1 sub-categories — shown as tab pills (none are "active" at this level) */
+  subCats: SubCatCard[];
   currentSort: FeedSortKey;
   currentPage: number;
   totalPages: number;
   total: number;
 };
 
-/* ─── Helpers ───────────────────────────────────────────────────────────── */
+/* ─── Helper ─────────────────────────────────────────────────────────────── */
 
-function buildUrl(
-  pathname: string,
-  sort: FeedSortKey,
-  page: number
-): string {
-  const params = new URLSearchParams();
-  if (sort !== "featured") params.set("sort", sort);
-  if (page > 1) params.set("page", String(page));
-  const qs = params.toString();
+function buildUrl(pathname: string, sort: FeedSortKey, page: number): string {
+  const p = new URLSearchParams();
+  if (sort !== "featured") p.set("sort", sort);
+  if (page > 1) p.set("page", String(page));
+  const qs = p.toString();
   return qs ? `${pathname}?${qs}` : pathname;
 }
 
-/* ─── Component ─────────────────────────────────────────────────────────── */
+/* ─── Component ──────────────────────────────────────────────────────────── */
 
-export default function SubCategoryClient({
+export default function CategoryClientPage({
   products,
   categorySlug,
-  subCategorySlug,
-  subSubCategorySlug,
-  subSubCategoryLabel,
-  siblings,
+  categoryLabel,
+  subCats,
   currentSort,
   currentPage,
   totalPages,
   total,
-}: ClientPageProps) {
-  const router = useRouter();
+}: Props) {
+  const router   = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
   /* ── Sibling tab scroll ──────────────────────────────────────────────── */
   const navRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollLeft,  setCanScrollLeft]  = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   function checkScroll() {
@@ -82,25 +73,18 @@ export default function SubCategoryClient({
     };
   }, []);
 
-  useEffect(() => {
-    const activeEl = document.getElementById(`nav-item-${subSubCategorySlug}`);
-    if (activeEl && navRef.current) {
-      activeEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-    }
-  }, [subSubCategorySlug]);
-
   function scrollNav(dir: "left" | "right") {
     navRef.current?.scrollBy({ left: dir === "left" ? -220 : 220, behavior: "smooth" });
   }
 
-  /* ── Sort handler — updates URL, server re-fetches ───────────────────── */
+  /* ── Sort handler ────────────────────────────────────────────────────── */
   function handleSortChange(value: FeedSortKey) {
     startTransition(() => {
-      router.push(buildUrl(pathname, value, 1)); // reset to page 1 on sort change
+      router.push(buildUrl(pathname, value, 1));
     });
   }
 
-  /* ── Pagination handlers ─────────────────────────────────────────────── */
+  /* ── Pagination ──────────────────────────────────────────────────────── */
   function goToPage(page: number) {
     startTransition(() => {
       router.push(buildUrl(pathname, currentSort, page));
@@ -108,13 +92,12 @@ export default function SubCategoryClient({
     });
   }
 
-  /* ── Client-side price filter (applied on top of the server page) ─────── */
+  /* ── Price filter ────────────────────────────────────────────────────── */
   const [filterOpen, setFilterOpen] = useState(false);
   const minPrice = products.length > 0 ? Math.min(...products.map((p) => p.price)) : 0;
   const maxPrice = products.length > 0 ? Math.max(...products.map((p) => p.price)) : 10000;
   const [priceRange, setPriceRange] = useState<[number, number]>([minPrice, maxPrice]);
 
-  // Re-sync price range when products change (new page / sort)
   useEffect(() => {
     setPriceRange([minPrice, maxPrice]);
   }, [minPrice, maxPrice]);
@@ -123,7 +106,7 @@ export default function SubCategoryClient({
     (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
   );
 
-  /* ── Page range for pagination buttons ──────────────────────────────── */
+  /* ── Pagination page numbers ─────────────────────────────────────────── */
   function getPageNumbers(): (number | "…")[] {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
     const pages: (number | "…")[] = [1];
@@ -140,18 +123,16 @@ export default function SubCategoryClient({
   return (
     <div className={`min-h-screen bg-white transition-opacity duration-200 ${isPending ? "opacity-60 pointer-events-none" : ""}`}>
 
-      {/* ── Breadcrumb ───────────────────────────────────────────────── */}
+      {/* ── Breadcrumb ───────────────────────────────────────────────────── */}
       <div className="px-6 md:px-10 xl:px-16 pt-8 pb-2">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
           <Link href="/" className="hover:text-black transition-colors">Home</Link>
           <span className="text-gray-300">/</span>
-          <span className="text-gray-400 capitalize">{categorySlug.replace(/-/g, " ")}</span>
-          <span className="text-gray-300">/</span>
-          <span className="text-black font-bold">{subSubCategoryLabel}</span>
+          <span className="text-black font-bold">{categoryLabel}</span>
         </nav>
       </div>
 
-      {/* ── Sub-category scroll tab bar ───────────────────────────────── */}
+      {/* ── Sub-category tab bar ─────────────────────────────────────────── */}
       <div className="relative border-b border-gray-100 bg-white">
         {/* Left arrow */}
         <button
@@ -168,29 +149,22 @@ export default function SubCategoryClient({
           </span>
         </button>
 
-        {/* Scrollable pills */}
+        {/* Scrollable pills — level-1 sub-categories, none are active here */}
         <div
           ref={navRef}
           className="flex items-center gap-2 px-6 md:px-10 xl:px-16 py-3 overflow-x-auto"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {siblings.map((item) => {
-            const isActive = item.slug === subSubCategorySlug;
-            return (
-              <Link
-                key={item.slug}
-                id={`nav-item-${item.slug}`}
-                href={`/${categorySlug}/${subCategorySlug}/${item.slug}`}
-                className={`flex-shrink-0 px-5 py-1.5 rounded-full border text-[12px] tracking-widest uppercase transition-all duration-200 ${
-                  isActive
-                    ? "bg-black text-white border-black font-black"
-                    : "bg-white text-gray-400 border-gray-100 font-bold hover:border-gray-300 hover:text-black"
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
+          {subCats.map((sub) => (
+            <Link
+              key={sub.slug}
+              id={`nav-item-${sub.slug}`}
+              href={`/${categorySlug}/${sub.slug}`}
+              className="flex-shrink-0 px-5 py-1.5 rounded-full border text-[12px] tracking-widest uppercase transition-all duration-200 bg-white text-gray-400 border-gray-100 font-bold hover:border-gray-300 hover:text-black"
+            >
+              {sub.label}
+            </Link>
+          ))}
         </div>
 
         {/* Right arrow */}
@@ -209,11 +183,10 @@ export default function SubCategoryClient({
         </button>
       </div>
 
-      {/* ── Filter + Sort bar ─────────────────────────────────────────── */}
+      {/* ── Filter + Sort bar ─────────────────────────────────────────────── */}
       <div className="sticky top-[72px] z-30 bg-white border-b border-gray-100">
         <div className="px-6 md:px-10 xl:px-16 flex items-center justify-between py-3 gap-4 flex-wrap">
 
-          {/* Left: total count + filter toggle */}
           <div className="flex items-center gap-4">
             <button
               id="filter-toggle"
@@ -236,7 +209,6 @@ export default function SubCategoryClient({
             </span>
           </div>
 
-          {/* Right: Sort selector */}
           <div className="flex items-center gap-2">
             <label htmlFor="sort-select" className="text-[12px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap hidden sm:block">
               Sort:
@@ -249,9 +221,7 @@ export default function SubCategoryClient({
                 className="appearance-none text-[12px] font-black uppercase tracking-widest text-black border border-gray-200 rounded-full pl-4 pr-8 py-2 bg-white hover:border-black transition-colors outline-none cursor-pointer"
               >
                 {SORT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
               <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -272,8 +242,6 @@ export default function SubCategoryClient({
                     ₹{priceRange[0].toLocaleString("en-IN")} – ₹{priceRange[1].toLocaleString("en-IN")}
                   </span>
                 </div>
-
-                {/* Dual range slider */}
                 <div className="relative pt-1">
                   <div className="relative h-1 bg-gray-200 rounded-full">
                     <div
@@ -286,19 +254,13 @@ export default function SubCategoryClient({
                   </div>
                   <input
                     type="range" min={minPrice} max={maxPrice} step={100} value={priceRange[0]}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      if (v <= priceRange[1] - 100) setPriceRange([v, priceRange[1]]);
-                    }}
+                    onChange={(e) => { const v = Number(e.target.value); if (v <= priceRange[1] - 100) setPriceRange([v, priceRange[1]]); }}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     style={{ zIndex: priceRange[0] > maxPrice - 200 ? 5 : 3 }}
                   />
                   <input
                     type="range" min={minPrice} max={maxPrice} step={100} value={priceRange[1]}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      if (v >= priceRange[0] + 100) setPriceRange([priceRange[0], v]);
-                    }}
+                    onChange={(e) => { const v = Number(e.target.value); if (v >= priceRange[0] + 100) setPriceRange([priceRange[0], v]); }}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     style={{ zIndex: 4 }}
                   />
@@ -311,13 +273,11 @@ export default function SubCategoryClient({
                     style={{ left: `calc(${((priceRange[1] - minPrice) / (maxPrice - minPrice)) * 100}% - 8px)` }}
                   />
                 </div>
-
                 <div className="flex justify-between text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
                   <span>₹{minPrice.toLocaleString("en-IN")}</span>
                   <span>₹{maxPrice.toLocaleString("en-IN")}</span>
                 </div>
               </div>
-
               <button
                 onClick={() => setPriceRange([minPrice, maxPrice])}
                 className="text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-black underline underline-offset-2 transition-colors"
@@ -329,17 +289,16 @@ export default function SubCategoryClient({
         )}
       </div>
 
-      {/* ── Loading overlay ──────────────────────────────────────────────── */}
+      {/* ── Loading overlay ───────────────────────────────────────────────── */}
       {isPending && (
         <div className="flex justify-center py-4">
           <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
-      {/* ── Product Grid ─────────────────────────────────────────────────── */}
+      {/* ── Product Grid ──────────────────────────────────────────────────── */}
       <div className="px-6 md:px-10 xl:px-16 py-10">
         {total === 0 ? (
-          /* Empty state — no products in this category */
           <div className="flex flex-col items-center justify-center py-28 gap-4 text-center">
             <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -349,7 +308,6 @@ export default function SubCategoryClient({
             </p>
           </div>
         ) : displayed.length === 0 ? (
-          /* Price filter removed all items on this page */
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
             <p className="text-sm font-black uppercase tracking-widest text-gray-300">
               No items match your price filter on this page
@@ -369,10 +327,9 @@ export default function SubCategoryClient({
               ))}
             </div>
 
-            {/* ── Pagination ───────────────────────────────────────────── */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-16">
-                {/* Prev */}
                 <button
                   onClick={() => goToPage(currentPage - 1)}
                   disabled={currentPage <= 1 || isPending}
@@ -381,23 +338,17 @@ export default function SubCategoryClient({
                 >
                   ← Prev
                 </button>
-
-                {/* Page numbers */}
                 <div className="flex gap-1">
                   {getPageNumbers().map((p, i) =>
                     p === "…" ? (
-                      <span key={`ellipsis-${i}`} className="w-8 h-8 flex items-center justify-center text-[11px] text-gray-400">
-                        …
-                      </span>
+                      <span key={`ellipsis-${i}`} className="w-8 h-8 flex items-center justify-center text-[11px] text-gray-400">…</span>
                     ) : (
                       <button
                         key={p}
                         onClick={() => goToPage(p as number)}
                         disabled={isPending}
                         className={`w-8 h-8 flex items-center justify-center text-[11px] font-black transition-colors ${
-                          currentPage === p
-                            ? "bg-black text-white"
-                            : "text-gray-500 hover:bg-gray-100"
+                          currentPage === p ? "bg-black text-white" : "text-gray-500 hover:bg-gray-100"
                         }`}
                         aria-label={`Page ${p}`}
                         aria-current={currentPage === p ? "page" : undefined}
@@ -407,8 +358,6 @@ export default function SubCategoryClient({
                     )
                   )}
                 </div>
-
-                {/* Next */}
                 <button
                   onClick={() => goToPage(currentPage + 1)}
                   disabled={currentPage >= totalPages || isPending}
@@ -420,7 +369,6 @@ export default function SubCategoryClient({
               </div>
             )}
 
-            {/* Page info */}
             {totalPages > 1 && (
               <p className="text-center text-[10px] text-gray-400 font-semibold uppercase tracking-widest mt-4">
                 Page {currentPage} of {totalPages} &nbsp;·&nbsp; {total} items

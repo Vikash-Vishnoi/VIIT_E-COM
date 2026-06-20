@@ -13,6 +13,7 @@ export type FormattedProduct = {
   image: string;
   badge?: string;
   slug: string;
+  ratings?: { average: number; count: number };
 };
 
 export default function ProductCard({ product }: { product: FormattedProduct }) {
@@ -129,6 +130,7 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
             </p>
           )}
         </div>
+
       </div>
     </Link>
   );

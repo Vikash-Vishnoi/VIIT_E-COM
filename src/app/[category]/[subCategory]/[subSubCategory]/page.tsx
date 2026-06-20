@@ -1,8 +1,9 @@
 import { connectDB } from "@/lib/db";
-import { Product, SubCategory } from "@/models";
+import { SubCategory } from "@/models";
 import { notFound } from "next/navigation";
 import ClientPage, { SiblingCategory } from "./ClientPage";
-import { FormattedProduct } from "@/components/ProductCard";
+import { fetchFeedProducts } from "@/lib/productFeed";
+import { FeedSortKey, SORT_OPTIONS } from "@/lib/feedTypes";
 
 type RouteParams = {
   category: string;
@@ -10,65 +11,72 @@ type RouteParams = {
   subSubCategory: string;
 };
 
-export default async function CategoryPage({ params }: { params: Promise<RouteParams> }) {
+type SearchParams = {
+  page?: string;
+  sort?: string;
+};
+
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<RouteParams>;
+  searchParams: Promise<SearchParams>;
+}) {
   await connectDB();
   const { category, subCategory, subSubCategory } = await params;
+  const { page: pageParam, sort: sortParam } = await searchParams;
 
-  // 1. Verify the category exists
-  const currentCat = await SubCategory.findOne({ 
-    slug: subSubCategory, 
+  // ── Resolve sort ────────────────────────────────────────────────────────
+  const validSortValues = SORT_OPTIONS.map((o) => o.value);
+  const sort: FeedSortKey = validSortValues.includes(sortParam as FeedSortKey)
+    ? (sortParam as FeedSortKey)
+    : "featured";
+
+  // ── Resolve page number ──────────────────────────────────────────────────
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+
+  // ── 1. Verify the sub-sub-category exists ────────────────────────────────
+  const currentCat = await SubCategory.findOne({
+    slug: subSubCategory,
     level: 2,
-    isActive: true 
+    isActive: true,
   }).lean();
 
-  if (!currentCat) {
-    notFound();
-  }
+  if (!currentCat) notFound();
 
-  // 2. Fetch siblings (for the horizontal scroll bar)
-  // We need to find all sub-sub-categories that share the same parent (which is the subCategory)
-  const siblingsData = await SubCategory.find({ 
-    parentId: currentCat.parentId, 
-    isActive: true 
-  }).sort({ sortOrder: 1 }).lean();
+  // ── 2. Fetch siblings for the horizontal tab bar ─────────────────────────
+  const siblingsData = await SubCategory.find({
+    parentId: currentCat.parentId,
+    isActive: true,
+  })
+    .sort({ sortOrder: 1 })
+    .lean();
 
   const siblings: SiblingCategory[] = siblingsData.map((s) => ({
     label: s.label,
     slug: s.slug,
   }));
 
-  // 3. Fetch products
-  // Based on the Product model, it stores subSubCategory as a string (the slug)
-  const dbProducts = await Product.find({ 
-    subSubCategory: subSubCategory,
-    isActive: true 
-  }).lean();
-
-  // 4. Map to frontend format
-  const products: FormattedProduct[] = dbProducts.map((p) => {
-    // Get first image from first color if available
-    const firstColor = p.colors?.[0];
-    const firstImage = firstColor?.images?.[0]?.url || "";
-
-    return {
-      id: p._id.toString(),
-      name: p.title,
-      price: p.sellingPrice,
-      originalPrice: p.price,
-      image: firstImage,
-      badge: p.badge || undefined,
-      slug: p.slug,
-    };
-  });
+  // ── 3. Fetch paginated, scored, OOS-filtered products ───────────────────
+  const { products, total, totalPages, currentPage } = await fetchFeedProducts(
+    { by: 'subSubCategory', slug: subSubCategory },
+    sort,
+    page
+  );
 
   return (
-    <ClientPage 
+    <ClientPage
       products={products}
       categorySlug={category}
       subCategorySlug={subCategory}
       subSubCategorySlug={subSubCategory}
       subSubCategoryLabel={currentCat.label}
       siblings={siblings}
+      currentSort={sort}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      total={total}
     />
   );
 }
