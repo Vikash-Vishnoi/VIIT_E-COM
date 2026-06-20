@@ -31,9 +31,12 @@ export function useHorizontalScroll(scrollAmount = 400) {
   const updateArrows = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
+    
     const maxScroll = el.scrollWidth - el.clientWidth;
-    const rawProgress = maxScroll <= 0 ? 1 : el.scrollLeft / maxScroll;
+    // Map scrollLeft to 0-1
+    const rawProgress = maxScroll <= 0 ? 0 : el.scrollLeft / maxScroll;
     const clampedProgress = Math.min(1, Math.max(0, rawProgress));
+
     setCanScrollLeft(el.scrollLeft > 4);
     setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
     setScrollProgress(clampedProgress);

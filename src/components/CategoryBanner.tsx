@@ -58,11 +58,10 @@ export default function CategoryBanner({
       </div>
 
       {/* Buy Now Button — bottom left */}
-      <div className="absolute bottom-8 left-8 md:bottom-10 md:left-12 -translate-y-30 md:-translate-y-40">
+      <div className="absolute bottom-8 left-8 md:bottom-10 md:left-12 -translate-y-12 md:-translate-y-16">
         <Link 
           href={href}
-          className="inline-flex items-center justify-center px-4 py-2 text-black font-bold uppercase tracking-widest text-sm md:text-base hover:underline"
-          style={{ transform: "scale(1.3)", transformOrigin: "left bottom" }}
+          className="inline-flex items-center justify-center px-6 py-2.5 bg-white/95 text-black font-black uppercase tracking-widest text-[11px] md:text-[13px] rounded-full hover:bg-white hover:scale-105 transition-all shadow-md"
         >
           Shop Now &gt;
         </Link>

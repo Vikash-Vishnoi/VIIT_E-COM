@@ -62,6 +62,7 @@ export default function CarouselSection({
       }
 
       el.scrollLeft += dir * 3;
+      updateArrows(); // Update progress bar explicitly during arrow hover scroll
 
       // Auto-stop at boundaries
       const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
@@ -114,7 +115,7 @@ export default function CarouselSection({
         <div className="mt-4 mr-6 md:mr-10" aria-hidden="true">
           <div className="h-[3px] w-full rounded-full bg-black/10 overflow-hidden">
             <div
-              className="h-full bg-black transition-[width] duration-300"
+              className="h-full bg-black"
               style={{ width: `${scrollProgress * 100}%` }}
             />
           </div>
