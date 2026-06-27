@@ -9,7 +9,7 @@ export const logAuthEvent = (req: NextRequest, email: string, action: AuthAction
   (async () => {
     try {
       await connectDB();
-      const ipAddress = req.headers.get('x-forwarded-for') || req.ip || 'Unknown';
+      const ipAddress = req.headers.get('x-forwarded-for') || 'Unknown';
       const userAgent = req.headers.get('user-agent') || 'Unknown';
 
       await AuthLog.create({

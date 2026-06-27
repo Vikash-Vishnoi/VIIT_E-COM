@@ -26,6 +26,26 @@ export async function getAuthUser(req: NextRequest): Promise<string | null> {
 }
 
 /**
+ * Verifies the JWT and securely checks the database to ensure the user is an admin.
+ * Returns the user's ObjectId if valid, active, and an admin.
+ */
+export async function getAdminUser(req: NextRequest): Promise<string | null> {
+  const token = req.cookies.get('auth_token')?.value;
+  if (!token) return null;
+
+  const payload = await verifyToken(token);
+  
+  if (!payload || typeof payload.email !== 'string') return null;
+
+  await connectDB();
+  const user = await User.findOne({ email: payload.email }).select('_id isActive role');
+  
+  if (!user || !user.isActive || user.role !== 'admin') return null;
+
+  return user._id.toString();
+}
+
+/**
  * Handles the rate limiting, lockout, generation, saving, and emailing of an OTP.
  * Returns an object with { success, message, status } which can be passed directly to NextResponse.json.
  */

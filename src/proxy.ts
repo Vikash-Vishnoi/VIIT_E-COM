@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyToken } from '@/lib/jwt';
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -18,15 +17,6 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set('returnTo', pathname);
       return NextResponse.redirect(loginUrl);
     }
-
-    // 2. Verify token validity and role
-    const payload = await verifyToken(token);
-    if (!payload || payload.role !== 'admin') {
-      if (pathname.startsWith('/api/')) {
-        return NextResponse.json({ success: false, message: 'Forbidden: Admin access required' }, { status: 403 });
-      }
-      return NextResponse.redirect(new URL('/', request.url));
-    }
   }
 
   // Protect Profile Routes
@@ -34,13 +24,6 @@ export async function proxy(request: NextRequest) {
     const token = request.cookies.get('auth_token')?.value;
     
     if (!token) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('returnTo', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    const payload = await verifyToken(token);
-    if (!payload || !payload.userId) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('returnTo', pathname);
       return NextResponse.redirect(loginUrl);
