@@ -6,7 +6,14 @@ import { sendOTP } from '@/lib/mail';
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { email } = await req.json();
+    let email: string | undefined;
+    try {
+      const body = await req.json();
+      email = body.email;
+    } catch {
+      return NextResponse.json({ success: false, message: 'Email is required to reset your password' }, { status: 400 });
+    }
+
 
     if (!email) {
       return NextResponse.json({ success: false, message: 'Email is required' }, { status: 400 });

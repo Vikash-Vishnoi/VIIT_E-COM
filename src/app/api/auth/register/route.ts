@@ -14,11 +14,11 @@ import {
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-
     // ── Parse body safely ────────────────────────────────────────────────────
     let email: string | undefined, otp: string | undefined,
         name: string | undefined, mobile: string | undefined,
         password: string | undefined;
+    
     try {
       const body = await req.json();
       ({ email, otp, name, mobile, password } = body);

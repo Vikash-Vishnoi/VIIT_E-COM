@@ -37,7 +37,13 @@ export async function POST(req: NextRequest) {
     if (!userId) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
 
     await connectDB();
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ success: false, message: 'Address details are required' }, { status: 400 });
+    }
+
 
     // Required fields based on AddressSchema
     const { label, fullName, mobile, line1, line2, city, state, pincode, country, isDefault } = body;

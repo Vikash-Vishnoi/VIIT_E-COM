@@ -54,7 +54,13 @@ export async function POST(req: NextRequest) {
     if (!userId) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
 
     await connectDB();
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ success: false, message: 'Product ID is required to update your wishlist' }, { status: 400 });
+    }
+
     let { productId, colorName, size } = body;
 
     if (!productId) {

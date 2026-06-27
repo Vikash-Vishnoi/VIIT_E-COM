@@ -21,7 +21,14 @@ export async function POST(req: NextRequest) {
     if (!userId) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
 
     await connectDB();
-    const { currentPassword, newPassword } = await req.json();
+    let currentPassword: string | undefined, newPassword: string | undefined;
+    try {
+      const body = await req.json();
+      ({ currentPassword, newPassword } = body);
+    } catch {
+      return NextResponse.json({ success: false, message: 'Current password and new password are required' }, { status: 400 });
+    }
+
 
     if (!currentPassword || !newPassword) {
       return NextResponse.json({ success: false, message: 'Current and new passwords are required' }, { status: 400 });

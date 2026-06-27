@@ -32,7 +32,13 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   try {
     await connectDB();
     const { id } = await params;
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return Response.json({ success: false, message: 'Order update data is required (status, paymentStatus, or tracking info)' }, { status: 400 });
+    }
+
 
     const query = mongoose.Types.ObjectId.isValid(id)
       ? { _id: id }

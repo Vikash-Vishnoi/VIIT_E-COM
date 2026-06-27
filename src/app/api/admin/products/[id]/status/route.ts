@@ -21,7 +21,12 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return Response.json({ success: false, message: 'Request body with isActive or isFeatured is required' }, { status: 400 });
+    }
 
     // Only allow isActive and isFeatured — reject anything else
     const allowed: Record<string, boolean> = {};

@@ -44,7 +44,14 @@ export async function PATCH(req: NextRequest) {
     }
 
     await connectDB();
-    const { name, mobile } = await req.json();
+    let name: string | undefined, mobile: string | undefined;
+    try {
+      const body = await req.json();
+      ({ name, mobile } = body);
+    } catch {
+      return NextResponse.json({ success: false, message: 'Name and mobile number are required to update your profile' }, { status: 400 });
+    }
+
 
     if (!name || !mobile) {
       return NextResponse.json({ success: false, message: 'Name and mobile are required' }, { status: 400 });

@@ -119,7 +119,13 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     await connectDB();
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return Response.json({ success: false, message: 'productId, sku and newQuantity are required to adjust stock' }, { status: 400 });
+    }
+
     const { productId, sku, newQuantity } = body;
 
     if (!productId || !sku || typeof newQuantity !== 'number' || newQuantity < 0) {

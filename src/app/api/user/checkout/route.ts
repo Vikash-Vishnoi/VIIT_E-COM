@@ -27,7 +27,13 @@ export async function POST(req: NextRequest) {
     if (!userId) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
 
     await connectDB();
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ success: false, message: 'Shipping address and payment method are required to place an order' }, { status: 400 });
+    }
+
     const { addressId, paymentMethod } = body;
 
     if (!addressId || !paymentMethod) {

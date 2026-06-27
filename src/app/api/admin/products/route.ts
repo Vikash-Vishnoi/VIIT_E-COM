@@ -111,7 +111,13 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return Response.json({ success: false, message: 'Product data is required to create a product' }, { status: 400 });
+    }
+
 
     if (body.price !== undefined && body.sellingPrice !== undefined && body.price < body.sellingPrice) {
       return Response.json({ success: false, message: 'Regular price must be greater than or equal to selling price' }, { status: 400 });

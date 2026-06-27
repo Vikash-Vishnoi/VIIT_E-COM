@@ -8,7 +8,14 @@ import { validatePassword, passwordErrorMsg } from '@/lib/validation';
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { email, otp, newPassword } = await req.json();
+    let email: string | undefined, otp: string | undefined, newPassword: string | undefined;
+    try {
+      const body = await req.json();
+      ({ email, otp, newPassword } = body);
+    } catch {
+      return NextResponse.json({ success: false, message: 'Email, OTP and new password are required' }, { status: 400 });
+    }
+
 
     if (!email || !otp || !newPassword) {
       return NextResponse.json({ success: false, message: 'All fields are required' }, { status: 400 });

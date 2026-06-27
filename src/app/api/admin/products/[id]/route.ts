@@ -52,7 +52,12 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return Response.json({ success: false, message: 'Product data is required to update this product' }, { status: 400 });
+    }
 
     if (body.price !== undefined && body.sellingPrice !== undefined && body.price < body.sellingPrice) {
       return Response.json({ success: false, message: 'Regular price must be greater than or equal to selling price' }, { status: 400 });

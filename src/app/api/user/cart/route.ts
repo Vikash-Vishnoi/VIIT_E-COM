@@ -44,7 +44,8 @@ export async function POST(req: NextRequest) {
     if (!userId) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
 
     await connectDB();
-    const body = await req.json();
+    let body: any = {};
+    try { body = await req.json(); } catch {}
     const { productId, colorName, size, quantity = 1 } = body;
 
     if (!productId || !colorName || !size) {
@@ -83,7 +84,8 @@ export async function PATCH(req: NextRequest) {
     if (!userId) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
 
     await connectDB();
-    const body = await req.json();
+    let body: any = {};
+    try { body = await req.json(); } catch {}
     const { cartItemId, quantity } = body;
 
     if (!cartItemId || quantity === undefined) {

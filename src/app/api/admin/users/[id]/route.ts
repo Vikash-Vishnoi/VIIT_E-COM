@@ -40,7 +40,13 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       return Response.json({ success: false, message: 'Invalid user ID format' }, { status: 400 });
     }
 
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return Response.json({ success: false, message: 'Request body is required to update a user' }, { status: 400 });
+    }
+
 
     // Only allow specific fields
     const allowed: Record<string, any> = {};
