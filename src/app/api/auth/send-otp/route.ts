@@ -9,19 +9,11 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     // ── Parse body safely ────────────────────────────────────────────────────
-    let email: string | undefined;
+    let email: any;
     try { 
       const body = await req.json();
       email = body.email;
     } catch {
-      return NextResponse.json({ success: false, message: 'Email is required' }, { status: 400 });
-    }
-
-    if (!email) {
-      return NextResponse.json({ success: false, message: 'Email is required' }, { status: 400 });
-    }
-
-    if (typeof email !== 'string') {
       return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
     }
 

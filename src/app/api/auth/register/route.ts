@@ -15,31 +15,16 @@ export async function POST(req: NextRequest) {
   try {
     await connectDB();
     // ── Parse body safely ────────────────────────────────────────────────────
-    let email: string | undefined, otp: string | undefined,
-        name: string | undefined, mobile: string | undefined,
-        password: string | undefined;
-    
+    let email: any, otp: any, name: any, mobile: any, password: any;
     try {
       const body = await req.json();
       ({ email, otp, name, mobile, password } = body);
     } catch {
-      return NextResponse.json({ success: false, message: 'All fields are required' }, { status: 400 });
-    }
-
-    // ── Presence check ───────────────────────────────────────────────────────
-    if (!email || !otp || !name || !mobile || !password) {
-      return NextResponse.json({ success: false, message: 'All fields are required' }, { status: 400 });
-    }
-
-    // ── Type check ───────────────────────────────────────────────────────────
-    if (
-      typeof email    !== 'string' ||
-      typeof otp      !== 'string' ||
-      typeof name     !== 'string' ||
-      typeof mobile   !== 'string' ||
-      typeof password !== 'string'
-    ) {
       return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
+    }
+
+    if (!otp || typeof otp !== 'string') {
+      return NextResponse.json({ success: false, message: 'OTP is required and must be a string' }, { status: 400 });
     }
 
 

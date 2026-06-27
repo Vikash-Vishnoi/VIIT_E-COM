@@ -167,6 +167,9 @@ export default function ForgotPasswordPage() {
                   className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
                   placeholder="••••••••"
                 />
+                <div className="mt-1 p-3 bg-gray-50/80 border border-gray-100 rounded-lg text-[10px] font-medium text-gray-500 leading-relaxed">
+                  {passwordErrorMsg}
+                </div>
               </div>
 
               <button 

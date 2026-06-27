@@ -9,21 +9,13 @@ export async function POST(req: NextRequest) {
   try {
     await connectDB();
 
-    let email: string | undefined;
-    let password: string | undefined;
+    let email: any;
+    let password: any;
     try {
       const body = await req.json();
       email = body.email;
       password = body.password;
     } catch {
-      return NextResponse.json({ success: false, message: 'Email and password are required' }, { status: 400 });
-    }
-
-    if (!email || !password) {
-      return NextResponse.json({ success: false, message: 'Email and password are required' }, { status: 400 });
-    }
-
-    if (typeof email !== 'string' || typeof password !== 'string') {
       return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
     }
 

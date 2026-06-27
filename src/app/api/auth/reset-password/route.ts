@@ -8,21 +8,16 @@ import { validatePassword, passwordErrorMsg, validateEmail, emailErrorMsg, hashO
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    let email: string | undefined, otp: string | undefined, newPassword: string | undefined;
+    let email: any, otp: any, newPassword: any;
     try {
       const body = await req.json();
       ({ email, otp, newPassword } = body);
     } catch {
-      return NextResponse.json({ success: false, message: 'Email, OTP and new password are required' }, { status: 400 });
-    }
-
-
-    if (!email || !otp || !newPassword) {
-      return NextResponse.json({ success: false, message: 'All fields are required' }, { status: 400 });
-    }
-
-    if (typeof email !== 'string' || typeof otp !== 'string' || typeof newPassword !== 'string') {
       return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
+    }
+
+    if (!otp || typeof otp !== 'string') {
+      return NextResponse.json({ success: false, message: 'OTP is required and must be a string' }, { status: 400 });
     }
 
 
@@ -45,12 +40,6 @@ export async function POST(req: NextRequest) {
 
     if (otpRecord.isLocked && otpRecord.lockedUntil && otpRecord.lockedUntil > new Date()) {
        return NextResponse.json({ success: false, message: 'Account locked due to too many OTP requests. Try again later.' }, { status: 400 });
-    }
-
-    // Check if the current OTP code is older than 5 minutes
-    const ageInMinutes = (Date.now() - otpRecord.createdAt.getTime()) / 60000;
-    if (ageInMinutes > 5) {
-      return NextResponse.json({ success: false, message: 'OTP has expired (valid for 5 minutes). Please request a new one.' }, { status: 400 });
     }
 
     // Check for brute-force attempts on the code

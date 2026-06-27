@@ -7,20 +7,11 @@ import { validateEmail, emailErrorMsg, hashOTP } from '@/lib/validation';
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    let email: string | undefined;
+    let email: any;
     try {
       const body = await req.json();
       email = body.email;
     } catch {
-      return NextResponse.json({ success: false, message: 'Email is required to reset your password' }, { status: 400 });
-    }
-
-
-    if (!email) {
-      return NextResponse.json({ success: false, message: 'Email is required' }, { status: 400 });
-    }
-
-    if (typeof email !== 'string') {
       return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
     }
 
@@ -34,8 +25,7 @@ export async function POST(req: NextRequest) {
     // Check if user already exists
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (!existingUser) {
-      // For security, you can choose to return success even if email doesn't exist to prevent email enumeration,
-      // but in e-commerce, it's usually fine to tell the user they don't have an account.
+      // If no user exists with the provided email, return a 404 response
       return NextResponse.json({ success: false, message: 'No account found with this email address.' }, { status: 404 });
     }
 
@@ -80,7 +70,6 @@ export async function POST(req: NextRequest) {
     // Save or update OTP in database
     if (existingOtp) {
       existingOtp.otp = hashedOtp;
-      existingOtp.attempts = 0;
       existingOtp.sendCount += 1;
       existingOtp.createdAt = new Date();
       await existingOtp.save();
@@ -88,7 +77,6 @@ export async function POST(req: NextRequest) {
       await OTP.create({
         email: normalizedEmail,
         otp: hashedOtp,
-        sendCount: 1
       });
     }
 

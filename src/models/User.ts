@@ -77,8 +77,6 @@ const UserSchema = new Schema<IUser>(
 
 // ─── Indexes ───────────────────────────────────────────────────────
 UserSchema.index({ email: 1 }, { unique: true });
-UserSchema.index({ mobile: 1 }, { unique: true });
-UserSchema.index({ role: 1 });
 
 // ─── Prevent model re-compilation in dev hot-reload ───────────────
 const User: Model<IUser> =
