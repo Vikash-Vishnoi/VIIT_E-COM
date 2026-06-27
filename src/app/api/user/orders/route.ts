@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { Order } from '@/models';
-import { verifyToken } from '@/lib/jwt';
+import { getAuthUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
-
-async function getAuthUser(req: NextRequest) {
-  const token = req.cookies.get('auth_token')?.value;
-  if (!token) return null;
-  const payload = await verifyToken(token);
-  if (!payload || !payload.userId) return null;
-  return String(payload.userId);
-}
 
 // GET: Fetch all orders for the logged-in user
 export async function GET(req: NextRequest) {

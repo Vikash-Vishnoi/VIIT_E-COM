@@ -2,18 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/db';
 import { User } from '@/models';
-import { verifyToken } from '@/lib/jwt';
+import { getAuthUser } from '@/lib/auth';
 import { validatePassword, passwordErrorMsg } from '@/lib/validation';
-
-// Helper to authenticate request
-async function getAuthUser(req: NextRequest) {
-  const token = req.cookies.get('auth_token')?.value;
-  if (!token) return null;
-  const payload = await verifyToken(token);
-  if (!payload || !payload.userId) return null;
-  if (typeof payload.userId !== 'string') return null;
-  return payload.userId;
-}
 
 export async function POST(req: NextRequest) {
   try {

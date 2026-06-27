@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
 import {
   Search,
   ChevronLeft,
@@ -222,9 +223,13 @@ function AdminUsersContent() {
       });
       if (!res.ok) {
         setUsers((prev) => prev.map((u) => (u._id === id ? { ...u, [field]: current } : u)));
+        toast.error("Failed to update user status");
+      } else {
+        toast.success("User status updated");
       }
     } catch {
       setUsers((prev) => prev.map((u) => (u._id === id ? { ...u, [field]: current } : u)));
+      toast.error("Failed to update user status");
     }
   };
 
@@ -243,9 +248,12 @@ function AdminUsersContent() {
         setUsers((prev) =>
           prev.map((u) => (u._id === actionModal.user!._id ? { ...u, isActive: newActive } : u))
         );
+        toast.success(newActive ? "User unblocked" : "User blocked");
+      } else {
+        toast.error(`Failed to ${actionModal.action} user`);
       }
     } catch (err) {
-      console.error(`${actionModal.action} failed:`, err);
+      toast.error("An unexpected error occurred");
     } finally {
       setActionLoading(false);
       setActionModal({ open: false, user: null, action: "block" });

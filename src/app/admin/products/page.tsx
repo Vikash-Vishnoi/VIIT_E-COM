@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, Suspense } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 import {
   Search,
@@ -222,11 +223,15 @@ function AdminProductsContent() {
         setProducts((prev) =>
           prev.map((p) => (p._id === id ? { ...p, [field]: current } : p))
         );
+        toast.error(`Failed to update ${field}`);
+      } else {
+        toast.success(`Product ${field === "isActive" ? "status" : "featured state"} updated`);
       }
     } catch {
       setProducts((prev) =>
         prev.map((p) => (p._id === id ? { ...p, [field]: current } : p))
       );
+      toast.error(`An error occurred updating ${field}`);
     }
   };
 
@@ -241,9 +246,12 @@ function AdminProductsContent() {
       if (res.ok) {
         setProducts((prev) => prev.filter((p) => p._id !== deleteModal.product!._id));
         setMeta((prev) => ({ ...prev, total: prev.total - 1 }));
+        toast.success("Product deleted successfully");
+      } else {
+        toast.error("Failed to delete product");
       }
     } catch (err) {
-      console.error("Delete failed:", err);
+      toast.error("An unexpected error occurred");
     } finally {
       setDeleting(false);
       setDeleteModal({ open: false, product: null });

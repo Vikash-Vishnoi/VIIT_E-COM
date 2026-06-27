@@ -3,6 +3,7 @@ import { Geist_Mono, Dancing_Script, Red_Hat_Display } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import FlashProvider from "@/components/FlashProvider";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -39,6 +40,7 @@ export default function RootLayout({
       className={`${redHat.variable} ${geistMono.variable} ${dancingScript.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <FlashProvider />
         <Header />
         <main className="flex-1 pt-20">{children}</main>
         <Footer />

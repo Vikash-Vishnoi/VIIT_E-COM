@@ -4,14 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { validatePassword, passwordErrorMsg } from "@/lib/validation";
+import toast from "react-hot-toast";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-  const [error, setError] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
   const [cooldown, setCooldown] = useState(0);
   
   // Form Data
@@ -27,12 +26,10 @@ export default function ForgotPasswordPage() {
   }, [cooldown]);
 
   const handleSendOTP = async () => {
-    if (!email) return setError("Please enter your registered email");
+    if (!email) return toast.error("Please enter your registered email");
     if (cooldown > 0) return;
     
     setOtpLoading(true);
-    setError("");
-    setSuccessMsg("");
     try {
       const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
@@ -43,12 +40,12 @@ export default function ForgotPasswordPage() {
       if (data.success) {
         setOtpSent(true);
         setCooldown(60);
-        setSuccessMsg(`A 5-digit reset code has been sent to ${email}`);
+        toast.success(`A 5-digit reset code has been sent to ${email}`);
       } else {
-        setError(data.message || "Failed to send OTP");
+        toast.error(data.message || "Failed to send OTP");
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setOtpLoading(false);
     }
@@ -57,18 +54,16 @@ export default function ForgotPasswordPage() {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !newPassword || !otp) {
-      return setError("Please fill all required fields");
+      return toast.error("Please fill all required fields");
     }
     if (otp.length !== 5) {
-      return setError("OTP must be exactly 5 digits");
+      return toast.error("OTP must be exactly 5 digits");
     }
     if (!validatePassword(newPassword)) {
-      return setError(passwordErrorMsg);
+      return toast.error(passwordErrorMsg);
     }
     
     setLoading(true);
-    setError("");
-    setSuccessMsg("");
     try {
       const res = await fetch("/api/auth/reset-password", {
         method: "POST",
@@ -77,6 +72,7 @@ export default function ForgotPasswordPage() {
       });
       const data = await res.json();
       if (data.success) {
+        toast.success("Password reset successfully!");
         window.dispatchEvent(new Event('auth-change'));
         // Find where to redirect the user back to
         let returnUrl = '/';
@@ -98,10 +94,10 @@ export default function ForgotPasswordPage() {
         router.push(returnUrl); 
         router.refresh();
       } else {
-        setError(data.message || "Password reset failed");
+        toast.error(data.message || "Password reset failed");
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -116,17 +112,6 @@ export default function ForgotPasswordPage() {
         <p className="text-xs text-gray-500 text-center mb-8 uppercase tracking-widest">
           Secure Account Recovery
         </p>
-
-        {error && (
-          <div className="mb-6 p-3 bg-red-50 text-red-600 text-[11px] font-bold text-center uppercase tracking-wider">
-            {error}
-          </div>
-        )}
-        {successMsg && (
-          <div className="mb-6 p-3 bg-green-50 text-green-700 text-[11px] font-bold text-center uppercase tracking-wider">
-            {successMsg}
-          </div>
-        )}
 
         <form onSubmit={handleResetPassword} className="flex flex-col gap-6">
           

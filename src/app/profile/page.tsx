@@ -14,6 +14,7 @@ import {
   Edit2
 } from "lucide-react";
 import { validatePassword, passwordErrorMsg } from "@/lib/validation";
+import toast from "react-hot-toast";
 
 type OrderItem = {
   productId: string;
@@ -92,8 +93,6 @@ export default function ProfilePage() {
 
   // Forms loading state
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   // Overview Form
   const [editName, setEditName] = useState("");
@@ -131,7 +130,6 @@ export default function ProfilePage() {
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
-    clearMessages();
     
     // Update URL without reloading the page
     const params = new URLSearchParams(window.location.search);
@@ -174,14 +172,8 @@ export default function ProfilePage() {
     }
   };
 
-  const clearMessages = () => {
-    setError("");
-    setSuccess("");
-  };
-
   const handleUpdateOverview = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearMessages();
     setSaving(true);
     try {
       const res = await fetch("/api/user/profile", {
@@ -191,14 +183,14 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (data.success) {
-        setSuccess("Profile updated successfully!");
+        toast.success("Profile updated successfully!");
         setProfile(data.data);
         window.dispatchEvent(new Event('auth-change')); // Tell header to update name if changed
       } else {
-        setError(data.message);
+        toast.error(data.message);
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setSaving(false);
     }
@@ -206,7 +198,6 @@ export default function ProfilePage() {
 
   const handleSaveAddress = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearMessages();
     setSaving(true);
     try {
       const method = editAddressId ? "PUT" : "POST";
@@ -230,14 +221,14 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (data.success) {
-        setSuccess(editAddressId ? "Address updated!" : "Address added!");
+        toast.success(editAddressId ? "Address updated!" : "Address added!");
         setShowAddressForm(false);
         fetchProfile(); // Refresh list
       } else {
-        setError(data.message);
+        toast.error(data.message);
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setSaving(false);
     }
@@ -245,23 +236,21 @@ export default function ProfilePage() {
 
   const handleDeleteAddress = async (id: string) => {
     if (!confirm("Are you sure you want to delete this address?")) return;
-    clearMessages();
     try {
       const res = await fetch(`/api/user/addresses?id=${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        setSuccess("Address removed");
+        toast.success("Address removed");
         fetchProfile();
       } else {
-        setError(data.message);
+        toast.error(data.message);
       }
     } catch (err) {
-      setError("Failed to delete address");
+      toast.error("Failed to delete address");
     }
   };
 
   const openEditAddress = (addr: Address) => {
-    clearMessages();
     setEditAddressId(addr._id);
     setAddrLabel(addr.label);
     setAddrFullName(addr.fullName);
@@ -276,7 +265,6 @@ export default function ProfilePage() {
   };
 
   const resetAddressForm = () => {
-    clearMessages();
     setEditAddressId(null);
     setAddrLabel("Home");
     setAddrFullName(profile?.name || "");
@@ -292,13 +280,12 @@ export default function ProfilePage() {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearMessages();
     
     if (newPassword !== confirmPassword) {
-      return setError("New passwords do not match");
+      return toast.error("New passwords do not match");
     }
     if (!validatePassword(newPassword)) {
-      return setError(passwordErrorMsg);
+      return toast.error(passwordErrorMsg);
     }
 
     setSaving(true);
@@ -310,15 +297,15 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (data.success) {
-        setSuccess("Password changed successfully!");
+        toast.success("Password changed successfully!");
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       } else {
-        setError(data.message);
+        toast.error(data.message);
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setSaving(false);
     }
@@ -408,18 +395,6 @@ export default function ProfilePage() {
 
           {/* Main Content Area */}
           <div className="bg-white border border-gray-100 p-8 min-h-[400px]">
-            
-            {/* Global Alerts */}
-            {error && (
-              <div className="mb-8 p-4 bg-red-50 text-red-600 text-[11px] font-bold uppercase tracking-wider border border-red-100">
-                {error}
-              </div>
-            )}
-            {success && (
-              <div className="mb-8 p-4 bg-green-50 text-green-700 text-[11px] font-bold uppercase tracking-wider border border-green-100">
-                {success}
-              </div>
-            )}
 
             {/* OVERVIEW TAB */}
             {activeTab === "overview" && (

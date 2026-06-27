@@ -75,11 +75,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── Brute-force guard: too many failed attempts ───────────────────────────
-    if (otpRecord.attempts >= 3) {
-      await OTP.deleteOne({ _id: otpRecord._id });
+    if (otpRecord.isLocked && otpRecord.lockedUntil && otpRecord.lockedUntil > new Date()) {
+       return NextResponse.json({ success: false, message: 'Account locked due to too many OTP requests. Try again later.' }, { status: 400 });
+    }
+
+    // ── Check if the current OTP code is older than 5 minutes ───────────────
+    const ageInMinutes = (Date.now() - otpRecord.createdAt.getTime()) / 60000;
+    if (ageInMinutes > 5) {
       return NextResponse.json(
-        { success: false, message: 'Too many failed attempts. For security, this OTP has been invalidated. Please request a new one.' },
+        { success: false, message: 'OTP has expired (valid for 5 minutes). Please request a new one.' }, 
+        { status: 400 }
+      );
+    }
+
+    // ── Brute-force guard: too many failed attempts for this code ────────────
+    if (otpRecord.attempts >= 3) {
+      return NextResponse.json(
+        { success: false, message: 'Too many failed attempts for this code. Please request a new OTP.' },
         { status: 400 },
       );
     }
@@ -91,7 +103,6 @@ export async function POST(req: NextRequest) {
 
       const attemptsLeft = 3 - otpRecord.attempts;
       if (attemptsLeft <= 0) {
-        await OTP.deleteOne({ _id: otpRecord._id });
         return NextResponse.json(
           { success: false, message: 'Too many failed attempts. Please request a new OTP.' },
           { status: 400 },

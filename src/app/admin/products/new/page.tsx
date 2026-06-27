@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Save, Plus, Trash2, ArrowLeft, Upload, X, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import toast from "react-hot-toast";
 
 type Size = { size: string; quantity: number; sku: string };
 type ProductImage = { url: string; order: number; file?: File; isLocal?: boolean };
@@ -31,7 +32,6 @@ const generateSKU = (title: string, color: string, size: string, existingSku: st
 export default function AddProductPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -246,31 +246,30 @@ export default function AddProductPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     try {
       const payload = { ...formData };
 
       if (payload.price < payload.sellingPrice) {
-        setError("Regular price must be greater than or equal to the selling price.");
+        toast.error("Regular price must be greater than or equal to the selling price.");
         setLoading(false);
         return;
       }
 
       if (payload.colors.length === 0) {
-        setError("You must add at least one color variant.");
+        toast.error("You must add at least one color variant.");
         setLoading(false);
         return;
       }
 
       for (const color of payload.colors) {
         if (color.images.length === 0) {
-          setError(`You must upload at least one image for the '${color.colorName}' color.`);
+          toast.error(`You must upload at least one image for the '${color.colorName}' color.`);
           setLoading(false);
           return;
         }
         if (color.sizes.length === 0) {
-          setError(`You must add at least one size for the '${color.colorName}' color.`);
+          toast.error(`You must add at least one size for the '${color.colorName}' color.`);
           setLoading(false);
           return;
         }
@@ -316,13 +315,14 @@ export default function AddProductPage() {
 
       const data = await res.json();
       if (data.success) {
+        toast.success("Product created successfully!");
         localStorage.removeItem(LOCAL_STORAGE_KEY);
         router.push("/admin/products");
       } else {
-        setError(data.message || "Failed to create product");
+        toast.error(data.message || "Failed to create product");
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -365,12 +365,6 @@ export default function AddProductPage() {
           Save Product
         </button>
       </div>
-
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm font-medium">
-          {error}
-        </div>
-      )}
 
       <form className="grid grid-cols-1 lg:grid-cols-3 gap-8" onSubmit={handleSubmit}>
         

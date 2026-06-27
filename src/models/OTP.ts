@@ -4,6 +4,9 @@ export interface IOTP extends Document {
   email: string;
   otp: string;       // stored as SHA-256 hash, never plaintext
   attempts: number;
+  sendCount: number;
+  isLocked: boolean;
+  lockedUntil?: Date;
   createdAt: Date;
 }
 
@@ -12,7 +15,10 @@ const OTPSchema = new Schema<IOTP>(
     email:    { type: String, required: true, index: true },
     otp:      { type: String, required: true }, // SHA-256 hash of the OTP
     attempts: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now, expires: '5m' }, // TTL — auto-deleted after 5 minutes
+    sendCount: { type: Number, default: 1 },
+    isLocked: { type: Boolean, default: false },
+    lockedUntil: { type: Date },
+    createdAt: { type: Date, default: Date.now, expires: '30m' }, // TTL — auto-deleted after 30 minutes (handles lock expiration)
   },
 );
 

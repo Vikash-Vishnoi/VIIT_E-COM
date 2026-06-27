@@ -3,15 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { validatePassword, passwordErrorMsg } from "@/lib/validation";
+import { validatePassword, passwordErrorMsg, validateName, nameErrorMsg, validateMobile, mobileErrorMsg } from "@/lib/validation";
+import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-  const [error, setError] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
   const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
@@ -30,13 +29,10 @@ export default function RegisterPage() {
   const [otp, setOtp] = useState("");
 
   const handleSendOTP = async () => {
-    if (!email) return setError("Please enter your email before requesting an OTP");
+    if (!email) return toast.error("Please enter your email before requesting an OTP");
     if (cooldown > 0) return;
 
-    
     setOtpLoading(true);
-    setError("");
-    setSuccessMsg("");
     try {
       const res = await fetch("/api/auth/send-otp", {
         method: "POST",
@@ -47,12 +43,12 @@ export default function RegisterPage() {
       if (data.success) {
         setOtpSent(true);
         setCooldown(60);
-        setSuccessMsg(`A 5-digit code has been sent to ${email}`);
+        toast.success(`A 5-digit code has been sent to ${email}`);
       } else {
-        setError(data.message || "Failed to send OTP");
+        toast.error(data.message || "Failed to send OTP");
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setOtpLoading(false);
     }
@@ -61,26 +57,32 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !mobile || !password || !otp) {
-      return setError("Please fill all required fields");
+      return toast.error("Please fill all required fields");
+    }
+    if (!validateName(name)) {
+      return toast.error(nameErrorMsg);
+    }
+    const fullMobile = `+91${mobile}`;
+    if (!validateMobile(fullMobile)) {
+      return toast.error(mobileErrorMsg);
     }
     if (otp.length !== 5) {
-      return setError("OTP must be exactly 5 digits");
+      return toast.error("OTP must be exactly 5 digits");
     }
     if (!validatePassword(password)) {
-      return setError(passwordErrorMsg);
+      return toast.error(passwordErrorMsg);
     }
     
     setLoading(true);
-    setError("");
-    setSuccessMsg("");
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp, name, mobile: `+91${mobile}`, password }),
+        body: JSON.stringify({ email, otp, name, mobile: fullMobile, password }),
       });
       const data = await res.json();
       if (data.success) {
+        toast.success("Registration successful!");
         window.dispatchEvent(new Event('auth-change'));
         // Find where to redirect the user back to
         let returnUrl = '/';
@@ -101,10 +103,10 @@ export default function RegisterPage() {
 
         router.push(returnUrl); 
       } else {
-        setError(data.message || "Registration failed");
+        toast.error(data.message || "Registration failed");
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -117,17 +119,6 @@ export default function RegisterPage() {
           Create Account
         </h1>
 
-        {error && (
-          <div className="mb-6 p-3 bg-red-50 text-red-600 text-[11px] font-bold text-center uppercase tracking-wider">
-            {error}
-          </div>
-        )}
-        {successMsg && (
-          <div className="mb-6 p-3 bg-green-50 text-green-700 text-[11px] font-bold text-center uppercase tracking-wider">
-            {successMsg}
-          </div>
-        )}
-
         <form onSubmit={handleRegister} className="flex flex-col gap-6">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -138,6 +129,8 @@ export default function RegisterPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                minLength={2}
+                maxLength={100}
                 className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
                 placeholder="Priya Sharma"
               />
@@ -209,6 +202,9 @@ export default function RegisterPage() {
               className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
               placeholder="••••••••"
             />
+            <div className="mt-1 p-3 bg-gray-50/80 border border-gray-100 rounded-lg text-[10px] font-medium text-gray-500 leading-relaxed">
+              {passwordErrorMsg}
+            </div>
           </div>
 
           <button 

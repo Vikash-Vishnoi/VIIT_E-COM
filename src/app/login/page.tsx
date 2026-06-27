@@ -3,20 +3,19 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return setError("Please fill all required fields");
+    if (!email || !password) return toast.error("Please fill all required fields");
     
     setLoading(true);
-    setError("");
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -44,13 +43,14 @@ export default function LoginPage() {
           } catch (err) {}
         }
 
+        toast.success("Successfully logged in!");
         router.push(returnUrl);
         router.refresh(); // Refresh the layout to trigger any server-side auth checks
       } else {
-        setError(data.message || "Invalid credentials");
+        toast.error(data.message || "Invalid credentials");
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -62,12 +62,6 @@ export default function LoginPage() {
         <h1 className="text-2xl font-black uppercase tracking-widest text-black text-center mb-6">
           Sign In
         </h1>
-
-        {error && (
-          <div className="mb-6 p-3 bg-red-50 text-red-600 text-[11px] font-bold text-center uppercase tracking-wider">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleLogin} className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">

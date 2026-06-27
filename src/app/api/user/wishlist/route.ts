@@ -1,18 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { Wishlist, Product } from '@/models';
-import { verifyToken } from '@/lib/jwt';
-import mongoose from 'mongoose';
-
-// Helper to authenticate request
-async function getAuthUser(req: NextRequest) {
-  const token = req.cookies.get('auth_token')?.value;
-  if (!token) return null;
-  const payload = await verifyToken(token);
-  if (!payload || !payload.userId) return null;
-  if (typeof payload.userId !== 'string') return null;
-  return payload.userId;
-}
+import { getAuthUser } from '@/lib/auth';
 
 // GET: Fetch user's wishlist items
 export async function GET(req: NextRequest) {

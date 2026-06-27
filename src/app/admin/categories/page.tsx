@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, ChevronRight, ChevronDown, Loader2, X } from "lucide-react";
+import toast from "react-hot-toast";
 
 type CategoryNode = {
   _id: string;
@@ -29,7 +30,6 @@ export default function CategoriesPage() {
   });
 
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -58,7 +58,6 @@ export default function CategoriesPage() {
 
   const handleOpenModal = (mode: "create" | "edit", category?: CategoryNode, defaultParentId?: string) => {
     setModalMode(mode);
-    setError(null);
     if (mode === "edit" && category) {
       setActiveCategory(category);
       setFormData({
@@ -84,7 +83,6 @@ export default function CategoriesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setError(null);
 
     try {
       const url = modalMode === "edit" ? `/api/admin/categories/${activeCategory?._id}` : "/api/admin/categories";
@@ -98,13 +96,14 @@ export default function CategoriesPage() {
 
       const data = await res.json();
       if (data.success) {
+        toast.success(modalMode === "create" ? "Category created!" : "Category updated!");
         setIsModalOpen(false);
         fetchCategories();
       } else {
-        setError(data.message);
+        toast.error(data.message);
       }
     } catch (err: any) {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setSubmitting(false);
     }
@@ -117,12 +116,13 @@ export default function CategoriesPage() {
       const res = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
+        toast.success("Category deleted");
         fetchCategories();
       } else {
-        alert(data.message);
+        toast.error(data.message);
       }
     } catch (err) {
-      alert("Failed to delete category");
+      toast.error("Failed to delete category");
     }
   };
 
@@ -231,11 +231,6 @@ export default function CategoriesPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              {error && (
-                <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 font-medium">
-                  {error}
-                </div>
-              )}
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Category Name *</label>
