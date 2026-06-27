@@ -18,9 +18,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ 
       success: true, 
       user: {
-        id: payload.userId,
         email: payload.email,
-        role: payload.role,
         name: payload.name
       } 
     });

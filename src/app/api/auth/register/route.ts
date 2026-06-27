@@ -11,7 +11,7 @@ import {
   hashOTP,
 } from '@/lib/validation';
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) { 
   try {
     await connectDB();
     // ── Parse body safely ────────────────────────────────────────────────────
@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
     ) {
       return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
     }
+
 
     // ── Format validations ───────────────────────────────────────────────────
     if (!validateEmail(email)) {
@@ -122,7 +123,6 @@ export async function POST(req: NextRequest) {
       email:        normalizedEmail,
       mobile:       trimmedMobile,
       passwordHash,
-      role:         'customer',
       isVerified:   true,  // verified via OTP
       isActive:     true,
     });
@@ -131,12 +131,9 @@ export async function POST(req: NextRequest) {
     await OTP.deleteOne({ _id: otpRecord._id });
 
     // ── Issue JWT and set HttpOnly cookie ────────────────────────────────────
-    const newUser = await User.findOne({ email: normalizedEmail }).lean();
     const token = await signToken({
-      userId: (newUser!._id as any).toString(),
-      email:  newUser!.email,
-      role:   newUser!.role,
-      name:   newUser!.name,
+      email:  normalizedEmail,
+      name:   trimmedName,
     });
 
     const response = NextResponse.json({
@@ -149,7 +146,7 @@ export async function POST(req: NextRequest) {
       secure:   process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path:     '/',
-      maxAge:   7 * 24 * 60 * 60, // 7 days
+      maxAge:   30 * 24 * 60 * 60, // 30 days
     });
 
     return response;
@@ -158,9 +155,8 @@ export async function POST(req: NextRequest) {
 
     // Mongoose required field validation error (e.g. blank name after trim)
     if (error.name === 'ValidationError') {
-      const firstMsg = Object.values(error.errors)[0] as any;
       return NextResponse.json(
-        { success: false, message: firstMsg?.message ?? 'Validation error' },
+        { success: false, message: 'Invalid data provided. Please check your inputs and try again.' },
         { status: 400 },
       );
     }

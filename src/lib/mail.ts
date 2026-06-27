@@ -11,14 +11,14 @@ export const transporter = nodemailer.createTransport({
 export const sendOTP = async (to: string, otp: string) => {
   // During local development if no credentials are provided, just log it.
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    console.log(`\n\n=== 🚀 OTP FOR ${to}: ${otp} ===\n\n`);
+    console.log(`\n\n===  OTP FOR ${to}: ${otp} ===\n\n`);
     return { success: true, message: 'OTP logged to console (No Gmail configured)' };
   }
 
   const mailOptions = {
     from: `"VIIT" <${process.env.GMAIL_USER}>`,
     to,
-    subject: 'Your VIIT Verification OTP',
+    subject: 'Your VIIT Verification OTP', 
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 8px;">
         <h2 style="color: #333; text-align: center;">Welcome to VIIT</h2>

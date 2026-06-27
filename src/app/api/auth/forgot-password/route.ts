@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { User, OTP } from '@/models';
 import { sendOTP } from '@/lib/mail';
+import { validateEmail, emailErrorMsg, hashOTP } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,8 +24,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
     }
 
+
+    if (!validateEmail(email)) {
+      return NextResponse.json({ success: false, message: emailErrorMsg }, { status: 400 });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (!existingUser) {
       // For security, you can choose to return success even if email doesn't exist to prevent email enumeration,
       // but in e-commerce, it's usually fine to tell the user they don't have an account.
@@ -32,7 +40,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check for Server-Side Rate Limiting (60 seconds cooldown)
-    const existingOtp = await OTP.findOne({ email });
+    const existingOtp = await OTP.findOne({ email: normalizedEmail });
     if (existingOtp) {
       const now = new Date();
       const diffInSeconds = (now.getTime() - existingOtp.createdAt.getTime()) / 1000;
@@ -48,16 +56,16 @@ export async function POST(req: NextRequest) {
     const otp = Math.floor(10000 + Math.random() * 90000).toString();
 
     // Delete any existing OTP for this email
-    await OTP.deleteMany({ email });
+    await OTP.deleteMany({ email: normalizedEmail });
 
     // Save new OTP to database (TTL will auto-delete it after 5 mins)
     await OTP.create({
-      email,
-      otp,
+      email: normalizedEmail,
+      otp: hashOTP(otp),
     });
 
     // Send the OTP via Email
-    await sendOTP(email, otp);
+    await sendOTP(normalizedEmail, otp);
 
     return NextResponse.json({ success: true, message: 'OTP sent successfully' });
   } catch (error: any) {

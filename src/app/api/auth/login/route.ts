@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/db';
 import { User } from '@/models';
 import { signToken } from '@/lib/jwt';
+import { validateEmail, validatePassword } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,6 +25,10 @@ export async function POST(req: NextRequest) {
 
     if (typeof email !== 'string' || typeof password !== 'string') {
       return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
+    }
+
+    if (!validateEmail(email) || !validatePassword(password)) {
+      return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401 });
     }
 
     // Find the user
@@ -65,16 +70,14 @@ export async function POST(req: NextRequest) {
     await user.save();
 
     // Generate JWT and set HttpOnly Cookie
-    const token = await signToken({ userId: user._id.toString(), email: user.email, role: user.role, name: user.name });
+    const token = await signToken({ email: user.email, name: user.name });
     
     const response = NextResponse.json({ 
       success: true, 
       message: 'Logged in successfully', 
       user: {
-        id: user._id.toString(),
         name: user.name,
         email: user.email,
-        role: user.role
       } 
     });
     
@@ -83,7 +86,7 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 30 * 24 * 60 * 60, // 30 days
     });
 
     return response;

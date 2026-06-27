@@ -1,38 +1,43 @@
 import crypto from 'crypto';
 
 // ─── Password ─────────────────────────────────────────────────────────────────
-export const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+export const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,20}$/;
 export const passwordErrorMsg =
-  'Password must be at least 8 characters, and include an uppercase letter, a lowercase letter, a number, and a special character.';
+  'Password must be between 8 and 20 characters, and include an uppercase letter, a lowercase letter, a number, and a special character.';
 
 export function validatePassword(password: string): boolean {
+  if (password.length > 20) return false;
   return passwordRegex.test(password);
 }
 
 // ─── Email ────────────────────────────────────────────────────────────────────
 // RFC-5322 simplified — catches the vast majority of invalid formats
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,255}$/;
 export const emailErrorMsg = 'Please enter a valid email address.';
 
 export function validateEmail(email: string): boolean {
+  if (email.length > 255) return false;
   return emailRegex.test(email.trim());
 }
 
 // ─── Mobile ───────────────────────────────────────────────────────────────────
-// Accepts optional leading + and 7–15 digits (E.164 compatible)
-const mobileRegex = /^\+?[0-9]{7,15}$/;
-export const mobileErrorMsg = 'Please enter a valid mobile number (7–15 digits).';
+const mobileRegex = /^\+91[0-9]{10}$/;
+export const mobileErrorMsg = 'Please enter a valid 10-digit mobile number.';
 
 export function validateMobile(mobile: string): boolean {
-  return mobileRegex.test(mobile.trim());
+  const trimmed = mobile.trim();
+  if (trimmed.length !== 13) return false;
+  return mobileRegex.test(trimmed);
 }
 
 // ─── Name ─────────────────────────────────────────────────────────────────────
-export const nameErrorMsg = 'Name must be at least 2 characters and cannot be blank.';
+export const nameErrorMsg = 'Name must be between 2 and 100 characters and cannot be blank.';
 
 export function validateName(name: string): boolean {
+  if (name.length > 100) return false;
   return name.trim().length >= 2;
 }
+
 
 // ─── OTP hashing ──────────────────────────────────────────────────────────────
 /**
@@ -41,7 +46,7 @@ export function validateName(name: string): boolean {
  */
 export function hashOTP(otp: string): string {
   return crypto.createHash('sha256').update(otp).digest('hex');
-}
+} 
 
 // ─── RegExp escaping (used in search) ────────────────────────────────────────
 export function escapeRegExp(string: string): string {

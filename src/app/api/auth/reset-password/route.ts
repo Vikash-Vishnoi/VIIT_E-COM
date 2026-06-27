@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/db';
 import { User, OTP } from '@/models';
 import { signToken } from '@/lib/jwt';
-import { validatePassword, passwordErrorMsg } from '@/lib/validation';
+import { validatePassword, passwordErrorMsg, validateEmail, emailErrorMsg, hashOTP } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,12 +25,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
     }
 
+
+    if (!validateEmail(email)) {
+      return NextResponse.json({ success: false, message: emailErrorMsg }, { status: 400 });
+    }
+
     if (!validatePassword(newPassword)) {
       return NextResponse.json({ success: false, message: passwordErrorMsg }, { status: 400 });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Find the OTP record
-    const otpRecord = await OTP.findOne({ email });
+    const otpRecord = await OTP.findOne({ email: normalizedEmail });
 
     if (!otpRecord) {
       return NextResponse.json({ success: false, message: 'OTP has expired or was not sent. Please request a new one.' }, { status: 400 });
@@ -43,7 +50,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate OTP match
-    if (otpRecord.otp !== otp) {
+    if (otpRecord.otp !== hashOTP(otp)) {
       otpRecord.attempts += 1;
       await otpRecord.save();
       
@@ -57,7 +64,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Find User
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
@@ -74,7 +81,7 @@ export async function POST(req: NextRequest) {
     await OTP.deleteOne({ _id: otpRecord._id });
 
     // Generate JWT and set HttpOnly Cookie to auto-login
-    const token = await signToken({ userId: user._id.toString(), email: user.email, role: user.role, name: user.name });
+    const token = await signToken({ email: user.email, name: user.name });
     
     const response = NextResponse.json({ success: true, message: 'Password reset successfully! You are now logged in.' });
     

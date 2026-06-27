@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
     // ── Parse body safely ────────────────────────────────────────────────────
     let email: string | undefined;
-    try {
+    try { 
       const body = await req.json();
       email = body.email;
     } catch {
@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
     if (typeof email !== 'string') {
       return NextResponse.json({ success: false, message: 'Invalid payload format' }, { status: 400 });
     }
+
 
     // ── Validate email format ────────────────────────────────────────────────
     if (!validateEmail(email)) {

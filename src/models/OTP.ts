@@ -9,7 +9,7 @@ export interface IOTP extends Document {
 
 const OTPSchema = new Schema<IOTP>(
   {
-    email:    { type: String, required: true },
+    email:    { type: String, required: true, index: true },
     otp:      { type: String, required: true }, // SHA-256 hash of the OTP
     attempts: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now, expires: '5m' }, // TTL — auto-deleted after 5 minutes
