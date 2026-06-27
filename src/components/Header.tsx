@@ -78,7 +78,6 @@ export default function Header() {
   // ── Dynamic category tree fetched from DB ──
   const [navTree, setNavTree] = useState<NavCategory[]>([]);
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith("/admin");
 
   const fetchWishlistCount = () => {
     fetch('/api/user/wishlist')
@@ -206,21 +205,19 @@ export default function Header() {
         {/* Single row: Logo | Nav | Icons */}
         <div className="grid grid-cols-[auto_1fr_auto] items-center py-4 gap-3 md:flex md:justify-between md:gap-3">
 
-          {/* Mobile menu — hidden on admin */}
-          {!isAdmin && (
-            <button
-              onClick={() => setMobileMenuOpen((open) => !open)}
-              aria-label="Open menu"
-              aria-expanded={mobileMenuOpen}
-              className="md:hidden justify-self-start text-black hover:opacity-60 transition-opacity"
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="4" y1="6" x2="20" y2="6" />
-                <line x1="4" y1="12" x2="20" y2="12" />
-                <line x1="4" y1="18" x2="20" y2="18" />
-              </svg>
-            </button>
-          )}
+          {/* Mobile menu */}
+          <button
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            aria-label="Open menu"
+            aria-expanded={mobileMenuOpen}
+            className="md:hidden justify-self-start text-black hover:opacity-60 transition-opacity"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="18" x2="20" y2="18" />
+            </svg>
+          </button>
 
           {/* LEFT — Logo */}
           <Link href="/" aria-label="Home" className="justify-self-center md:justify-self-auto flex-shrink-0 relative w-[120px] h-[48px] flex items-center justify-center">
@@ -234,9 +231,8 @@ export default function Header() {
             />
           </Link>
 
-          {/* CENTER — Nav links — hidden on admin */}
-          {!isAdmin && (
-            <nav key={pathname} className="hidden md:flex items-center gap-7 mx-8">
+          {/* CENTER — Nav links */}
+          <nav key={pathname} className="hidden md:flex items-center gap-7 mx-8">
               {navLinks.map((link) => {
                 // Look up this level-0 slug in the dynamic tree
                 const cat = navTreeBySlug.get(link.slug);
@@ -324,7 +320,6 @@ export default function Header() {
                 );
               })}
             </nav>
-          )}
 
           {/* RIGHT — Icons */}
           <div className="col-start-3 flex items-center gap-4 md:gap-5 flex-shrink-0">
@@ -384,8 +379,8 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Expandable Search bar — hidden on admin */}
-      {!isAdmin && searchOpen && (
+      {/* Expandable Search bar */}
+      {searchOpen && (
         <div className="border-t border-gray-100 px-10 xl:px-16 py-3 bg-gray-50">
           <label htmlFor="site-search" className="sr-only">Search</label>
           <input
@@ -399,8 +394,8 @@ export default function Header() {
         </div>
       )}
 
-      {/* Mobile menu drawer — hidden on admin */}
-      {!isAdmin && mobileMenuOpen && (
+      {/* Mobile menu drawer */}
+      {mobileMenuOpen && (
         <div className="md:hidden border-t border-gray-100 px-6 py-4 bg-white">
           <nav className="flex flex-col gap-4">
             {navLinks.map((link) => (

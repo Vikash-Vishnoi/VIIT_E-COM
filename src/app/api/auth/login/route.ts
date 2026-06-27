@@ -7,7 +7,16 @@ import { signToken } from '@/lib/jwt';
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { email, password } = await req.json();
+
+    let email: string | undefined;
+    let password: string | undefined;
+    try {
+      const body = await req.json();
+      email = body.email;
+      password = body.password;
+    } catch {
+      return NextResponse.json({ success: false, message: 'Email and password are required' }, { status: 400 });
+    }
 
     if (!email || !password) {
       return NextResponse.json({ success: false, message: 'Email and password are required' }, { status: 400 });
