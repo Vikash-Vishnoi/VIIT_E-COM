@@ -100,8 +100,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── Check email not already registered ───────────────────────────────────
-    const existingUser = await User.findOne({ email: normalizedEmail });
+    // ── Check if user already exists (Data Minimization) ────────────────────
+    const existingUser = await User.findOne({ email: normalizedEmail }).select('_id');
     if (existingUser) {
       return NextResponse.json(
         { success: false, message: 'Email is already registered' },

@@ -23,8 +23,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401 });
     }
 
-    // Find the user
-    const user = await User.findOne({ email });
+    // Normalize email
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Find the user with minimized data selection
+    const user = await User.findOne({ email: normalizedEmail }).select('passwordHash isActive failedLoginAttempts lockUntil name');
     if (!user) {
       return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401 });
     }
@@ -42,9 +45,9 @@ export async function POST(req: NextRequest) {
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       user.failedLoginAttempts += 1;
-      if (user.failedLoginAttempts >= 5) {
-        // Lock account for 15 minutes
-        user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
+      if (user.failedLoginAttempts >= 3) {
+        // Lock account for 30 minutes
+        user.lockUntil = new Date(Date.now() + 30 * 60 * 1000);
       }
       await user.save();
       return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401 });
@@ -52,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     // Check if account is active
     if (!user.isActive) {
-      return NextResponse.json({ success: false, message: 'Your account has been deactivated. Please contact support.' }, { status: 403 });
+      return NextResponse.json({ success: false, message: 'Your account has been deactivated. Please contact support at ' + process.env.SUPPORT_EMAIL }, { status: 403 });
     }
 
     // Reset failed attempts and update last login
@@ -61,16 +64,12 @@ export async function POST(req: NextRequest) {
     user.lastLoginAt = new Date();
     await user.save();
 
-    // Generate JWT and set HttpOnly Cookie
-    const token = await signToken({ email: user.email, name: user.name });
+    // Generate JWT and set HttpOnly Cookie using normalized email
+    const token = await signToken({ email: normalizedEmail, name: user.name });
     
     const response = NextResponse.json({ 
       success: true, 
       message: 'Logged in successfully', 
-      user: {
-        name: user.name,
-        email: user.email,
-      } 
     });
     
     response.cookies.set('auth_token', token, {

@@ -52,16 +52,14 @@ export async function POST(req: NextRequest) {
       otpRecord.attempts += 1;
       await otpRecord.save();
       
-      const attemptsLeft = 3 - otpRecord.attempts;
-      if (attemptsLeft <= 0) {
+      if (otpRecord.attempts >= 3) {
         return NextResponse.json({ success: false, message: 'Too many failed attempts for this code. Please request a new OTP.' }, { status: 400 });
       }
-      
-      return NextResponse.json({ success: false, message: `Invalid OTP. You have ${attemptsLeft} attempt(s) left.` }, { status: 400 });
+      return NextResponse.json({ success: false, message: `Invalid OTP. You have ${3 - otpRecord.attempts} attempt(s) left.` }, { status: 400 });
     }
 
-    // Find User
-    const user = await User.findOne({ email: normalizedEmail });
+    // Check if user exists
+    const user = await User.findOne({ email: normalizedEmail }).select('_id passwordHash');
     if (!user) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }

@@ -1,25 +1,5 @@
 import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 
-// ─── Sub-schemas ───────────────────────────────────────────────────
-
-const AddressSchema = new Schema(
-  {
-    label: { type: String, enum: ['Home', 'Work', 'Other'], default: 'Home' },
-    fullName: { type: String, required: true },
-    mobile: { type: String, required: true },
-    line1: { type: String, required: true },
-    line2: { type: String },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    pincode: { type: String, required: true },
-    country: { type: String, default: 'India' },
-    isDefault: { type: Boolean, default: false },
-  },
-  { _id: true }
-);
-
-
-
 // ─── Main interface ────────────────────────────────────────────────
 
 export interface IUser extends Document {
@@ -30,19 +10,6 @@ export interface IUser extends Document {
   role: 'customer' | 'admin';
   isVerified: boolean;
   isActive: boolean;
-  address: {
-    _id: Types.ObjectId;
-    label: string;
-    fullName: string;
-    mobile: string;
-    line1: string;
-    line2?: string;
-    city: string;
-    state: string;
-    pincode: string;
-    country: string;
-    isDefault: boolean;
-  }[];
   createdAt: Date;
   updatedAt: Date;
   lastLoginAt?: Date;
@@ -58,12 +25,9 @@ const UserSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     mobile: { type: String, required: true, unique: true, trim: true },
     passwordHash: { type: String, required: true },
-
     role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
     isVerified: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
-
-    address: { type: [AddressSchema], default: [] },
 
     lastLoginAt: { type: Date },
     failedLoginAttempts: { type: Number, required: true, default: 0 },

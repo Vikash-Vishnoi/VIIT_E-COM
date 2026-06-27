@@ -12,7 +12,7 @@ if (!rawSecret && process.env.NODE_ENV === 'production') {
 
 if (!rawSecret) {
   console.warn(
-    '⚠️  [jwt] JWT_SECRET is not set — using an insecure fallback. ' +
+    '[jwt] JWT_SECRET is not set — using an insecure fallback. ' +
     'This is only acceptable in local development.',
   );
 }

@@ -16,11 +16,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ 
-      success: true, 
-      user: {
-        email: payload.email,
-        name: payload.name
-      } 
+      success: true
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: 'Authentication error' }, { status: 500 });
