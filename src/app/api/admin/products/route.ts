@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
     // ─── Pagination ──────────────────────────────────────────────────
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '20', 10) || 20));
+    const limit = 20; // Fixed limit for admin product listing
     const skip = (page - 1) * limit;
 
     // ─── Filter ──────────────────────────────────────────────────────
@@ -105,52 +105,5 @@ export async function GET(req: NextRequest) {
       { success: false, message: 'Internal server error' },
       { status: 500 }
     );
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    await connectDB();
-    let body: any;
-    try {
-      body = await req.json();
-    } catch {
-      return Response.json({ success: false, message: 'Product data is required to create a product' }, { status: 400 });
-    }
-
-
-    if (body.price !== undefined && body.sellingPrice !== undefined && body.price < body.sellingPrice) {
-      return Response.json({ success: false, message: 'Regular price must be greater than or equal to selling price' }, { status: 400 });
-    }
-
-    // Generate unique productId if not provided
-    if (!body.productId) {
-      body.productId = `VIIT-${new Date().getFullYear()}-${Math.random().toString(10).slice(2, 6)}`;
-    }
-
-    // Generate slug if not provided
-    if (!body.slug && body.title) {
-      let baseSlug = body.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      // Ensure unique slug
-      const existing = await Product.findOne({ slug: baseSlug });
-      if (existing) {
-        baseSlug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
-      }
-      body.slug = baseSlug;
-    }
-
-    const product = new Product(body);
-    await product.save();
-
-    return Response.json({ success: true, data: product }, { status: 201 });
-  } catch (error: any) {
-    console.error('POST /api/admin/products error:', error);
-    if (error.code === 11000) {
-      if (error.keyPattern && error.keyPattern['colors.sizes.sku']) {
-        return Response.json({ success: false, message: 'One or more SKUs in this product already exist in the database. SKUs must be unique.' }, { status: 400 });
-      }
-      return Response.json({ success: false, message: 'A product with this slug already exists' }, { status: 400 });
-    }
-    return Response.json({ success: false, message: error.message || 'Failed to create product' }, { status: 500 });
   }
 }

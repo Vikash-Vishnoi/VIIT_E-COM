@@ -54,7 +54,6 @@ const SubCategorySchema = new Schema<ISubCategory>(
 
 // Fast lookup: get all children of a parent, ordered by sortOrder
 SubCategorySchema.index({ parentId: 1, isActive: 1, sortOrder: 1 });
-SubCategorySchema.index({ slug: 1 }, { unique: true });
 SubCategorySchema.index({ level: 1 });
 
 const SubCategory: Model<ISubCategory> =

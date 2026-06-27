@@ -39,9 +39,6 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-// ─── Indexes ───────────────────────────────────────────────────────
-UserSchema.index({ email: 1 }, { unique: true });
-
 // ─── Prevent model re-compilation in dev hot-reload ───────────────
 const User: Model<IUser> =
   mongoose.models.User ?? mongoose.model<IUser>('User', UserSchema);

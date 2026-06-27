@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
-type Size = { size: string; quantity: number; sku: string };
+type Size = { size: string; quantity: number | ""; sku: string };
 type ProductImage = { url: string; order: number; file?: File; isLocal?: boolean };
 type ColorVariant = { colorName: string; images: ProductImage[]; sizes: Size[] };
 
@@ -32,6 +32,7 @@ const generateSKU = (title: string, color: string, size: string, existingSku: st
 export default function AddProductPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     title: "",
@@ -39,8 +40,8 @@ export default function AddProductPage() {
     category: "",
     subCategory: "",
     subSubCategory: "",
-    price: 0,
-    sellingPrice: 0,
+    price: "" as number | "",
+    sellingPrice: "" as number | "",
     badge: "",
     isFeatured: false,
     isActive: true,
@@ -100,8 +101,14 @@ export default function AddProductPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    
+    // Clear error for this field when user starts typing
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
     setFormData((prev) => {
-      const newValue: string | number | boolean = type === "checkbox" ? (e.target as HTMLInputElement).checked : type === "number" ? Number(value) : value;
+      const newValue: string | number | boolean = type === "checkbox" ? (e.target as HTMLInputElement).checked : type === "number" ? (value === "" ? "" : Number(value)) : value;
       
       if (name === "title") {
         const newColors = prev.colors.map(color => ({
@@ -158,7 +165,7 @@ export default function AddProductPage() {
       const newSku = generateSKU(prev.title, newColors[colorIndex].colorName, "", "");
       newColors[colorIndex] = {
         ...newColors[colorIndex],
-        sizes: [...newColors[colorIndex].sizes, { size: "", quantity: 0, sku: newSku }],
+        sizes: [...newColors[colorIndex].sizes, { size: "", quantity: "", sku: newSku }],
       };
       return { ...prev, colors: newColors };
     });
@@ -250,7 +257,42 @@ export default function AddProductPage() {
     try {
       const payload = { ...formData };
 
+      // Category Validation
+      let hasError = false;
+      const newErrors: Record<string, string> = {};
+
+      if (!payload.category) {
+        newErrors.category = "Main category is required.";
+        hasError = true;
+      }
+      if (!payload.subCategory) {
+        newErrors.subCategory = "Sub category is required.";
+        hasError = true;
+      }
+      if (!payload.subSubCategory) {
+        newErrors.subSubCategory = "Sub-sub category is required.";
+        hasError = true;
+      }
+
+      if (payload.price === "" || payload.price <= 0) {
+        newErrors.price = "Regular price must be greater than 0.";
+        hasError = true;
+      }
+      if (payload.sellingPrice === "" || payload.sellingPrice <= 0) {
+        newErrors.sellingPrice = "Selling price must be greater than 0.";
+        hasError = true;
+      }
+
+      if (hasError) {
+        setFormErrors(newErrors);
+        const firstErrorMsg = Object.values(newErrors)[0];
+        toast.error(firstErrorMsg || "Please fix all form errors.");
+        setLoading(false);
+        return;
+      }
+
       if (payload.price < payload.sellingPrice) {
+        setFormErrors(prev => ({ ...prev, price: "Regular price must be greater than or equal to selling price." }));
         toast.error("Regular price must be greater than or equal to the selling price.");
         setLoading(false);
         return;
@@ -307,7 +349,8 @@ export default function AddProductPage() {
       }
 
       // 2. Submit product
-      const res = await fetch("/api/admin/products", {
+      // Submit to the new, explicit creation endpoint
+      const res = await fetch("/api/admin/products/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -320,6 +363,10 @@ export default function AddProductPage() {
         router.push("/admin/products");
       } else {
         toast.error(data.message || "Failed to create product");
+        // Map backend validation errors to the UI
+        if (data.errors) {
+          setFormErrors(data.errors);
+        }
       }
     } catch (err) {
       toast.error("An unexpected error occurred");
@@ -386,8 +433,15 @@ export default function AddProductPage() {
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g. Vintage Denim Jacket"
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all font-medium text-sm"
+                className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white outline-none transition-all font-medium text-sm ${
+                  formErrors.title 
+                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+                    : "border-gray-200 focus:border-black focus:ring-1 focus:ring-black"
+                }`}
               />
+              {formErrors.title && (
+                <p className="text-red-500 text-[10px] font-bold mt-1.5 ml-1">{formErrors.title}</p>
+              )}
             </div>
 
             <div>
@@ -401,8 +455,15 @@ export default function AddProductPage() {
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="Write a compelling product description..."
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all font-medium text-sm resize-none"
+                className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white outline-none transition-all font-medium text-sm resize-none ${
+                  formErrors.description 
+                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+                    : "border-gray-200 focus:border-black focus:ring-1 focus:ring-black"
+                }`}
               />
+              {formErrors.description && (
+                <p className="text-red-500 text-[10px] font-bold mt-1.5 ml-1">{formErrors.description}</p>
+              )}
             </div>
           </div>
 
@@ -537,7 +598,9 @@ export default function AddProductPage() {
                                 required
                                 min="0"
                                 value={size.quantity}
-                                onChange={(e) => handleSizeChange(colorIdx, sizeIdx, "quantity", Number(e.target.value))}
+                                onChange={(e) => handleSizeChange(colorIdx, sizeIdx, "quantity", e.target.value === "" ? "" : Number(e.target.value))}
+                                onWheel={(e) => (e.target as HTMLElement).blur()}
+                                autoComplete="off"
                                 className="w-24 px-3 py-1.5 text-sm font-bold border border-gray-200 rounded-lg outline-none focus:border-black"
                               />
                               <input
@@ -598,13 +661,20 @@ export default function AddProductPage() {
                     subSubCategory: "" 
                   }));
                 }}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all text-sm font-bold cursor-pointer uppercase tracking-wider"
+                className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white outline-none transition-all text-sm font-bold cursor-pointer uppercase tracking-wider ${
+                  formErrors.category 
+                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 text-red-600" 
+                    : "border-gray-200 focus:border-black focus:ring-1 focus:ring-black"
+                }`}
               >
                 <option value="" disabled>Select Main Category</option>
                 {mainCategories.map(c => (
                   <option key={c._id} value={c.slug}>{c.label}</option>
                 ))}
               </select>
+              {formErrors.category && (
+                <p className="text-red-500 text-[10px] font-bold mt-1.5 ml-1">{formErrors.category}</p>
+              )}
             </div>
 
             <div>
@@ -622,7 +692,11 @@ export default function AddProductPage() {
                     subSubCategory: "" 
                   }));
                 }}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all text-sm font-medium cursor-pointer"
+                className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white outline-none transition-all text-sm font-medium cursor-pointer ${
+                  formErrors.subCategory 
+                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+                    : "border-gray-200 focus:border-black focus:ring-1 focus:ring-black"
+                }`}
                 disabled={!formData.category}
               >
                 <option value="" disabled>Select Sub Category</option>
@@ -630,6 +704,9 @@ export default function AddProductPage() {
                   <option key={c._id} value={c.slug}>{c.label}</option>
                 ))}
               </select>
+              {formErrors.subCategory && (
+                <p className="text-red-500 text-[10px] font-bold mt-1.5 ml-1">{formErrors.subCategory}</p>
+              )}
             </div>
 
             <div>
@@ -641,7 +718,11 @@ export default function AddProductPage() {
                 required
                 value={formData.subSubCategory}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all text-sm font-medium cursor-pointer"
+                className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white outline-none transition-all text-sm font-medium cursor-pointer ${
+                  formErrors.subSubCategory 
+                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+                    : "border-gray-200 focus:border-black focus:ring-1 focus:ring-black"
+                }`}
                 disabled={!formData.subCategory}
               >
                 <option value="" disabled>Select Sub-Sub Category</option>
@@ -649,6 +730,9 @@ export default function AddProductPage() {
                   <option key={c._id} value={c.slug}>{c.label}</option>
                 ))}
               </select>
+              {formErrors.subSubCategory && (
+                <p className="text-red-500 text-[10px] font-bold mt-1.5 ml-1">{formErrors.subSubCategory}</p>
+              )}
             </div>
             
             <div>
@@ -686,8 +770,17 @@ export default function AddProductPage() {
                 step="0.01"
                 value={formData.price}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all font-black text-sm"
+                onWheel={(e) => (e.target as HTMLElement).blur()}
+                autoComplete="off"
+                className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white outline-none transition-all font-black text-sm ${
+                  formErrors.price 
+                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+                    : "border-gray-200 focus:border-black focus:ring-1 focus:ring-black"
+                }`}
               />
+              {formErrors.price && (
+                <p className="text-red-500 text-[10px] font-bold mt-1.5 ml-1">{formErrors.price}</p>
+              )}
             </div>
 
             <div>
@@ -702,8 +795,17 @@ export default function AddProductPage() {
                 step="0.01"
                 value={formData.sellingPrice}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all font-black text-sm text-green-600"
+                onWheel={(e) => (e.target as HTMLElement).blur()}
+                autoComplete="off"
+                className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white outline-none transition-all font-black text-sm text-green-600 ${
+                  formErrors.sellingPrice 
+                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+                    : "border-gray-200 focus:border-black focus:ring-1 focus:ring-black"
+                }`}
               />
+              {formErrors.sellingPrice && (
+                <p className="text-red-500 text-[10px] font-bold mt-1.5 ml-1">{formErrors.sellingPrice}</p>
+              )}
             </div>
           </div>
 

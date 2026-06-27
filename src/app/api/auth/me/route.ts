@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ 
-      success: true
+      success: true,
+      user: true // Expose a truthy value for the Header UI without leaking PII
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: 'Authentication error' }, { status: 500 });

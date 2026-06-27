@@ -320,10 +320,12 @@ function AdminProductsContent() {
               className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 outline-none cursor-pointer"
             >
               <option value="">All Categories</option>
-              <option value="MAN">Man</option>
+              <option value="VIIT EXCLUSIVE">VIIT Exclusive</option>
               <option value="WOMAN">Woman</option>
+              <option value="MAN">Man</option>
               <option value="KIDS">Kids</option>
               <option value="ACCESSORIES">Accessories</option>
+              <option value="HANDBAG">Handbag</option>
             </select>
 
             {/* Badge */}

@@ -44,7 +44,7 @@ const CouponSchema = new Schema<ICoupon>(
   }
 );
 
-CouponSchema.index({ code: 1 }, { unique: true });
+// code unique index handled by schema definition
 CouponSchema.index({ isActive: 1, expiresAt: 1 });
 
 const Coupon: Model<ICoupon> =

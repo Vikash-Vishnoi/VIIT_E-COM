@@ -118,9 +118,6 @@ const OrderSchema = new Schema<IOrder>(
   }
 );
 
-// ─── Indexes ───────────────────────────────────────────────────────
-OrderSchema.index({ orderId: 1 }, { unique: true });
-
 // Customer History
 OrderSchema.index({ userId: 1, createdAt: -1 });
 

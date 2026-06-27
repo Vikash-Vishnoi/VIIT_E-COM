@@ -1,11 +1,10 @@
-import { connectDB } from '@/lib/db';
-import Product from '@/models/Product';
-
 export async function register() {
   // We only want the cron job to run on the Node.js server, not the edge runtime.
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     // Dynamic import to avoid edge-runtime conflicts
     const cron = await import('node-cron');
+    const { connectDB } = await import('@/lib/db');
+    const { default: Product } = await import('@/models/Product');
 
     // Run every day at 3:00 AM (Server local time)
     // "0 3 * * *" = 3:00 AM every day
