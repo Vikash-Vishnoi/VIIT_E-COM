@@ -10,6 +10,7 @@ import {
   validateName,     nameErrorMsg,
   hashOTP,
 } from '@/lib/validation';
+import { logAuthEvent } from '@/lib/audit';
 
 export async function POST(req: NextRequest) { 
   try {
@@ -144,6 +145,8 @@ export async function POST(req: NextRequest) {
       path:     '/',
       maxAge:   30 * 24 * 60 * 60, // 30 days
     });
+
+    logAuthEvent(req, normalizedEmail, 'REGISTER');
 
     return response;
   } catch (error: any) {

@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/db';
 import { User } from '@/models';
 import { signToken } from '@/lib/jwt';
 import { validateEmail, validatePassword } from '@/lib/validation';
+import { logAuthEvent } from '@/lib/audit';
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,12 +30,14 @@ export async function POST(req: NextRequest) {
     // Find the user with minimized data selection
     const user = await User.findOne({ email: normalizedEmail }).select('passwordHash isActive failedLoginAttempts lockUntil name');
     if (!user) {
+      logAuthEvent(req, normalizedEmail, 'LOGIN_FAILED');
       return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401 });
     }
 
     // Check if account is locked
     if (user.lockUntil && user.lockUntil > new Date()) {
       const waitMinutes = Math.ceil((user.lockUntil.getTime() - Date.now()) / 60000);
+      logAuthEvent(req, normalizedEmail, 'ACCOUNT_LOCKED');
       return NextResponse.json({ 
         success: false, 
         message: `Account is temporarily locked due to multiple failed login attempts. Please try again in ${waitMinutes} minutes.` 
@@ -48,6 +51,9 @@ export async function POST(req: NextRequest) {
       if (user.failedLoginAttempts >= 3) {
         // Lock account for 30 minutes
         user.lockUntil = new Date(Date.now() + 30 * 60 * 1000);
+        logAuthEvent(req, normalizedEmail, 'ACCOUNT_LOCKED');
+      } else {
+        logAuthEvent(req, normalizedEmail, 'LOGIN_FAILED');
       }
       await user.save();
       return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401 });
@@ -55,6 +61,7 @@ export async function POST(req: NextRequest) {
 
     // Check if account is active
     if (!user.isActive) {
+      logAuthEvent(req, normalizedEmail, 'LOGIN_FAILED');
       return NextResponse.json({ success: false, message: 'Your account has been deactivated. Please contact support at ' + process.env.SUPPORT_EMAIL }, { status: 403 });
     }
 
@@ -67,6 +74,8 @@ export async function POST(req: NextRequest) {
     // Generate JWT and set HttpOnly Cookie using normalized email
     const token = await signToken({ email: normalizedEmail, name: user.name });
     
+    logAuthEvent(req, normalizedEmail, 'LOGIN_SUCCESS');
+
     const response = NextResponse.json({ 
       success: true, 
       message: 'Logged in successfully', 

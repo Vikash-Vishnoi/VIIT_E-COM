@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { User, Cart, Order, Product } from '@/models';
+import { User, Cart, Order, Product, Address } from '@/models';
 import { getAuthUser } from '@/lib/auth';
 
 // Generate a random, clean order ID
@@ -31,10 +31,10 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Fetch User and Validate Address
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select('_id');
     if (!user) return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
 
-    const selectedAddress = user.address?.find((a: any) => a._id.toString() === addressId);
+    const selectedAddress = await Address.findOne({ _id: addressId, user: userId }).lean();
     if (!selectedAddress) {
       return NextResponse.json({ success: false, message: 'Invalid shipping address' }, { status: 400 });
     }
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
       orderId: generateOrderId(),
       userId,
       items: orderItems,
-      shippingAddress: selectedAddress,
+      shippingAddress: selectedAddress as any,
       pricing: {
         subtotal,
         discount: 0,

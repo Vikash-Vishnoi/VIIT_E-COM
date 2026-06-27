@@ -1,7 +1,18 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyToken } from '@/lib/jwt';
+import { logAuthEvent } from '@/lib/audit';
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
+    // Attempt to identify the user for audit logging
+    const token = req.cookies.get('auth_token')?.value;
+    if (token) {
+      const payload = await verifyToken(token);
+      if (payload && typeof payload.email === 'string') {
+        logAuthEvent(req, payload.email, 'LOGOUT');
+      }
+    }
+
     const response = NextResponse.json({ success: true, message: 'Logged out successfully' });
     
     // Clear the auth_token cookie by setting it with maxAge 0

@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/db';
 import { User } from '@/models';
 import { getAuthUser } from '@/lib/auth';
 import { validatePassword, passwordErrorMsg } from '@/lib/validation';
+import { logAuthEvent } from '@/lib/audit';
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,6 +47,8 @@ export async function POST(req: NextRequest) {
 
     user.passwordHash = passwordHash;
     await user.save();
+
+    logAuthEvent(req, user.email, 'PASSWORD_CHANGED');
 
     return NextResponse.json({ success: true, message: 'Password changed successfully' });
   } catch (error: any) {
