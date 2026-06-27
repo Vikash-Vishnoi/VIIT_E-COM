@@ -119,10 +119,14 @@ const OrderSchema = new Schema<IOrder>(
 );
 
 // ─── Indexes ───────────────────────────────────────────────────────
-OrderSchema.index({ userId: 1 });
-OrderSchema.index({ status: 1 });
-OrderSchema.index({ paymentStatus: 1 });
-OrderSchema.index({ createdAt: -1 });
+OrderSchema.index({ orderId: 1 }, { unique: true });
+
+// Customer History
+OrderSchema.index({ userId: 1, createdAt: -1 });
+
+// Admin Filters
+OrderSchema.index({ status: 1, createdAt: -1 });
+OrderSchema.index({ paymentStatus: 1, createdAt: -1 });
 
 const Order: Model<IOrder> =
   mongoose.models.Order ?? mongoose.model<IOrder>('Order', OrderSchema);

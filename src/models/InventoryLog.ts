@@ -29,9 +29,8 @@ const InventoryLogSchema = new Schema<IInventoryLog>(
   }
 );
 
-InventoryLogSchema.index({ productId: 1, sku: 1 });
-InventoryLogSchema.index({ createdAt: -1 });
-InventoryLogSchema.index({ changeType: 1 });
+InventoryLogSchema.index({ productId: 1, sku: 1, createdAt: -1 });
+InventoryLogSchema.index({ changeType: 1, createdAt: -1 });
 
 const InventoryLog: Model<IInventoryLog> =
   mongoose.models.InventoryLog ??

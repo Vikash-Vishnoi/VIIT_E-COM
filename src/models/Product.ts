@@ -57,6 +57,7 @@ export interface IProduct extends Document {
   isFeatured: boolean;
   isActive: boolean;
   ratings: { average: number; count: number };
+  popularityScore: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -91,23 +92,25 @@ const ProductSchema = new Schema<IProduct>(
     isActive: { type: Boolean, default: true },
 
     ratings: { type: RatingsSchema, default: () => ({ average: 0, count: 0 }) },
+    popularityScore: { type: Number, default: 0 },
   },
   {
     timestamps: true, // adds createdAt & updatedAt automatically
     collection: 'products',
   }
 );
-
-// ─── Indexes ───────────────────────────────────────────────────────
-ProductSchema.index({ productId: 1 }, { unique: true, sparse: true });
-ProductSchema.index({ category: 1 });
-ProductSchema.index({ subCategory: 1 });
-ProductSchema.index({ slug: 1 }, { unique: true });
-ProductSchema.index({ isFeatured: 1, isActive: 1 });
+//selling price indexing
 ProductSchema.index({ sellingPrice: 1 });
-ProductSchema.index({ 'ratings.average': -1 });
 
-// ─── Pre-save Hook for Auto-Incrementing Product ID ────────────────
+// The 3-Tier Feed Algorithm Indexes (Zero In-Memory Sorts)
+ProductSchema.index({ isActive: 1, category: 1, popularityScore: -1 });
+ProductSchema.index({ isActive: 1, category: 1, subCategory: 1, popularityScore: -1 });
+ProductSchema.index({ isActive: 1, category: 1, subCategory: 1, subSubCategory: 1, popularityScore: -1 });
+
+// Full-Text Search Index
+ProductSchema.index({ title: 'text', description: 'text' });
+
+// ─── Pre-save Hook for Auto-Incrementing Product ID & Score ───────
 ProductSchema.pre('save', async function () {
   if (this.isNew && !this.productId) {
     const Counter = mongoose.model('Counter');
@@ -119,6 +122,24 @@ ProductSchema.pre('save', async function () {
     // Format: PID_001
     this.productId = `PID_${String(counter.seq).padStart(3, '0')}`;
   }
+
+  // Calculate initial popularityScore for the feed algorithm
+  let score = 0;
+  if (this.isFeatured) score += 100;
+  
+  if (this.badge === 'Best Seller') score += 50;
+  else if (this.badge === 'New') score += 40;
+  else if (this.badge === 'Limited') score += 35;
+  else if (this.badge === 'Sale') score += 30;
+
+  const avg = this.ratings?.average || 0;
+  const count = this.ratings?.count || 0;
+  score += (avg / 5) * 25 * Math.min(count / 30, 1);
+
+  const daysSinceCreated = (Date.now() - (this.createdAt ? this.createdAt.getTime() : Date.now())) / 86400000;
+  score += Math.max(0, 35 - daysSinceCreated);
+
+  this.popularityScore = Math.round(score * 10) / 10;
 });
 
 // ─── Prevent model re-compilation in dev hot-reload ───────────────

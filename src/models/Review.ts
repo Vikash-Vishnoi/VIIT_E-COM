@@ -40,7 +40,13 @@ const ReviewSchema = new Schema<IReview>(
 
 // One review per user per order item
 ReviewSchema.index({ productId: 1, userId: 1, orderId: 1 }, { unique: true });
-ReviewSchema.index({ productId: 1, isApproved: 1 });
+
+// Fast lookup for product page reviews
+ReviewSchema.index({ productId: 1, isApproved: 1, createdAt: -1 });
+
+// Fast lookup for admin pending reviews
+ReviewSchema.index({ isApproved: 1, createdAt: -1 });
+
 ReviewSchema.index({ rating: -1 });
 
 const Review: Model<IReview> =

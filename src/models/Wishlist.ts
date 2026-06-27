@@ -27,8 +27,11 @@ const WishlistSchema = new Schema<IWishlist>(
 );
 
 // ─── Indexes ───────────────────────────────────────────────────────
-// Unique compound: same user can't wishlist same product+color+size twice
+// Fast lookup for user's wishlist page
 WishlistSchema.index({ userId: 1 });
+
+// Unique compound: same user can't wishlist same product+color+size twice
+WishlistSchema.index({ userId: 1, productId: 1, colorName: 1, size: 1 }, { unique: true });
 
 // ─── Prevent model re-compilation in dev hot-reload ───────────────
 const Wishlist: Model<IWishlist> =
