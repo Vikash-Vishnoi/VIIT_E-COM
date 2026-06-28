@@ -4,17 +4,23 @@ import { connectDB } from '@/lib/db';
 import { User, Order } from '@/models';
 
 export const dynamic = 'force-dynamic';
+import { getAdminUser } from '@/lib/auth';
+import { validateObjectId } from '@/lib/productValidation';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 // GET single user detail (excluding passwordHash)
 export async function GET(_req: NextRequest, { params }: RouteContext) {
   try {
+    const adminId = await getAdminUser(_req);
+    if (!adminId) return Response.json({ success: false, message: 'Forbidden' }, { status: 403 });
+
     await connectDB();
     const { id } = await params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return Response.json({ success: false, message: 'Invalid user ID format' }, { status: 400 });
+    const idValidation = validateObjectId(id, 'user');
+    if (!idValidation.isValid) {
+      return Response.json({ success: false, message: idValidation.error }, { status: 400 });
     }
 
     const user = await User.findById(id).select('-passwordHash').lean();
@@ -33,11 +39,15 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
 // PATCH — only allow toggling isActive
 export async function PATCH(req: NextRequest, { params }: RouteContext) {
   try {
+    const adminId = await getAdminUser(req);
+    if (!adminId) return Response.json({ success: false, message: 'Forbidden' }, { status: 403 });
+
     await connectDB();
     const { id } = await params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return Response.json({ success: false, message: 'Invalid user ID format' }, { status: 400 });
+    const idValidation = validateObjectId(id, 'user');
+    if (!idValidation.isValid) {
+      return Response.json({ success: false, message: idValidation.error }, { status: 400 });
     }
 
     let body: any;
@@ -68,18 +78,22 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     return Response.json({ success: true, data: updatedUser });
   } catch (error: any) {
     console.error('PATCH /api/admin/users/[id] error:', error);
-    return Response.json({ success: false, message: error.message || 'Internal server error' }, { status: 500 });
+    return Response.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }
 
 // DELETE — soft delete (set isActive to false)
 export async function DELETE(_req: NextRequest, { params }: RouteContext) {
   try {
+    const adminId = await getAdminUser(_req);
+    if (!adminId) return Response.json({ success: false, message: 'Forbidden' }, { status: 403 });
+
     await connectDB();
     const { id } = await params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return Response.json({ success: false, message: 'Invalid user ID format' }, { status: 400 });
+    const idValidation = validateObjectId(id, 'user');
+    if (!idValidation.isValid) {
+      return Response.json({ success: false, message: idValidation.error }, { status: 400 });
     }
 
     const user = await User.findById(id);
@@ -102,6 +116,6 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
     return Response.json({ success: true, message: 'User has been deactivated.' });
   } catch (error: any) {
     console.error('DELETE /api/admin/users/[id] error:', error);
-    return Response.json({ success: false, message: error.message || 'Internal server error' }, { status: 500 });
+    return Response.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

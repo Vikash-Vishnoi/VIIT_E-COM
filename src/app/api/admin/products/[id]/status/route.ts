@@ -4,6 +4,8 @@ import { connectDB } from '@/lib/db';
 import { Product } from '@/models';
 
 export const dynamic = 'force-dynamic';
+import { getAdminUser } from '@/lib/auth';
+import { validateObjectId } from '@/lib/productValidation';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -11,14 +13,15 @@ type RouteContext = { params: Promise<{ id: string }> };
 // Toggle isActive or isFeatured only — no other fields allowed
 export async function PATCH(req: NextRequest, { params }: RouteContext) {
   try {
+    const adminId = await getAdminUser(req);
+    if (!adminId) return Response.json({ success: false, message: 'Forbidden' }, { status: 403 });
+
     await connectDB();
     const { id } = await params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return Response.json(
-        { success: false, message: 'Invalid product ID format' },
-        { status: 400 }
-      );
+    const idValidation = validateObjectId(id, 'product');
+    if (!idValidation.isValid) {
+      return Response.json({ success: false, message: idValidation.error }, { status: 400 });
     }
 
     let body: any;

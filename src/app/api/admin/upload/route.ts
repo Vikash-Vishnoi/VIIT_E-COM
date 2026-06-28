@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import cloudinary from '@/lib/cloudinary';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,6 +40,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, url: result.secure_url });
   } catch (error: any) {
     console.error('Upload Error:', error);
-    return NextResponse.json({ success: false, message: 'Upload failed', error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Upload failed', error: 'Internal server error' }, { status: 500 });
   }
 }

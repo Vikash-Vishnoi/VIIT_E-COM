@@ -78,6 +78,6 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
     return Response.json({ success: true, data: order });
   } catch (error: any) {
-    return Response.json({ success: false, message: error.message || 'Internal server error' }, { status: 500 });
+    return Response.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

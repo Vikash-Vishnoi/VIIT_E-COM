@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
-type Size = { size: string; quantity: number | ""; sku: string };
+type Size = { size: string; quantity: number | "" };
 type ProductImage = { url: string; order: number; file?: File; isLocal?: boolean };
 type ColorVariant = { colorName: string; images: ProductImage[]; sizes: Size[] };
 
@@ -19,15 +19,7 @@ type CategoryNode = {
   parentId: string | null;
 };
 
-const generateSKU = (title: string, color: string, size: string, existingSku: string) => {
-  const getInitials = (str: string) => str.trim().split(/\s+/).map(word => word[0]?.toUpperCase()).join('').slice(0, 3);
-  const t = getInitials(title || 'PRD');
-  const c = getInitials(color || 'COL');
-  const s = size.toUpperCase().replace(/[^A-Z0-9]/g, '') || 'SZ';
-  const hexMatch = existingSku.match(/-([0-9A-F]{4})$/);
-  const hex = hexMatch ? hexMatch[1] : Math.random().toString(16).slice(2, 6).toUpperCase().padStart(4, '0');
-  return `VIIT-${t}-${c}-${s}-${hex}`;
-};
+
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -110,17 +102,7 @@ export default function AddProductPage() {
     setFormData((prev) => {
       const newValue: string | number | boolean = type === "checkbox" ? (e.target as HTMLInputElement).checked : type === "number" ? (value === "" ? "" : Number(value)) : value;
       
-      if (name === "title") {
-        const newColors = prev.colors.map(color => ({
-          ...color,
-          sizes: color.sizes.map(size => ({
-            ...size,
-            sku: generateSKU(value, color.colorName, size.size, size.sku)
-          }))
-        }));
-        return { ...prev, [name]: newValue, colors: newColors } as typeof prev;
-      }
-      
+
       return {
         ...prev,
         [name]: newValue,
@@ -148,11 +130,7 @@ export default function AddProductPage() {
       const newColors = [...prev.colors];
       newColors[colorIndex] = { 
         ...newColors[colorIndex], 
-        colorName: value,
-        sizes: newColors[colorIndex].sizes.map(size => ({
-          ...size,
-          sku: generateSKU(prev.title, value, size.size, size.sku)
-        }))
+        colorName: value
       };
       return { ...prev, colors: newColors };
     });
@@ -162,10 +140,9 @@ export default function AddProductPage() {
   const addSize = (colorIndex: number) => {
     setFormData((prev) => {
       const newColors = [...prev.colors];
-      const newSku = generateSKU(prev.title, newColors[colorIndex].colorName, "", "");
       newColors[colorIndex] = {
         ...newColors[colorIndex],
-        sizes: [...newColors[colorIndex].sizes, { size: "", quantity: "", sku: newSku }],
+        sizes: [...newColors[colorIndex].sizes, { size: "", quantity: "" }],
       };
       return { ...prev, colors: newColors };
     });
@@ -188,10 +165,7 @@ export default function AddProductPage() {
       const newSizes = [...newColors[colorIndex].sizes];
       newSizes[sizeIndex] = { ...newSizes[sizeIndex], [field]: value };
       
-      if (field === "size") {
-        newSizes[sizeIndex].sku = generateSKU(prev.title, newColors[colorIndex].colorName, value as string, newSizes[sizeIndex].sku);
-      }
-      
+
       newColors[colorIndex] = { ...newColors[colorIndex], sizes: newSizes };
       return { ...prev, colors: newColors };
     });
@@ -206,7 +180,15 @@ export default function AddProductPage() {
       const spaceLeft = 8 - newImages.length;
       if (spaceLeft <= 0) return prev;
 
-      const filesToAdd = Array.from(files).slice(0, spaceLeft);
+      const existingFiles = newImages.filter(img => img.isLocal && img.file).map(img => img.file as File);
+      
+      const uniqueFilesToAdd = Array.from(files).filter(file => {
+        return !existingFiles.some(existing => existing.name === file.name && existing.size === file.size);
+      });
+
+      const filesToAdd = uniqueFilesToAdd.slice(0, spaceLeft);
+
+      if (filesToAdd.length === 0) return prev;
 
       filesToAdd.forEach((file) => {
         const previewUrl = URL.createObjectURL(file);
@@ -261,6 +243,15 @@ export default function AddProductPage() {
       let hasError = false;
       const newErrors: Record<string, string> = {};
 
+      if (!payload.title || payload.title.trim().length < 3 || payload.title.trim().length > 150) {
+        newErrors.title = "Title must be between 3 and 150 characters.";
+        hasError = true;
+      }
+      if (!payload.description || payload.description.trim().length < 10 || payload.description.trim().length > 5000) {
+        newErrors.description = "Description must be between 10 and 5000 characters.";
+        hasError = true;
+      }
+
       if (!payload.category) {
         newErrors.category = "Main category is required.";
         hasError = true;
@@ -306,12 +297,12 @@ export default function AddProductPage() {
 
       for (const color of payload.colors) {
         if (color.images.length === 0) {
-          toast.error(`You must upload at least one image for the '${color.colorName}' color.`);
+          toast.error(`You must upload at least one image for ${color.colorName} color.`);
           setLoading(false);
           return;
         }
         if (color.sizes.length === 0) {
-          toast.error(`You must add at least one size for the '${color.colorName}' color.`);
+          toast.error(`You must add at least one size for ${color.colorName} color.`);
           setLoading(false);
           return;
         }
@@ -430,6 +421,8 @@ export default function AddProductPage() {
                 type="text"
                 name="title"
                 required
+                minLength={3}
+                maxLength={150}
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g. Vintage Denim Jacket"
@@ -451,6 +444,8 @@ export default function AddProductPage() {
               <textarea
                 name="description"
                 required
+                minLength={10}
+                maxLength={5000}
                 rows={4}
                 value={formData.description}
                 onChange={handleChange}
@@ -603,14 +598,7 @@ export default function AddProductPage() {
                                 autoComplete="off"
                                 className="w-24 px-3 py-1.5 text-sm font-bold border border-gray-200 rounded-lg outline-none focus:border-black"
                               />
-                              <input
-                                type="text"
-                                placeholder="SKU (Auto)"
-                                readOnly
-                                title="SKU is automatically generated to ensure uniqueness"
-                                value={size.sku}
-                                className="flex-1 min-w-[120px] px-3 py-1.5 text-sm font-mono border border-gray-200 rounded-lg outline-none bg-gray-50/50 text-gray-500 cursor-not-allowed"
-                              />
+
                               <button
                                 type="button"
                                 onClick={() => removeSize(colorIdx, sizeIdx)}

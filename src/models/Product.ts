@@ -110,20 +110,71 @@ ProductSchema.index({ isActive: 1, category: 1, subCategory: 1, subSubCategory: 
 // Full-Text Search Index
 ProductSchema.index({ title: 'text', description: 'text' });
 
-// ─── Pre-save Hook for Auto-Incrementing Product ID & Score ───────
-ProductSchema.pre('save', async function () {
+// ─── Pre-Validate Hook for Bulk SKU, ID, and Slug Generation ────────
+ProductSchema.pre('validate', async function () {
+  const Counter = mongoose.models.Counter || mongoose.model('Counter');
+
+  // 1. Generate Slug
+  if (this.isModified('title') || this.isNew) {
+    if (this.title) {
+      let baseSlug = this.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const existing = await mongoose.model('Product').findOne({ slug: baseSlug, _id: { $ne: this._id } }).select('_id').lean();
+      if (existing) {
+        baseSlug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
+      }
+      this.slug = baseSlug;
+    }
+  }
+
+  // 2. Generate Product ID
   if (this.isNew && !this.productId) {
-    const Counter = mongoose.model('Counter');
     const counter = await Counter.findByIdAndUpdate(
       'pro_seq',
       { $inc: { seq: 1 } },
       { new: true, upsert: true }
     );
-    // Format: PID_001
-    this.productId = `PID_${String(counter.seq).padStart(3, '0')}`;
+    this.productId = `VIIT-${new Date().getFullYear()}-${String(counter.seq).padStart(4, '0')}`;
   }
 
+  // 3. Generate missing SKUs
+  if (this.isModified('colors') || this.isNew) {
+    let missingSkusCount = 0;
+    this.colors?.forEach(c => {
+      c.sizes?.forEach(s => {
+        if (!s.sku) missingSkusCount++;
+      });
+    });
+
+    if (missingSkusCount > 0) {
+      const counter = await Counter.findByIdAndUpdate(
+        'sku_seq',
+        { $inc: { seq: missingSkusCount } },
+        { new: true, upsert: true }
+      );
+
+      let currentSeq = counter.seq - missingSkusCount + 1;
+
+      const getInitials = (str: string) => (str || '').trim().split(/\s+/).map(w => w[0]?.toUpperCase()).join('').slice(0, 3);
+      const t = getInitials(this.title || 'PRD');
+
+      this.colors?.forEach(c => {
+        const cInitials = getInitials(c.colorName || 'COL');
+        c.sizes?.forEach(s => {
+          if (!s.sku) {
+            const sInitials = (s.size || 'SZ').toUpperCase().replace(/[^A-Z0-9]/g, '');
+            const seqStr = String(currentSeq++).padStart(4, '0');
+            s.sku = `VIIT-${t}-${cInitials}-${sInitials}-${seqStr}`;
+          }
+        });
+      });
+    }
+  }
+});
+
+// ─── Pre-save Hook for Auto-Incrementing Score ───────
+ProductSchema.pre('save', async function () {
   // Calculate initial popularityScore for the feed algorithm
+
   let score = 0;
   if (this.isFeatured) score += 100;
   

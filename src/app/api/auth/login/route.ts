@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/db';
 import { User } from '@/models';
-import { signToken } from '@/lib/jwt';
+import { signToken, signAdminToken } from '@/lib/jwt';
 import { validateEmail, validatePassword } from '@/lib/validation';
 import { logAuthEvent } from '@/lib/audit';
 
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     const normalizedEmail = email.trim().toLowerCase();
 
     // Find the user with minimized data selection
-    const user = await User.findOne({ email: normalizedEmail }).select('passwordHash isActive failedLoginAttempts lockUntil name');
+    const user = await User.findOne({ email: normalizedEmail }).select('passwordHash isActive failedLoginAttempts lockUntil name role');
     if (!user) {
       logAuthEvent(req, normalizedEmail, 'LOGIN_FAILED');
       return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401 });
@@ -71,9 +71,12 @@ export async function POST(req: NextRequest) {
     user.lastLoginAt = new Date();
     await user.save();
 
-    // Generate JWT and set HttpOnly Cookie using normalized email
-    const token = await signToken({ email: normalizedEmail, name: user.name });
-    
+    // Generate JWT — admins get a short-lived 8h token, customers get 30d for good UX
+    const isAdmin = user.role === 'admin';
+    const token = isAdmin
+      ? await signAdminToken({ email: normalizedEmail, name: user.name })
+      : await signToken({ email: normalizedEmail, name: user.name });
+
     logAuthEvent(req, normalizedEmail, 'LOGIN_SUCCESS');
 
     const response = NextResponse.json({ 
@@ -86,7 +89,9 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+      maxAge: isAdmin
+        ? 8 * 60 * 60          // 8 hours for admins
+        : 30 * 24 * 60 * 60,  // 30 days for customers
     });
 
     return response;

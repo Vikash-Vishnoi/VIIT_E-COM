@@ -245,11 +245,18 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       const newImages = [...newColors[colorIndex].images];
       const spaceLeft = 8 - newImages.length;
       if (spaceLeft <= 0) return prev;
-      Array.from(files)
-        .slice(0, spaceLeft)
-        .forEach((file) => {
-          newImages.push({ url: URL.createObjectURL(file), order: newImages.length, file, isLocal: true });
-        });
+      const existingFiles = newImages.filter(img => img.isLocal && img.file).map(img => img.file as File);
+      
+      const uniqueFilesToAdd = Array.from(files).filter(file => {
+        return !existingFiles.some(existing => existing.name === file.name && existing.size === file.size);
+      });
+
+      const filesToAdd = uniqueFilesToAdd.slice(0, spaceLeft);
+      if (filesToAdd.length === 0) return prev;
+
+      filesToAdd.forEach((file) => {
+        newImages.push({ url: URL.createObjectURL(file), order: newImages.length, file, isLocal: true });
+      });
       newColors[colorIndex] = { ...newColors[colorIndex], images: newImages };
       return { ...prev, colors: newColors };
     });
@@ -313,6 +320,17 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     try {
       const current = formData;
 
+      if (!current.title || current.title.trim().length < 3 || current.title.trim().length > 150) {
+        setSaveError("Title must be between 3 and 150 characters.");
+        setSaving(false);
+        return;
+      }
+      if (!current.description || current.description.trim().length < 10 || current.description.trim().length > 5000) {
+        setSaveError("Description must be between 10 and 5000 characters.");
+        setSaving(false);
+        return;
+      }
+
       if (current.price < current.sellingPrice) {
         setSaveError("Regular price must be greater than or equal to the selling price.");
         setSaving(false);
@@ -325,12 +343,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       }
       for (const color of current.colors) {
         if (color.images.length === 0) {
-          setSaveError(`You must upload at least one image for '${color.colorName}'.`);
+          setSaveError(`You must upload at least one image for ${color.colorName} color.`);
           setSaving(false);
           return;
         }
         if (color.sizes.length === 0) {
-          setSaveError(`You must add at least one size for '${color.colorName}'.`);
+          setSaveError(`You must add at least one size for ${color.colorName} color.`);
           setSaving(false);
           return;
         }
@@ -509,6 +527,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 type="text"
                 name="title"
                 required
+                minLength={3}
+                maxLength={150}
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g. Vintage Denim Jacket"
@@ -523,6 +543,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               <textarea
                 name="description"
                 required
+                minLength={10}
+                maxLength={5000}
                 rows={4}
                 value={formData.description}
                 onChange={handleChange}

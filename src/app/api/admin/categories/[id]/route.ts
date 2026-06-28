@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { SubCategory, Product } from '@/models';
+import { getAdminUser } from '@/lib/auth';
 
-export async function PUT(request: Request, context: { params: Promise<{ id: string }> | { id: string } }) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> | { id: string } }) {
   try {
+    const adminId = await getAdminUser(request);
+    if (!adminId) return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+
     await connectDB();
     const resolvedParams = await context.params;
     const { id } = resolvedParams;
@@ -26,12 +30,15 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     return NextResponse.json({ success: true, data: category });
   } catch (error: any) {
     console.error('PUT /api/admin/categories/[id] error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'Failed to update category' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Failed to update category' }, { status: 500 });
   }
 }
 
-export async function DELETE(request: Request, context: { params: Promise<{ id: string }> | { id: string } }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> | { id: string } }) {
   try {
+    const adminId = await getAdminUser(request);
+    if (!adminId) return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+
     await connectDB();
     const resolvedParams = await context.params;
     const { id } = resolvedParams;
@@ -72,6 +79,6 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     return NextResponse.json({ success: true, message: 'Category deleted successfully' });
   } catch (error: any) {
     console.error('DELETE /api/admin/categories/[id] error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'Failed to delete category' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Failed to delete category' }, { status: 500 });
   }
 }

@@ -13,3 +13,4 @@ export { default as Wishlist } from './Wishlist';
 export { default as OTP } from './OTP';
 export { default as Address } from './Address';
 export { default as AuthLog } from './AuthLog';
+export { default as AdminAuditLog } from './AdminAuditLog';

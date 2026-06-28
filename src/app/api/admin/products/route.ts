@@ -2,10 +2,17 @@ import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { Product } from '@/models';
 
+import { getAdminUser } from '@/lib/auth';
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    const adminId = await getAdminUser(req);
+    if (!adminId) {
+      return Response.json({ success: false, message: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     await connectDB();
 
     const { searchParams } = req.nextUrl;
@@ -20,7 +27,13 @@ export async function GET(req: NextRequest) {
 
     const search = searchParams.get('search')?.trim();
     if (search) {
-      const regex = { $regex: search, $options: 'i' };
+      // Guard: reject absurdly long strings before they hit the DB
+      if (search.length > 100) {
+        return Response.json({ success: false, message: 'Search query is too long (max 100 characters)' }, { status: 400 });
+      }
+      // Escape regex metacharacters to prevent ReDoS
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = { $regex: escapedSearch, $options: 'i' };
       filter.$or = [
         { title: regex },
         { slug: regex },
@@ -74,13 +87,12 @@ export async function GET(req: NextRequest) {
       price: 1,
       sellingPrice: 1,
       'colors.colorName': 1,
-      'colors.images': { $slice: 1 }, // first image per color
-      'colors.sizes': 1,
-      badge: 1,
+      'colors.images': { $slice: 1 }, // first image per color (url + order — see note below)
+      'colors.sizes.size': 1,         // sub-field projection excludes sku from wire payload
+      'colors.sizes.quantity': 1,
       isFeatured: 1,
       isActive: 1,
-      ratings: 1,
-      createdAt: 1,
+      // Note: badge, ratings, createdAt removed — not needed in list view
     };
 
     // ─── Query ───────────────────────────────────────────────────────

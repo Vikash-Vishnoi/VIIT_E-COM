@@ -4,9 +4,13 @@ import { User, Cart, Wishlist } from '@/models';
 import { escapeRegExp } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
+import { getAdminUser } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {
+    const adminId = await getAdminUser(req);
+    if (!adminId) return Response.json({ success: false, message: 'Forbidden' }, { status: 403 });
+
     await connectDB();
     const { searchParams } = new URL(req.url);
 

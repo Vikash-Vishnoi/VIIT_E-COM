@@ -1,11 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { SubCategory } from '@/models';
 
 export const dynamic = 'force-dynamic';
+import { getAdminUser } from '@/lib/auth';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
+    const adminId = await getAdminUser(request);
+    if (!adminId) return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+
     await connectDB();
 
     const { searchParams } = new URL(request.url);
@@ -25,8 +29,11 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const adminId = await getAdminUser(request);
+    if (!adminId) return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+
     await connectDB();
     const body = await request.json();
     const { label, parentId, image, isActive } = body;
@@ -76,6 +83,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, data: newCategory });
   } catch (error: any) {
     console.error('POST /api/admin/categories error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'Failed to create category' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Failed to create category' }, { status: 500 });
   }
 }

@@ -4,10 +4,14 @@ import { Product, InventoryLog } from '@/models';
 import { escapeRegExp } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
+import { getAdminUser } from '@/lib/auth';
 
 // GET /api/admin/inventory
 export async function GET(req: NextRequest) {
   try {
+    const adminId = await getAdminUser(req);
+    if (!adminId) return Response.json({ success: false, message: 'Forbidden' }, { status: 403 });
+
     await connectDB();
     const { searchParams } = new URL(req.url);
 
@@ -118,6 +122,9 @@ export async function GET(req: NextRequest) {
 // Expects: { productId: string, sku: string, newQuantity: number }
 export async function PATCH(req: NextRequest) {
   try {
+    const adminId = await getAdminUser(req);
+    if (!adminId) return Response.json({ success: false, message: 'Forbidden' }, { status: 403 });
+
     await connectDB();
     let body: any;
     try {
