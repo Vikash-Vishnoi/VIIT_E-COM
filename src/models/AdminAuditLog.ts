@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 
 export interface IAdminAuditLog extends Document {
   adminId: Types.ObjectId;         // Which admin performed the action
-  action: 'PRODUCT_DELETED' | 'PRODUCT_CREATED' | 'PRODUCT_UPDATED';
+  action: 'PRODUCT_DELETED' | 'PRODUCT_CREATED' | 'PRODUCT_UPDATED' | 'USER_UPDATED';
   resourceId: string;              // MongoDB _id of the affected document
   resourceName: string;            // Human-readable label (e.g. product title)
   metadata: Record<string, unknown>; // Key field snapshot at the time of the action
@@ -15,7 +15,7 @@ const AdminAuditLogSchema = new Schema<IAdminAuditLog>(
     action: {
       type: String,
       required: true,
-      enum: ['PRODUCT_DELETED', 'PRODUCT_CREATED', 'PRODUCT_UPDATED'],
+      enum: ['PRODUCT_DELETED', 'PRODUCT_CREATED', 'PRODUCT_UPDATED', 'USER_UPDATED'],
     },
     resourceId:   { type: String, required: true, index: true },
     resourceName: { type: String, required: true },

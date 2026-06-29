@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { User, Cart, Wishlist } from '@/models';
-import { escapeRegExp } from '@/lib/validation';
+import { User } from '@/models';
+import { parseAdminQuery } from '@/lib/adminQueryParser';
 
 export const dynamic = 'force-dynamic';
 import { getAdminUser } from '@/lib/auth';
@@ -14,17 +14,22 @@ export async function GET(req: NextRequest) {
     await connectDB();
     const { searchParams } = new URL(req.url);
 
-    const page = Math.max(1, Number(searchParams.get('page')) || 1);
-    const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit')) || 20));
-    const skip = (page - 1) * limit;
+    // ─── Common query parsing ─────────────────────────────────────────
+    const SORT_MAP: Record<string, Record<string, 1 | -1>> = {
+      newest:    { createdAt: -1 },
+      oldest:    { createdAt:  1 },
+      name_asc:  { name:       1 },
+      name_desc: { name:      -1 },
+    };
+    const q = parseAdminQuery(searchParams, { sortWhitelist: SORT_MAP, defaultSort: 'newest' });
+    if (!q.ok) return Response.json({ success: false, message: q.message }, { status: q.status });
+    const { page, limit, skip, searchRegex, sortOrder } = q;
 
-    // Filters
+    // ─── Filters ─────────────────────────────────────────────────────
     const filter: Record<string, any> = {};
-    
-    const search = searchParams.get('search');
-    if (search) {
-      const regex = new RegExp(escapeRegExp(search), 'i');
-      filter.$or = [{ name: regex }, { email: regex }, { mobile: regex }];
+
+    if (searchRegex) {
+      filter.$or = [{ name: searchRegex }, { email: searchRegex }, { mobile: searchRegex }];
     }
 
     const role = searchParams.get('role');
@@ -38,56 +43,15 @@ export async function GET(req: NextRequest) {
     if (verified === 'true') filter.isVerified = true;
     else if (verified === 'false') filter.isVerified = false;
 
-    // Sort
-    const sortParam = searchParams.get('sort') || 'newest';
-    const sortMap: Record<string, Record<string, 1 | -1>> = {
-      newest: { createdAt: -1 },
-      oldest: { createdAt: 1 },
-      name_asc: { name: 1 },
-      name_desc: { name: -1 },
-    };
-    const sortOrder = sortMap[sortParam] ?? sortMap.newest;
 
-    // Use aggregation with $lookup for cart/wishlist counts from separate collections
-    const pipeline: any[] = [
-      { $match: filter },
-      { $sort: sortOrder },
-      { $skip: skip },
-      { $limit: limit },
-      { $lookup: {
-        from: 'carts',
-        localField: '_id',
-        foreignField: 'userId',
-        as: '_carts',
-      }},
-      { $lookup: {
-        from: 'wishlists',
-        localField: '_id',
-        foreignField: 'userId',
-        as: '_wishlists',
-      }},
-      { $addFields: {
-        cartCount: { $size: '$_carts' },
-        wishlistCount: { $size: '$_wishlists' },
-        addressCount: { $size: { $ifNull: ['$address', []] } },
-      }},
-      { $project: {
-        name: 1,
-        email: 1,
-        mobile: 1,
-        role: 1,
-        isVerified: 1,
-        isActive: 1,
-        lastLoginAt: 1,
-        createdAt: 1,
-        cartCount: 1,
-        wishlistCount: 1,
-        addressCount: 1,
-      }}
-    ];
 
-    const [users, totalArr] = await Promise.all([
-      User.aggregate(pipeline),
+    const [users, total] = await Promise.all([
+      User.find(filter)
+        .select('_id name email mobile role isVerified isActive createdAt lastLoginAt')
+        .sort(sortOrder as any)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
       User.countDocuments(filter),
     ]);
 
@@ -105,8 +69,8 @@ export async function GET(req: NextRequest) {
       meta: {
         page,
         limit,
-        total: totalArr,
-        totalPages: Math.ceil(totalArr / limit),
+        total,
+        totalPages: Math.ceil(total / limit),
       },
       stats: {
         totalUsers,

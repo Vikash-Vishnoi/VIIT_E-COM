@@ -18,9 +18,6 @@ import {
   UserX,
   Mail,
   Phone,
-  ShoppingCart,
-  Heart,
-  MapPin,
 } from "lucide-react";
 
 /* ─────────────────────────────────────────────
@@ -37,9 +34,6 @@ type User = {
   isActive: boolean;
   lastLoginAt?: string;
   createdAt: string;
-  cartCount: number;
-  wishlistCount: number;
-  addressCount: number;
 };
 
 type Meta = {
@@ -428,9 +422,6 @@ function AdminUsersContent() {
                   <th className="text-center text-[10px] font-black uppercase tracking-widest text-gray-400 px-3 py-2.5">
                     Activity
                   </th>
-                  <th className="text-center text-[10px] font-black uppercase tracking-widest text-gray-400 px-3 py-2.5">
-                    Data
-                  </th>
                   <th className="text-right text-[10px] font-black uppercase tracking-widest text-gray-400 px-3 pr-5 py-2.5">
                     Actions
                   </th>
@@ -505,20 +496,7 @@ function AdminUsersContent() {
                       </p>
                     </td>
 
-                    {/* Data counts */}
-                    <td className="px-3 py-3 text-center">
-                      <div className="flex items-center justify-center gap-3 text-[10px] font-bold text-gray-400">
-                        <span className="flex items-center gap-0.5" title="Cart items">
-                          <ShoppingCart size={10} /> {user.cartCount}
-                        </span>
-                        <span className="flex items-center gap-0.5" title="Wishlist">
-                          <Heart size={10} /> {user.wishlistCount}
-                        </span>
-                        <span className="flex items-center gap-0.5" title="Addresses">
-                          <MapPin size={10} /> {user.addressCount}
-                        </span>
-                      </div>
-                    </td>
+
 
                     {/* Actions */}
                     <td className="px-3 pr-5 py-3 text-right">

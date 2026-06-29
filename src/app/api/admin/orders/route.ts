@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { Order } from '@/models';
-import { escapeRegExp } from '@/lib/validation';
+import { parseAdminQuery } from '@/lib/adminQueryParser';
 
 export const dynamic = 'force-dynamic';
 import { getAdminUser } from '@/lib/auth';
@@ -14,17 +14,22 @@ export async function GET(req: NextRequest) {
     await connectDB();
     const { searchParams } = new URL(req.url);
 
-    const page  = Math.max(1, Number(searchParams.get('page'))  || 1);
-    const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit')) || 20));
-    const skip  = (page - 1) * limit;
+    // ─── Common query parsing ─────────────────────────────────────────
+    const SORT_MAP: Record<string, Record<string, 1 | -1>> = {
+      newest:     { createdAt:       -1 },
+      oldest:     { createdAt:        1 },
+      total_asc:  { 'pricing.total':  1 },
+      total_desc: { 'pricing.total': -1 },
+    };
+    const q = parseAdminQuery(searchParams, { sortWhitelist: SORT_MAP, defaultSort: 'newest' });
+    if (!q.ok) return Response.json({ success: false, message: q.message }, { status: q.status });
+    const { page, limit, skip, searchRegex, sortOrder } = q;
 
-    // Filters
+    // ─── Filters ─────────────────────────────────────────────────────
     const filter: Record<string, any> = {};
 
-    const search = searchParams.get('search');
-    if (search) {
-      const regex = new RegExp(escapeRegExp(search), 'i');
-      filter.$or = [{ orderId: regex }];
+    if (searchRegex) {
+      filter.$or = [{ orderId: searchRegex }];
     }
 
     const status = searchParams.get('status');
@@ -36,15 +41,7 @@ export async function GET(req: NextRequest) {
     const paymentMethod = searchParams.get('paymentMethod');
     if (paymentMethod && paymentMethod !== 'all') filter.paymentMethod = paymentMethod;
 
-    // Sort
-    const sortParam = searchParams.get('sort') || 'newest';
-    const sortMap: Record<string, Record<string, 1 | -1>> = {
-      newest:     { createdAt: -1 },
-      oldest:     { createdAt:  1 },
-      total_asc:  { 'pricing.total':  1 },
-      total_desc: { 'pricing.total': -1 },
-    };
-    const sortOrder = sortMap[sortParam] ?? sortMap.newest;
+
 
     const [orders, total] = await Promise.all([
       Order.find(filter)

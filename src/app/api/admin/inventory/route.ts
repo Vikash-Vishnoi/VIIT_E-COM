@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { Product, InventoryLog } from '@/models';
-import { escapeRegExp } from '@/lib/validation';
+import { parseAdminQuery } from '@/lib/adminQueryParser';
 
 export const dynamic = 'force-dynamic';
 import { getAdminUser } from '@/lib/auth';
@@ -15,18 +15,21 @@ export async function GET(req: NextRequest) {
     await connectDB();
     const { searchParams } = new URL(req.url);
 
-    const page = Math.max(1, Number(searchParams.get('page')) || 1);
-    const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit')) || 20));
-    const skip = (page - 1) * limit;
+    // ─── Common query parsing ─────────────────────────────────────────
+    // Inventory has no URL-driven sort — quantity asc is always applied later
+    const q = parseAdminQuery(searchParams, {
+      sortWhitelist: { default: { quantity: 1, sku: 1 } },
+      defaultSort: 'default',
+    });
+    if (!q.ok) return Response.json({ success: false, message: q.message }, { status: q.status });
+    const { page, limit, skip, searchRegex } = q;
 
-    const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || 'all';
 
-    // Build the match stage for the root product
+    // searchRegex is built once — reused in both pipeline stages below
     const rootMatch: any = {};
-    if (search) {
-      const regex = new RegExp(escapeRegExp(search), 'i');
-      rootMatch.$or = [{ title: regex }, { 'colors.sizes.sku': regex }];
+    if (searchRegex) {
+      rootMatch.$or = [{ title: searchRegex }, { 'colors.sizes.sku': searchRegex }];
     }
 
     const pipeline: any[] = [
@@ -36,16 +39,9 @@ export async function GET(req: NextRequest) {
       { $unwind: '$colors.sizes' },
     ];
 
-    // Filter by search again after unwind (in case we only matched one specific SKU in a product)
-    if (search) {
-      const regex = new RegExp(escapeRegExp(search), 'i');
+    if (searchRegex) {
       pipeline.push({
-        $match: {
-          $or: [
-            { title: regex },
-            { 'colors.sizes.sku': regex }
-          ]
-        }
+        $match: { $or: [{ title: searchRegex }, { 'colors.sizes.sku': searchRegex }] }
       });
     }
 

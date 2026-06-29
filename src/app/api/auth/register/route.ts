@@ -122,6 +122,7 @@ export async function POST(req: NextRequest) {
       passwordHash,
       isVerified:   true,  // verified via OTP
       isActive:     true,
+      lastLoginAt:  new Date(), // user is auto-logged in on registration
     });
 
     // ── Clean up used OTP ────────────────────────────────────────────────────

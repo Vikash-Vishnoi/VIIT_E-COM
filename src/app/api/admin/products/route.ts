@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { Product } from '@/models';
-
 import { getAdminUser } from '@/lib/auth';
+import { parseAdminQuery } from '@/lib/adminQueryParser';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,27 +17,27 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = req.nextUrl;
 
-    // ─── Pagination ──────────────────────────────────────────────────
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
-    const limit = 20; // Fixed limit for admin product listing
-    const skip = (page - 1) * limit;
+    // ─── Common query parsing (pagination · search · sort) ────────────
+    const SORT_MAP: Record<string, Record<string, 1 | -1>> = {
+      price_asc:  { sellingPrice:  1 },
+      price_desc: { sellingPrice: -1 },
+      newest:     { createdAt:    -1 },
+      oldest:     { createdAt:     1 },
+      title_asc:  { title:         1 },
+      title_desc: { title:        -1 },
+    };
+    const q = parseAdminQuery(searchParams, { sortWhitelist: SORT_MAP, defaultSort: 'newest' });
+    if (!q.ok) return Response.json({ success: false, message: q.message }, { status: q.status });
+    const { page, limit, skip, searchRegex, sortOrder } = q;
 
     // ─── Filter ──────────────────────────────────────────────────────
     const filter: Record<string, unknown> = {};
 
-    const search = searchParams.get('search')?.trim();
-    if (search) {
-      // Guard: reject absurdly long strings before they hit the DB
-      if (search.length > 100) {
-        return Response.json({ success: false, message: 'Search query is too long (max 100 characters)' }, { status: 400 });
-      }
-      // Escape regex metacharacters to prevent ReDoS
-      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = { $regex: escapedSearch, $options: 'i' };
+    if (searchRegex) {
       filter.$or = [
-        { title: regex },
-        { slug: regex },
-        { 'colors.sizes.sku': regex },
+        { title: searchRegex },
+        { slug: searchRegex },
+        { 'colors.sizes.sku': searchRegex },
       ];
     }
 
@@ -62,18 +62,6 @@ export async function GET(req: NextRequest) {
     } else if (stock === 'has_out_of_stock_variants') {
       filter['colors.sizes.quantity'] = 0; // matches if ANY variant has quantity 0
     }
-
-    // ─── Sort ────────────────────────────────────────────────────────
-    const sortParam = searchParams.get('sort') || 'newest';
-    const sortMap: Record<string, Record<string, 1 | -1>> = {
-      price_asc: { sellingPrice: 1 },
-      price_desc: { sellingPrice: -1 },
-      newest: { createdAt: -1 },
-      oldest: { createdAt: 1 },
-      title_asc: { title: 1 },
-      title_desc: { title: -1 },
-    };
-    const sortOrder = sortMap[sortParam] ?? sortMap.newest;
 
     // ─── Projection (list-view fields only) ──────────────────────────
     const projection = {
