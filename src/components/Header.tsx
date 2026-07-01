@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { 
+  User as UserIcon, 
+  MapPin, 
+  Package, 
+  ShieldCheck, 
+  LogOut
+} from "lucide-react";
 
 // ── Level-0 nav links are HARDCODED (these are the fixed top-level categories) ──
 type NavLink = {
@@ -75,9 +82,11 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   // ── Dynamic category tree fetched from DB ──
   const [navTree, setNavTree] = useState<NavCategory[]>([]);
   const pathname = usePathname();
+  const router = useRouter();
 
   const fetchWishlistCount = () => {
     fetch('/api/user/wishlist')
@@ -187,6 +196,18 @@ export default function Header() {
       window.removeEventListener('cart-change', handleCartChange);
     };
   }, []);
+
+  // Close profile menu when route changes
+  useEffect(() => {
+    setProfileMenuOpen(false);
+  }, [pathname]);
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.dispatchEvent(new Event('auth-change'));
+    setProfileMenuOpen(false);
+    router.push('/');
+  };
 
   // Fetch dynamic nav tree once on mount
   useEffect(() => {
@@ -362,12 +383,46 @@ export default function Header() {
             
             {/* Account */}
             {!loadingAuth && user ? (
-              <Link href="/profile" aria-label="Account" className="text-black hover:opacity-60 transition-opacity flex items-center justify-center min-w-[40px]">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-              </Link>
+              <div className="relative">
+                <button 
+                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                  aria-label="Account Menu" 
+                  className={`text-black hover:opacity-60 transition-opacity flex items-center justify-center min-w-[40px] ${profileMenuOpen ? 'opacity-60' : ''}`}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </button>
+
+                {profileMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setProfileMenuOpen(false)}></div>
+                    <div className="absolute top-[120%] right-0 w-[200px] bg-white border border-gray-100 shadow-xl z-50 flex flex-col py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="px-4 py-3 border-b border-gray-50 mb-2">
+                        <span className="block text-xs font-black uppercase tracking-widest text-black">{user.name}</span>
+                        <span className="block text-[10px] text-gray-400 mt-1">{user.email}</span>
+                      </div>
+                      <Link href="/profile?tab=overview" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
+                        <UserIcon size={14} /> My Profile
+                      </Link>
+                      <Link href="/profile?tab=orders" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
+                        <Package size={14} /> My Orders
+                      </Link>
+                      <Link href="/profile?tab=addresses" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
+                        <MapPin size={14} /> Address Book
+                      </Link>
+                      <Link href="/profile?tab=security" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
+                        <ShieldCheck size={14} /> Security
+                      </Link>
+                      <div className="h-px bg-gray-50 my-2"></div>
+                      <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-red-500 hover:bg-red-50 transition-colors">
+                        <LogOut size={14} /> Log Out
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             ) : !loadingAuth && !user ? (
               <Link href={`/login?returnTo=${encodeURIComponent(pathname)}`} aria-label="Login / Register" className="flex items-center gap-2 text-black hover:opacity-60 transition-opacity">
                 <span className="hidden md:inline text-[12px] font-bold uppercase tracking-widest whitespace-nowrap">Login / Register</span>

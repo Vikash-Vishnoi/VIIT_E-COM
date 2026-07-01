@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   User as UserIcon, 
@@ -80,8 +80,9 @@ const INDIAN_STATES = [
   "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
 ];
 
-export default function ProfilePage() {
+function ProfileContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("overview");
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -116,15 +117,16 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // React to tab changes via URL query params
   useEffect(() => {
-    // Read initial tab from URL
-    const params = new URLSearchParams(window.location.search);
-    const tab = params.get("tab");
-    if (tab && ["overview", "addresses", "orders", "security"].includes(tab)) {
+    const tab = searchParams.get("tab") || "overview";
+    if (["overview", "addresses", "orders", "security"].includes(tab)) {
       setActiveTab(tab);
       if (tab === 'orders') fetchOrders();
     }
-    
+  }, [searchParams]);
+
+  useEffect(() => {
     fetchProfile();
   }, []);
 
@@ -132,12 +134,9 @@ export default function ProfilePage() {
     setActiveTab(tabId);
     
     // Update URL without reloading the page
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tabId);
     router.replace(`/profile?${params.toString()}`, { scroll: false });
-
-    // Fetch orders when switching to orders tab
-    if (tabId === 'orders') fetchOrders();
   };
 
   const fetchOrders = async () => {
@@ -339,62 +338,27 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-[20px] pb-20 px-6 xl:px-16">
+    <div className="min-h-screen bg-gray-50 pt-[20px] md:pt-[10px] pb-20 px-4 md:px-6 xl:px-16">
       <div className="max-w-[1200px] mx-auto">
         
         {/* Breadcrumb */}
-        <div className="mb-8 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+        <div className="hidden md:block mb-8 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">
           <Link href="/" className="hover:text-black transition-colors">Home</Link>
           <span className="mx-2">/</span>
           <span className="text-black">Profile</span>
         </div>
 
         {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-3xl font-black uppercase tracking-widest text-black mb-2">My Account</h1>
+        <div className="mb-6 md:mb-10 text-center md:text-left">
+          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-widest text-black mb-2">My Account</h1>
           <p className="text-sm font-semibold tracking-wider text-gray-500 uppercase">
             Welcome back, {profile.name}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-10">
-          
-          {/* Sidebar */}
-          <div className="bg-white border border-gray-100 p-4 h-fit">
-            <nav className="flex flex-col gap-2">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabChange(tab.id)}
-                    className={`flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-widest transition-all ${
-                      isActive 
-                        ? "bg-black text-white" 
-                        : "text-gray-500 hover:bg-gray-50 hover:text-black"
-                    }`}
-                  >
-                    <Icon size={16} />
-                    {tab.label}
-                  </button>
-                );
-              })}
-              
-              <div className="h-px bg-gray-100 my-2"></div>
-              
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
-              >
-                <LogOut size={16} />
-                Log Out
-              </button>
-            </nav>
-          </div>
-
+        <div className="w-full max-w-4xl mx-auto">
           {/* Main Content Area */}
-          <div className="bg-white border border-gray-100 p-8 min-h-[400px]">
+          <div className="bg-white border border-gray-100 p-4 md:p-8 min-h-[400px]">
 
             {/* OVERVIEW TAB */}
             {activeTab === "overview" && (
@@ -403,7 +367,7 @@ export default function ProfilePage() {
                 
                 <form onSubmit={handleUpdateOverview} className="max-w-md flex flex-col gap-6">
                   <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Email Address</label>
+                    <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Email Address</label>
                     <input 
                       type="email" 
                       value={profile.email}
@@ -413,7 +377,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Full Name</label>
+                    <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Full Name</label>
                     <input 
                       type="text" 
                       value={editName}
@@ -424,7 +388,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Mobile Number</label>
+                    <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Mobile Number</label>
                     <input 
                       type="text" 
                       value={editMobile}
@@ -437,7 +401,7 @@ export default function ProfilePage() {
                   <button 
                     type="submit" 
                     disabled={saving}
-                    className="mt-4 px-8 py-3 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 disabled:opacity-50 transition-colors self-start"
+                    className="mt-4 w-full md:w-auto px-8 py-3.5 bg-black text-white text-xs font-black uppercase tracking-[0.2em] hover:bg-gray-800 disabled:opacity-50 transition-colors md:self-start"
                   >
                     {saving ? "Saving..." : "Save Changes"}
                   </button>
@@ -456,7 +420,7 @@ export default function ProfilePage() {
                         resetAddressForm();
                         setShowAddressForm(true);
                       }}
-                      className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-black hover:opacity-60 transition-opacity"
+                      className="flex items-center gap-2 text-[10px] md:text-xs font-black uppercase tracking-widest text-black hover:opacity-60 transition-opacity"
                     >
                       <Plus size={14} /> Add New
                     </button>
@@ -472,9 +436,9 @@ export default function ProfilePage() {
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="col-span-2 flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Address Type</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="col-span-1 md:col-span-2 flex flex-col gap-2">
+                        <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Address Type</label>
                         <select 
                           value={addrLabel}
                           onChange={(e) => setAddrLabel(e.target.value)}
@@ -487,27 +451,27 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Receiver's Full Name</label>
+                        <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Receiver's Full Name</label>
                         <input type="text" value={addrFullName} onChange={(e) => setAddrFullName(e.target.value)} required className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black bg-transparent" />
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Receiver's Mobile</label>
+                        <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Receiver's Mobile</label>
                         <input type="text" value={addrMobile} onChange={(e) => setAddrMobile(e.target.value.replace(/\D/g, ''))} required className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black bg-transparent" />
                       </div>
 
-                      <div className="col-span-2 flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Street Address</label>
+                      <div className="col-span-1 md:col-span-2 flex flex-col gap-2">
+                        <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Street Address</label>
                         <input type="text" value={addrLine1} onChange={(e) => setAddrLine1(e.target.value)} required className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black bg-transparent" />
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">City</label>
+                        <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">City</label>
                         <input type="text" value={addrCity} onChange={(e) => setAddrCity(e.target.value)} required className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black bg-transparent" />
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">State</label>
+                        <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">State</label>
                         <select 
                           value={addrState} 
                           onChange={(e) => setAddrState(e.target.value)} 
@@ -522,12 +486,12 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Pincode / Zip Code</label>
+                        <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Pincode / Zip Code</label>
                         <input type="text" value={addrPincode} onChange={(e) => setAddrPincode(e.target.value)} required className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black bg-transparent" />
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Country</label>
+                        <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Country</label>
                         <input 
                           type="text" 
                           value={addrCountry} 
@@ -536,7 +500,7 @@ export default function ProfilePage() {
                         />
                       </div>
 
-                      <div className="col-span-2 flex items-center gap-3 mt-2">
+                      <div className="col-span-1 md:col-span-2 flex items-center gap-3 mt-2">
                         <input 
                           type="checkbox" 
                           id="isDefault" 
@@ -544,17 +508,17 @@ export default function ProfilePage() {
                           onChange={(e) => setAddrIsDefault(e.target.checked)}
                           className="w-4 h-4 accent-black"
                         />
-                        <label htmlFor="isDefault" className="text-[10px] font-bold uppercase tracking-widest text-black cursor-pointer">
+                        <label htmlFor="isDefault" className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-black cursor-pointer">
                           Set as Default Address
                         </label>
                       </div>
                     </div>
 
-                    <div className="flex gap-4 mt-4">
-                      <button type="submit" disabled={saving} className="flex-1 py-3 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors">
+                    <div className="flex flex-col md:flex-row gap-4 mt-4">
+                      <button type="submit" disabled={saving} className="flex-1 py-3.5 bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-gray-800 transition-colors">
                         {saving ? "Saving..." : "Save Address"}
                       </button>
-                      <button type="button" onClick={resetAddressForm} className="px-6 py-3 border border-gray-200 text-[10px] font-black uppercase tracking-widest hover:border-black transition-colors">
+                      <button type="button" onClick={resetAddressForm} className="px-6 py-3.5 border border-gray-200 text-xs font-black uppercase tracking-widest hover:border-black transition-colors">
                         Cancel
                       </button>
                     </div>
@@ -576,15 +540,15 @@ export default function ProfilePage() {
                           )}
                           
                           <div className="flex justify-between items-start mb-4 mt-2">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 border border-gray-200 px-2 py-1">
+                            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-400 border border-gray-200 px-2 py-1">
                               {addr.label}
                             </span>
-                            <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex gap-4 md:gap-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                               <button onClick={() => openEditAddress(addr)} className="text-gray-400 hover:text-black">
-                                <Edit2 size={14} />
+                                <Edit2 size={16} className="md:w-3.5 md:h-3.5" />
                               </button>
                               <button onClick={() => handleDeleteAddress(addr._id)} className="text-gray-400 hover:text-red-500">
-                                <Trash2 size={14} />
+                                <Trash2 size={16} className="md:w-3.5 md:h-3.5" />
                               </button>
                             </div>
                           </div>
@@ -623,7 +587,7 @@ export default function ProfilePage() {
                     </p>
                     <button
                       onClick={() => router.push('/')}
-                      className="px-8 py-3 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors"
+                      className="w-full md:w-auto px-8 py-3.5 bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-gray-800 transition-colors"
                     >
                       Start Shopping
                     </button>
@@ -652,34 +616,34 @@ export default function ProfilePage() {
                           {/* Order Header Row */}
                           <button
                             onClick={() => setExpandedOrder(isExpanded ? null : order._id)}
-                            className="w-full flex flex-wrap items-center justify-between gap-4 px-6 py-5 text-left hover:bg-gray-50 transition-colors"
+                            className="w-full grid grid-cols-2 md:flex md:flex-wrap items-center justify-between gap-4 px-4 md:px-6 py-5 text-left hover:bg-gray-50 transition-colors"
                           >
                             <div className="flex flex-col gap-1">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Order ID</span>
+                              <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-400">Order ID</span>
                               <span className="text-sm font-black text-black">{order.orderId}</span>
                             </div>
 
                             <div className="flex flex-col gap-1">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Date</span>
+                              <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-400">Date</span>
                               <span className="text-sm font-semibold text-black">
                                 {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                               </span>
                             </div>
 
                             <div className="flex flex-col gap-1">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total</span>
+                              <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-400">Total</span>
                               <span className="text-sm font-black text-black">₹{order.pricing.total.toLocaleString('en-IN')}</span>
                             </div>
 
                             <div className="flex flex-col gap-1">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Payment</span>
+                              <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-400">Payment</span>
                               <span className={`text-xs font-black uppercase ${paymentColor[order.paymentStatus] || 'text-gray-500'}`}>
                                 {order.paymentStatus}
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                              <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 border rounded-full ${statusColor[order.status] || 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+                            <div className="col-span-2 md:col-span-1 flex items-center justify-between md:justify-start gap-3 mt-2 md:mt-0">
+                              <span className={`text-[10px] md:text-xs font-black uppercase tracking-wider px-3 py-1 border rounded-full ${statusColor[order.status] || 'bg-gray-50 text-gray-500 border-gray-200'}`}>
                                 {order.status}
                               </span>
                               <svg
@@ -697,13 +661,13 @@ export default function ProfilePage() {
 
                               {/* Items */}
                               <div>
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Items Ordered</h4>
+                                <h4 className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-400 mb-4">Items Ordered</h4>
                                 <div className="flex flex-col gap-3">
                                   {order.items.map((item, i) => (
                                     <div key={i} className="flex justify-between items-start bg-white border border-gray-100 p-4">
                                       <div className="flex flex-col gap-1">
                                         <span className="text-sm font-bold text-black">{item.title}</span>
-                                        <div className="flex items-center gap-2 text-[11px] text-gray-500 font-semibold uppercase tracking-wider">
+                                        <div className="flex items-center gap-2 text-[10px] md:text-xs text-gray-500 font-semibold uppercase tracking-wider">
                                           {item.colorName !== 'Default' && <span>Color: {item.colorName}</span>}
                                           {item.size !== 'Default' && <span>Size: {item.size}</span>}
                                           <span>Qty: {item.quantity}</span>
@@ -722,8 +686,8 @@ export default function ProfilePage() {
 
                                 {/* Pricing Breakdown */}
                                 <div>
-                                  <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Pricing</h4>
-                                  <div className="flex flex-col gap-2 text-[13px]">
+                                  <h4 className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-400 mb-4">Pricing</h4>
+                                  <div className="flex flex-col gap-2 text-xs md:text-sm">
                                     <div className="flex justify-between">
                                       <span className="text-gray-500 font-semibold">Subtotal</span>
                                       <span className="font-bold">₹{(order.pricing.total - order.pricing.tax).toLocaleString('en-IN')}</span>
@@ -734,13 +698,13 @@ export default function ProfilePage() {
                                     </div>
                                     <div className="flex justify-between">
                                       <span className="text-gray-500 font-semibold">Shipping</span>
-                                      <span className="text-green-600 font-black text-[11px] uppercase">Free</span>
+                                      <span className="text-green-600 font-black text-[10px] md:text-xs uppercase">Free</span>
                                     </div>
                                     <div className="flex justify-between border-t border-gray-200 pt-2 mt-1">
                                       <span className="font-black uppercase tracking-wider text-black">Total</span>
                                       <span className="font-black text-black">₹{order.pricing.total.toLocaleString('en-IN')}</span>
                                     </div>
-                                    <div className="flex justify-between text-[11px] mt-1">
+                                    <div className="flex justify-between text-[10px] md:text-xs mt-1">
                                       <span className="text-gray-400 font-semibold">Payment Method</span>
                                       <span className="font-bold uppercase">{order.paymentMethod}</span>
                                     </div>
@@ -749,12 +713,12 @@ export default function ProfilePage() {
 
                                 {/* Shipping Address */}
                                 <div>
-                                  <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Delivery Address</h4>
-                                  <div className="text-[13px] text-gray-600 leading-relaxed">
+                                  <h4 className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-400 mb-4">Delivery Address</h4>
+                                  <div className="text-xs md:text-sm text-gray-600 leading-relaxed">
                                     <p className="font-bold text-black">{order.shippingAddress.fullName}</p>
                                     <p>{order.shippingAddress.line1}</p>
                                     <p>{order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}</p>
-                                    <p className="text-gray-400 text-[11px] mt-1">Ph: {order.shippingAddress.mobile}</p>
+                                    <p className="text-gray-400 text-[10px] md:text-xs mt-1">Ph: {order.shippingAddress.mobile}</p>
                                   </div>
                                 </div>
 
@@ -763,7 +727,7 @@ export default function ProfilePage() {
                               {/* Timeline */}
                               {order.timeline && order.timeline.length > 0 && (
                                 <div>
-                                  <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Order Timeline</h4>
+                                  <h4 className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-400 mb-4">Order Timeline</h4>
                                   <div className="flex flex-col gap-3">
                                     {[...order.timeline].reverse().map((event, i) => (
                                       <div key={i} className="flex items-start gap-4">
@@ -771,8 +735,8 @@ export default function ProfilePage() {
                                           i === 0 ? 'bg-black' : 'bg-gray-300'
                                         }`} />
                                         <div className="flex flex-col gap-0.5">
-                                          <span className="text-[11px] font-black uppercase tracking-wider text-black">{event.status}</span>
-                                          <span className="text-[11px] text-gray-500">{event.message}</span>
+                                          <span className="text-[10px] md:text-xs font-black uppercase tracking-wider text-black">{event.status}</span>
+                                          <span className="text-[10px] md:text-xs text-gray-500">{event.message}</span>
                                           <span className="text-[10px] text-gray-400">
                                             {new Date(event.timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                           </span>
@@ -800,7 +764,7 @@ export default function ProfilePage() {
                 
                 <form onSubmit={handleChangePassword} className="max-w-md flex flex-col gap-6">
                   <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Current Password</label>
+                    <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Current Password</label>
                     <input 
                       type="password" 
                       value={currentPassword}
@@ -811,7 +775,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="flex flex-col gap-2 mt-4">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">New Password</label>
+                    <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">New Password</label>
                     <input 
                       type="password" 
                       value={newPassword}
@@ -822,7 +786,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Confirm New Password</label>
+                    <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Confirm New Password</label>
                     <input 
                       type="password" 
                       value={confirmPassword}
@@ -835,7 +799,7 @@ export default function ProfilePage() {
                   <button 
                     type="submit" 
                     disabled={saving}
-                    className="mt-4 px-8 py-3 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 disabled:opacity-50 transition-colors self-start"
+                    className="mt-4 w-full md:w-auto px-8 py-3.5 bg-black text-white text-xs font-black uppercase tracking-[0.2em] hover:bg-gray-800 disabled:opacity-50 transition-colors md:self-start"
                   >
                     {saving ? "Updating..." : "Update Password"}
                   </button>
@@ -847,5 +811,17 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-[100px]">
+        <div className="animate-pulse text-xs font-bold uppercase tracking-widest text-gray-400">Loading Profile...</div>
+      </div>
+    }>
+      <ProfileContent />
+    </Suspense>
   );
 }

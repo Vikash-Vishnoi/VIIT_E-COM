@@ -199,10 +199,10 @@ export default function CheckoutPage() {
                             {selectedAddressId === addr._id && <Check size={16} strokeWidth={3} className="text-black" />}
                           </div>
                           <span className="text-sm font-bold text-black capitalize">{addr.fullName}</span>
-                          <span className="text-[13px] text-gray-500">{addr.line1}</span>
-                          {addr.line2 && <span className="text-[13px] text-gray-500">{addr.line2}</span>}
-                          <span className="text-[13px] text-gray-500">{addr.city}, {addr.state} {addr.pincode}</span>
-                          <span className="text-[13px] text-gray-500 mt-1">Ph: {addr.mobile}</span>
+                          <span className="text-xs md:text-sm text-gray-500">{addr.line1}</span>
+                          {addr.line2 && <span className="text-xs md:text-sm text-gray-500">{addr.line2}</span>}
+                          <span className="text-xs md:text-sm text-gray-500">{addr.city}, {addr.state} {addr.pincode}</span>
+                          <span className="text-xs md:text-sm text-gray-500 mt-1">Ph: {addr.mobile}</span>
                         </label>
                       ))}
                     </div>
@@ -318,7 +318,7 @@ export default function CheckoutPage() {
               </div>
               
               {/* Calculations */}
-              <div className="flex flex-col gap-4 text-[13px] font-semibold text-gray-500 pt-2">
+              <div className="flex flex-col gap-4 text-xs md:text-sm font-semibold text-gray-500 pt-2">
                 <div className="flex justify-between items-center">
                   <span>Subtotal (Excl. Tax)</span>
                   <span className="text-black font-bold">₹{subtotalExclTax.toLocaleString("en-IN")}</span>
@@ -329,7 +329,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Estimated Shipping</span>
-                  <span className="text-green-600 uppercase tracking-wider text-[11px] font-black bg-green-50 px-2 py-1 rounded-sm">Free</span>
+                  <span className="text-green-600 uppercase tracking-wider text-[10px] md:text-xs font-black bg-green-50 px-2 py-1 rounded-sm">Free</span>
                 </div>
               </div>
 
@@ -344,7 +344,7 @@ export default function CheckoutPage() {
               <button 
                 onClick={handlePlaceOrder}
                 disabled={placingOrder || !selectedAddressId || showNewAddress}
-                className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-[13px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-none disabled:cursor-not-allowed"
+                className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-sm font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-none disabled:cursor-not-allowed"
               >
                 {placingOrder ? "Processing..." : `Pay ₹${subtotal.toLocaleString("en-IN")}`}
               </button>
@@ -371,7 +371,7 @@ export default function CheckoutPage() {
           <button 
             onClick={handlePlaceOrder}
             disabled={placingOrder || !selectedAddressId || showNewAddress}
-            className="flex items-center justify-center gap-2 bg-black text-white px-8 py-3.5 text-[11px] font-black uppercase tracking-widest active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 bg-black text-white px-8 py-3.5 text-xs font-black uppercase tracking-widest active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {placingOrder ? "Processing..." : "Pay Now"}
             <ArrowRight size={14} />

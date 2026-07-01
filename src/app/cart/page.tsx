@@ -130,7 +130,7 @@ export default function CartPage() {
             </p>
             <Link 
               href="/"
-              className="inline-flex items-center justify-center bg-black text-white px-8 py-4 text-[11px] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center justify-center bg-black text-white px-8 py-4 text-xs font-black uppercase tracking-widest hover:bg-gray-800 transition-colors"
             >
               Start Exploring
             </Link>
@@ -181,7 +181,7 @@ export default function CartPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-widest text-gray-500 mt-4">
+                    <div className="flex items-center gap-3 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-500 mt-4">
                       {item.colorName !== "Default" && (
                         <span>Color: <span className="text-black">{item.colorName}</span></span>
                       )}
@@ -194,7 +194,7 @@ export default function CartPage() {
                     {/* Quantity Selector + Mobile Delete */}
                     <div className="mt-auto pt-5 md:pt-6 flex justify-between items-end">
                       <div className="flex flex-col gap-1.5">
-                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500 md:mr-4 md:inline-block">
+                        <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500 md:mr-4 md:inline-block">
                           Qty:
                         </span>
                         <div className="flex items-center border border-gray-200 h-8 md:h-10 rounded-full md:rounded-none overflow-hidden">
@@ -215,7 +215,7 @@ export default function CartPage() {
                               const val = parseInt(e.target.value);
                               if (!isNaN(val) && val > 0) handleUpdateQuantity(item._id, val);
                             }}
-                            className="w-8 md:w-12 h-full text-center text-[11px] md:text-[12px] font-bold focus:outline-none focus:bg-gray-50 transition-colors [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                            className="w-8 md:w-12 h-full text-center text-xs md:text-sm font-bold focus:outline-none focus:bg-gray-50 transition-colors [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                             style={{ MozAppearance: 'textfield' }}
                           />
                           <button
@@ -251,7 +251,7 @@ export default function CartPage() {
                   Order Summary
                 </h2>
                 
-                <div className="flex flex-col gap-4 md:gap-5 text-[12px] md:text-[13px] font-semibold text-gray-500">
+                <div className="flex flex-col gap-4 md:gap-5 text-xs md:text-sm font-semibold text-gray-500">
                   <div className="flex justify-between items-center">
                     <span>Subtotal (Excl. Tax)</span>
                     <span className="text-black font-bold">₹{subtotalExclTax.toLocaleString("en-IN")}</span>
@@ -262,21 +262,21 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Estimated Shipping</span>
-                    <span className="text-green-600 uppercase tracking-wider text-[10px] md:text-[11px] font-black bg-green-50 px-2 py-1 rounded-sm">Free</span>
+                    <span className="text-green-600 uppercase tracking-wider text-[10px] md:text-xs font-black bg-green-50 px-2 py-1 rounded-sm">Free</span>
                   </div>
                 </div>
 
                 <div className="flex justify-between items-end pt-5 md:pt-6 border-t border-gray-100 mt-1 md:mt-2">
                   <div className="flex flex-col">
                     <span className="text-sm md:text-base font-black uppercase tracking-wide text-black">Total</span>
-                    <span className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Incl. of all taxes</span>
+                    <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Incl. of all taxes</span>
                   </div>
                   <span className="text-xl md:text-2xl font-black text-black leading-none">₹{subtotal.toLocaleString("en-IN")}</span>
                 </div>
 
                 <Link 
                   href="/checkout"
-                  className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-[12px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg group"
+                  className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-xs font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg group"
                 >
                   Proceed to Checkout
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -287,7 +287,7 @@ export default function CartPage() {
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                   </svg>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                  <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest">
                     Secure checkout powered by Razorpay
                   </p>
                 </div>
@@ -308,7 +308,7 @@ export default function CartPage() {
             </div>
             <Link 
               href="/checkout"
-              className="flex items-center justify-center gap-2 bg-black text-white px-8 py-3.5 text-[11px] font-black uppercase tracking-widest active:scale-[0.98] transition-transform"
+              className="flex items-center justify-center gap-2 bg-black text-white px-8 py-3.5 text-xs font-black uppercase tracking-widest active:scale-[0.98] transition-transform"
             >
               Checkout
               <ArrowRight size={14} />

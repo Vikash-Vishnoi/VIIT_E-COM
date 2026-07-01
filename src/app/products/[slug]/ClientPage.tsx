@@ -32,7 +32,11 @@ type ClientPageProps = {
 
 export default function ClientPage({ product, similarProducts }: ClientPageProps) {
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(() => {
+    const defaultSizes = product.colors[0]?.sizes || [];
+    const firstAvailable = defaultSizes.find(s => s.quantity > 0);
+    return firstAvailable ? firstAvailable.size : null;
+  });
   const [quantity, setQuantity] = useState<number | "">(1);
   const [addingToCart, setAddingToCart] = useState(false);
   
@@ -185,23 +189,23 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pb-24 md:pb-0">
       {/* ── Breadcrumb ── */}
-      <div className="px-6 md:px-10 xl:px-16 pt-8 pb-4">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
+      <div className="px-3 md:px-10 xl:px-16 pt-5 md:pt-8 pb-3 md:pb-4">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[10px] md:text-xs font-semibold uppercase tracking-widest text-gray-400">
           <Link href="/" className="hover:text-black transition-colors">Home</Link>
           <span className="text-gray-300">/</span>
-          <span className="text-black font-bold">{product.title}</span>
+          <span className="text-black font-bold truncate max-w-[200px] md:max-w-none">{product.title}</span>
         </nav>
       </div>
 
-      <div className="px-6 md:px-10 xl:px-16 pb-20">
+      <div className="px-0 md:px-10 xl:px-16 pb-0 md:pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16 items-start">
           
           {/* ── Left side: Image Gallery ── */}
-          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="lg:col-span-7 flex md:grid flex-nowrap md:grid-cols-2 overflow-x-auto md:overflow-visible snap-x snap-mandatory gap-0 md:gap-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {images.map((img, idx) => (
-              <div key={idx} className="relative aspect-[3/4] w-full bg-gray-50 overflow-hidden">
+              <div key={idx} className="relative aspect-[3/4] w-full flex-shrink-0 snap-center bg-gray-50 overflow-hidden">
                 <Image
                   src={img.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
                   alt={`${product.title} - ${currentColor.colorName} - ${idx + 1}`}
@@ -215,14 +219,14 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
           </div>
 
           {/* ── Right side: Sticky Info Panel ── */}
-          <div className="lg:col-span-5 sticky top-24 flex flex-col gap-6">
+          <div className="lg:col-span-5 sticky top-24 flex flex-col gap-5 md:gap-6 px-4 md:px-0 pt-4 md:pt-0">
             
             <div className="flex flex-col gap-2">
-              <span className="text-[11px] font-black tracking-widest uppercase text-gray-500">
+              <span className="text-[10px] md:text-xs font-black tracking-widest uppercase text-gray-500">
                 {product.subSubCategory ? product.subSubCategory.replace(/-/g, ' ') : product.category}
               </span>
               <div className="flex items-start justify-between gap-4">
-                <h1 className="text-2xl font-bold uppercase tracking-wide text-black leading-snug">
+                <h1 className="text-xl md:text-2xl font-bold uppercase tracking-wide text-black leading-snug">
                   {product.title}
                 </h1>
                 <div className="flex items-center gap-1">
@@ -253,7 +257,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                   </span>
                 )}
               </div>
-              <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mt-[-4px]">
+              <p className="text-[10px] md:text-xs uppercase tracking-widest text-gray-400 font-bold mt-[-4px]">
                 MRP incl. of all taxes
               </p>
             </div>
@@ -261,7 +265,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
             {/* Colors (if multiple) */}
             {product.colors.length > 1 && (
               <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">
                   Color: <span className="text-black">{currentColor.colorName}</span>
                 </span>
                 <div className="flex gap-2">
@@ -270,7 +274,9 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                       key={idx}
                       onClick={() => {
                         setSelectedColorIndex(idx);
-                        setSelectedSize(null);
+                        const newSizes = product.colors[idx]?.sizes || [];
+                        const firstAvailable = newSizes.find(s => s.quantity > 0);
+                        setSelectedSize(firstAvailable ? firstAvailable.size : null);
                       }}
                       className={`w-12 h-16 relative rounded-sm overflow-hidden border-2 transition-all ${
                         selectedColorIndex === idx ? "border-black" : "border-transparent hover:border-gray-300"
@@ -291,10 +297,10 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
             {/* Sizes */}
             <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">
                   Size
                 </span>
-                <button className="text-[10px] font-black uppercase tracking-widest underline underline-offset-4 hover:opacity-60 transition-opacity">
+                <button className="text-[10px] md:text-xs font-black uppercase tracking-widest underline underline-offset-4 hover:opacity-60 transition-opacity">
                   Size Guide
                 </button>
               </div>
@@ -308,7 +314,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                       key={s.size}
                       disabled={isOutOfStock}
                       onClick={() => setSelectedSize(s.size)}
-                      className={`relative w-14 h-12 flex items-center justify-center text-[12px] font-bold tracking-widest border transition-all ${
+                      className={`relative w-14 h-12 flex items-center justify-center text-xs md:text-sm font-bold tracking-widest border transition-all ${
                         isOutOfStock
                           ? "opacity-40 bg-gray-50 border-gray-200 cursor-not-allowed text-gray-400"
                           : isSelected
@@ -327,13 +333,13 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                 })}
               </div>
               {!selectedSize && sizes.some(s => s.quantity > 0) && (
-                <p className="text-[10px] font-bold text-red-500 tracking-wider">Please select a size.</p>
+                <p className="text-[10px] md:text-xs font-bold text-red-500 tracking-wider">Please select a size.</p>
               )}
             </div>
 
             {/* Quantity Selector */}
             <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">
                 Quantity
               </span>
               <div className="flex items-center border border-gray-200 w-32 h-12">
@@ -361,7 +367,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                   onBlur={() => {
                     if (quantity === "") setQuantity(1);
                   }}
-                  className="flex-1 h-full w-full text-center text-[13px] font-bold focus:outline-none focus:bg-gray-50 transition-colors [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  className="flex-1 h-full w-full text-center text-sm font-bold focus:outline-none focus:bg-gray-50 transition-colors [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   style={{ MozAppearance: 'textfield' }}
                 />
                 <button
@@ -376,12 +382,12 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-4 mt-6">
+            {/* Action Buttons (Desktop) */}
+            <div className="hidden md:flex gap-4 mt-6">
               <button
                 onClick={handleAddToCart}
                 disabled={!selectedSize || addingToCart}
-                className={`flex-1 py-4 text-[13px] font-black uppercase tracking-[0.2em] transition-all ${
+                className={`flex-1 py-4 text-sm font-black uppercase tracking-[0.2em] transition-all ${
                   selectedSize && !addingToCart
                     ? "bg-black text-white hover:bg-gray-800"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
@@ -397,13 +403,13 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>
                 </svg>
-                <span className="text-[10px] font-bold uppercase tracking-widest">Free Shipping</span>
+                <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Free Shipping</span>
               </div>
               <div className="flex flex-col items-center justify-center gap-2 text-center">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
                 </svg>
-                <span className="text-[10px] font-bold uppercase tracking-widest">Fresh Fashion</span>
+                <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Fresh Fashion</span>
               </div>
             </div>
 
@@ -415,7 +421,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                 isOpen={openAccordion === "details"} 
                 onClick={() => toggleAccordion("details")}
               >
-                <div className="text-[12px] leading-relaxed text-gray-600 space-y-4">
+                <div className="text-xs md:text-sm leading-relaxed text-gray-600 space-y-4">
                   <p>{product.description}</p>
                   <p className="font-semibold text-gray-400 pt-2 border-t border-gray-100">Style ID: {displaySku}</p>
                 </div>
@@ -427,7 +433,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                 isOpen={openAccordion === "delivery"} 
                 onClick={() => toggleAccordion("delivery")}
               >
-                <p className="text-[12px] leading-relaxed text-gray-600">
+                <p className="text-xs md:text-sm leading-relaxed text-gray-600">
                   Standard delivery takes 3-5 business days. Free shipping on orders over ₹1,999.
                   <br /><br />
                   You have 15 days from the shipping date to return your purchase. The items must have all their labels and be in perfect condition.
@@ -440,7 +446,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                 isOpen={openAccordion === "contact"} 
                 onClick={() => toggleAccordion("contact")}
               >
-                <p className="text-[12px] leading-relaxed text-gray-600">
+                <p className="text-xs md:text-sm leading-relaxed text-gray-600">
                   Need help? Reach out to our customer support.
                   <br /><br />
                   Email: support@viit.com<br />
@@ -456,7 +462,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
 
       {/* ── Similar Products ── */}
       {similarProducts.length > 0 && (
-        <div className="px-6 md:px-10 xl:px-16 py-16 bg-white border-t border-gray-100 relative">
+        <div className="px-3 md:px-10 xl:px-16 py-12 md:py-16 bg-white border-t border-gray-100 relative">
           <div className="flex flex-col gap-8">
             <h2 className="text-xl font-bold uppercase tracking-widest text-black">
               Similar Products
@@ -493,6 +499,27 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
           </div>
         </div>
       )}
+
+      {/* ── Sticky Mobile Add To Bag Bar ───────────────────────────────── */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-3 pb-safe shadow-[0_-8px_20px_rgba(0,0,0,0.04)] z-50 flex items-center justify-between gap-4">
+        <div className="flex flex-col flex-1 pl-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Price</span>
+          <span className="text-base font-black text-black leading-none mt-1">₹{product.sellingPrice.toLocaleString("en-IN")}</span>
+        </div>
+        <button
+          onClick={handleAddToCart}
+          disabled={addingToCart}
+          className={`w-[65%] py-4 text-xs font-black uppercase tracking-widest transition-all ${
+            addingToCart
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : selectedSize
+              ? "bg-black text-white hover:bg-gray-800 active:scale-[0.98]"
+              : "bg-gray-100 text-black border border-black/10 active:scale-[0.98]"
+          }`}
+        >
+          {addingToCart ? "Adding..." : selectedSize ? "Add To Bag" : "Select A Size First"}
+        </button>
+      </div>
     </div>
   );
 }
@@ -505,7 +532,7 @@ function AccordionItem({ id, title, isOpen, onClick, children }: { id: string, t
         onClick={onClick}
         className="w-full flex items-center justify-between py-5 text-left transition-colors hover:bg-gray-50/50"
       >
-        <span className="text-[11px] font-bold uppercase tracking-widest text-black">{title}</span>
+        <span className="text-xs font-bold uppercase tracking-widest text-black">{title}</span>
         <svg 
           className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
           width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"

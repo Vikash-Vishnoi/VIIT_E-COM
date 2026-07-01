@@ -101,7 +101,7 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
           };
           const cls = badgeStyles[product.badge] ?? "bg-black text-white";
           return (
-            <span className={`absolute top-2 left-2 px-2 py-0.5 text-[9px] md:text-[10px] font-black uppercase tracking-widest rounded-full ${cls}`}>
+            <span className={`absolute top-2 left-2 px-2 py-0.5 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-full ${cls}`}>
               {product.badge}
             </span>
           );
@@ -122,15 +122,15 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
       </div>
 
       <div className="flex flex-col gap-1">
-        <h2 className="text-[11px] md:text-[13px] font-bold uppercase tracking-wide text-black leading-snug line-clamp-2 group-hover:underline underline-offset-2 transition-all">
+        <h2 className="text-xs md:text-sm font-bold uppercase tracking-wide text-black leading-snug line-clamp-2 group-hover:underline underline-offset-2 transition-all">
           {product.name}
         </h2>
         <div className="flex items-center gap-2">
-          <p className="text-[12px] md:text-[13px] font-semibold text-black">
+          <p className="text-xs md:text-sm font-semibold text-black">
             ₹{product.price.toLocaleString("en-IN")}
           </p>
           {product.originalPrice > product.price && (
-            <p className="text-[10px] md:text-[11px] font-semibold text-gray-400 line-through">
+            <p className="text-[10px] md:text-xs font-semibold text-gray-400 line-through">
               ₹{product.originalPrice.toLocaleString("en-IN")}
             </p>
           )}

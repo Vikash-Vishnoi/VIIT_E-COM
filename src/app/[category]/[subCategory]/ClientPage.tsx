@@ -228,7 +228,7 @@ export default function SubCategoryClientPage({
             <button
               id="filter-toggle"
               onClick={() => setFilterOpen((o) => !o)}
-              className={`flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest rounded-full px-3.5 py-1.5 border transition-all duration-200 ${
+              className={`flex items-center gap-1.5 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-full px-3.5 py-1.5 border transition-all duration-200 ${
                 filterOpen
                   ? "bg-black text-white border-black"
                   : "bg-white text-black border-gray-200 hover:border-black hover:bg-gray-50"
@@ -241,13 +241,13 @@ export default function SubCategoryClientPage({
               </svg>
               Filter
             </button>
-            <span className="text-[11px] text-gray-400 font-semibold">
+            <span className="text-xs text-gray-400 font-semibold">
               {total} {total === 1 ? "item" : "items"}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <label htmlFor="sort-select" className="text-[11px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap hidden sm:block">
+            <label htmlFor="sort-select" className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap hidden sm:block">
               Sort:
             </label>
             <div className="relative">
@@ -255,7 +255,7 @@ export default function SubCategoryClientPage({
                 id="sort-select"
                 value={currentSort}
                 onChange={(e) => handleSortChange(e.target.value as FeedSortKey)}
-                className="appearance-none text-[11px] font-black uppercase tracking-widest text-black border border-gray-200 rounded-full pl-3.5 pr-7 py-1.5 bg-white hover:border-black transition-colors outline-none cursor-pointer"
+                className="appearance-none text-[10px] md:text-xs font-black uppercase tracking-widest text-black border border-gray-200 rounded-full pl-3.5 pr-7 py-1.5 bg-white hover:border-black transition-colors outline-none cursor-pointer"
               >
                 {SORT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -274,8 +274,8 @@ export default function SubCategoryClientPage({
             <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
               <div className="flex flex-col gap-3 w-full max-w-xs">
                 <div className="flex justify-between items-center">
-                  <span className="text-[11px] font-black uppercase tracking-widest text-gray-500">Price Range</span>
-                  <span className="text-[12px] font-black text-black">
+                  <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Price Range</span>
+                  <span className="text-xs md:text-sm font-black text-black">
                     ₹{priceRange[0].toLocaleString("en-IN")} – ₹{priceRange[1].toLocaleString("en-IN")}
                   </span>
                 </div>
