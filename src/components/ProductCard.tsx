@@ -83,7 +83,7 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
 
   return (
     <Link href={`/products/${product.slug}`} className="group flex flex-col cursor-pointer" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-50 rounded-sm mb-3">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-50 rounded-sm mb-2 md:mb-3">
         <Image
           src={product.image || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
           alt={product.name || "Product image"}
@@ -92,21 +92,26 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
           className={`object-cover transition-transform duration-500 ${hovered ? "scale-105" : "scale-100"}`}
         />
 
-        {product.badge && (
-          <span
-            className={`absolute top-3 left-3 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-full ${
-              product.badge === "Sale" ? "bg-red-500 text-white" : "bg-black text-white"
-            }`}
-          >
-            {product.badge}
-          </span>
-        )}
+        {product.badge && (() => {
+          const badgeStyles: Record<string, string> = {
+            "Sale":        "bg-red-500 text-white",
+            "New":         "bg-emerald-500 text-white",
+            "Best Seller": "bg-amber-400 text-black",
+            "Limited":     "bg-purple-500 text-white",
+          };
+          const cls = badgeStyles[product.badge] ?? "bg-black text-white";
+          return (
+            <span className={`absolute top-2 left-2 px-2 py-0.5 text-[9px] md:text-[10px] font-black uppercase tracking-widest rounded-full ${cls}`}>
+              {product.badge}
+            </span>
+          );
+        })()}
 
         {/* Wishlist Button */}
         <button
           onClick={toggleWishlist}
           disabled={loadingWishlist}
-          className="absolute top-3 right-3 p-2 bg-white/80 hover:bg-white rounded-full text-black shadow-sm transition-all z-10"
+          className="absolute top-2 right-2 p-1.5 md:p-2 bg-white/80 hover:bg-white rounded-full text-black shadow-sm transition-all z-10"
         >
           <Heart 
             size={16} 
@@ -117,15 +122,15 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
       </div>
 
       <div className="flex flex-col gap-1">
-        <h2 className="text-[13px] font-bold uppercase tracking-wide text-black leading-snug line-clamp-2 group-hover:underline underline-offset-2 transition-all">
+        <h2 className="text-[11px] md:text-[13px] font-bold uppercase tracking-wide text-black leading-snug line-clamp-2 group-hover:underline underline-offset-2 transition-all">
           {product.name}
         </h2>
         <div className="flex items-center gap-2">
-          <p className="text-[13px] font-semibold text-black">
+          <p className="text-[12px] md:text-[13px] font-semibold text-black">
             ₹{product.price.toLocaleString("en-IN")}
           </p>
           {product.originalPrice > product.price && (
-            <p className="text-[11px] font-semibold text-gray-400 line-through">
+            <p className="text-[10px] md:text-[11px] font-semibold text-gray-400 line-through">
               ₹{product.originalPrice.toLocaleString("en-IN")}
             </p>
           )}

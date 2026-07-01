@@ -87,7 +87,7 @@ export default function CarouselSection({
 
   return (
     <section className={`w-full bg-white ${sectionClassName}`}>
-      <div className={`relative z-20 pointer-events-none ml-6 md:ml-32 mb-4 ${headerClassName}`}>
+      <div className={`relative z-20 pointer-events-none ml-10 md:ml-32 mb-4 ${headerClassName}`}>
         <h2 className="absolute -ml-12 md:-ml-13 text-4xl md:text-5xl font-black tracking-tight text-black leading-none mt-1">
           {title}
         </h2>

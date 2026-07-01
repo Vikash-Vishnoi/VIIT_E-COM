@@ -21,7 +21,7 @@ export default function Home() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[center_38.5%] scale-[1.05] translate-x-[2%]"
+          className="object-cover object-[center_38.5%] md:scale-[1.05] md:translate-x-[2%]"
           aria-hidden="true"
         />
 

@@ -201,7 +201,7 @@ export default function Header() {
 
   return (
     <header className="w-full bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
-      <div className="w-full px-10 xl:px-16">
+      <div className="w-full px-4 md:px-10 xl:px-16">
         {/* Single row: Logo | Nav | Icons */}
         <div className="grid grid-cols-[auto_1fr_auto] items-center py-4 gap-3 md:flex md:justify-between md:gap-3">
 
@@ -226,7 +226,7 @@ export default function Header() {
               alt="Logo"
               width={200}
               height={80}
-              className="object-contain absolute scale-[1] -translate-x-10 translate-y-3"
+              className="object-contain absolute md:scale-[1] md:-translate-x-10 md:translate-y-3"
               priority
             />
           </Link>
@@ -370,7 +370,11 @@ export default function Header() {
               </Link>
             ) : !loadingAuth && !user ? (
               <Link href={`/login?returnTo=${encodeURIComponent(pathname)}`} aria-label="Login / Register" className="flex items-center gap-2 text-black hover:opacity-60 transition-opacity">
-                <span className="text-[12px] font-bold uppercase tracking-widest whitespace-nowrap">Login / Register</span>
+                <span className="hidden md:inline text-[12px] font-bold uppercase tracking-widest whitespace-nowrap">Login / Register</span>
+                <svg className="md:hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
               </Link>
             ) : (
               <div className="w-[120px] h-[20px] animate-pulse bg-gray-100 rounded"></div>
@@ -381,7 +385,7 @@ export default function Header() {
 
       {/* Expandable Search bar */}
       {searchOpen && (
-        <div className="border-t border-gray-100 px-10 xl:px-16 py-3 bg-gray-50">
+        <div className="border-t border-gray-100 px-4 md:px-10 xl:px-16 py-3 bg-gray-50">
           <label htmlFor="site-search" className="sr-only">Search</label>
           <input
             id="site-search"
@@ -396,14 +400,28 @@ export default function Header() {
 
       {/* Mobile menu drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-100 px-6 py-4 bg-white">
-          <nav className="flex flex-col gap-4">
+        <div className="md:hidden border-t border-gray-100 bg-white">
+          {/* Drawer header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Menu</span>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Close menu"
+              className="text-black hover:opacity-60 transition-opacity p-1"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+          <nav className="flex flex-col px-5 py-2">
             {navLinks.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 ${link.highlight ? "text-[#FFCC00]" : "text-black"}`}
+                className={`py-3.5 border-b border-gray-100 last:border-0 text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 ${link.highlight ? "text-[#FFCC00]" : "text-black"}`}
               >
                 {link.label}
               </Link>

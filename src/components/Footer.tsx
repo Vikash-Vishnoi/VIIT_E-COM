@@ -64,7 +64,7 @@ export default function Footer() {
 
       </div>
 
-      <div className="mt-16 pt-6 border-t border-gray-100 text-center text-xs text-gray-400 font-medium">
+      <div className="mt-8 md:mt-16 pt-6 border-t border-gray-100 text-center text-xs text-gray-400 font-medium">
         &copy; {new Date().getFullYear()} VIIT. All rights reserved.
       </div>
     </footer>

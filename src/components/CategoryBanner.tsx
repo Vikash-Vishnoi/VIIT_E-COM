@@ -37,7 +37,7 @@ export default function CategoryBanner({
       <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/10 to-transparent" />
 
       {/* Text block — top left */}
-      <div className="absolute top-8 left-8 md:top-10 md:left-12 text-white">
+      <div className="absolute top-5 left-5 md:top-10 md:left-12 text-white">
         {/* Subtitle */}
         {subtitle && (
           <p
@@ -57,8 +57,8 @@ export default function CategoryBanner({
         </Link>
       </div>
 
-      {/* Buy Now Button — bottom left */}
-      <div className="absolute bottom-8 left-8 md:bottom-10 md:left-12 -translate-y-12 md:-translate-y-16">
+      {/* Shop Now Button — bottom left */}
+      <div className="absolute bottom-6 left-5 md:bottom-10 md:left-12">
         <Link 
           href={href}
           className="inline-flex items-center justify-center px-6 py-2.5 bg-white/95 text-black font-black uppercase tracking-widest text-[11px] md:text-[13px] rounded-full hover:bg-white hover:scale-105 transition-all shadow-md"

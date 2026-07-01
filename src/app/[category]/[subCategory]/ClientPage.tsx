@@ -136,8 +136,8 @@ export default function SubCategoryClientPage({
     <div className={`min-h-screen bg-white transition-opacity duration-200 ${isPending ? "opacity-60 pointer-events-none" : ""}`}>
 
       {/* ── Breadcrumb ───────────────────────────────────────────────────── */}
-      <div className="px-6 md:px-10 xl:px-16 pt-8 pb-2">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
+      <div className="px-4 md:px-10 xl:px-16 pt-5 pb-2">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-gray-400">
           <Link href="/" className="hover:text-black transition-colors">Home</Link>
           <span className="text-gray-300">/</span>
           <Link href={`/${categorySlug}`} className="hover:text-black transition-colors capitalize">
@@ -168,7 +168,7 @@ export default function SubCategoryClientPage({
         {/* Scrollable pills */}
         <div
           ref={navRef}
-          className="flex items-center gap-2 px-6 md:px-10 xl:px-16 py-3 overflow-x-auto"
+          className="flex items-center gap-2 px-4 md:px-10 xl:px-16 py-2.5 overflow-x-auto"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {siblings.map((item) => {
@@ -178,7 +178,7 @@ export default function SubCategoryClientPage({
                 key={item.slug}
                 id={`nav-item-${item.slug}`}
                 href={`/${categorySlug}/${item.slug}`}
-                className={`flex-shrink-0 px-5 py-1.5 rounded-full border text-[12px] tracking-widest uppercase transition-all duration-200 ${
+                className={`flex-shrink-0 px-4 py-1 rounded-full border text-[11px] tracking-widest uppercase transition-all duration-200 ${
                   isActive
                     ? "bg-black text-white border-black font-black"
                     : "bg-white text-gray-400 border-gray-100 font-bold hover:border-gray-300 hover:text-black"
@@ -197,7 +197,7 @@ export default function SubCategoryClientPage({
             <Link
               key={child.slug}
               href={`/${categorySlug}/${subCategorySlug}/${child.slug}`}
-              className="flex-shrink-0 px-4 py-1.5 rounded-full border border-dashed border-gray-200 text-[11px] tracking-widest uppercase font-semibold text-gray-400 hover:border-gray-400 hover:text-black transition-all duration-200"
+              className="flex-shrink-0 px-3.5 py-1 rounded-full border border-dashed border-gray-200 text-[10px] tracking-widest uppercase font-semibold text-gray-400 hover:border-gray-400 hover:text-black transition-all duration-200"
             >
               {child.label}
             </Link>
@@ -222,32 +222,32 @@ export default function SubCategoryClientPage({
 
       {/* ── Filter + Sort bar ─────────────────────────────────────────────── */}
       <div className="sticky top-[72px] z-30 bg-white border-b border-gray-100">
-        <div className="px-6 md:px-10 xl:px-16 flex items-center justify-between py-3 gap-4 flex-wrap">
+        <div className="px-4 md:px-10 xl:px-16 flex items-center justify-between py-2.5 gap-3">
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               id="filter-toggle"
               onClick={() => setFilterOpen((o) => !o)}
-              className={`flex items-center gap-2 text-[12px] font-black uppercase tracking-widest rounded-full px-4 py-2 border transition-all duration-200 ${
+              className={`flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest rounded-full px-3.5 py-1.5 border transition-all duration-200 ${
                 filterOpen
                   ? "bg-black text-white border-black"
                   : "bg-white text-black border-gray-200 hover:border-black hover:bg-gray-50"
               }`}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="4" y1="6" x2="20" y2="6" />
                 <line x1="8" y1="12" x2="16" y2="12" />
                 <line x1="11" y1="18" x2="13" y2="18" />
               </svg>
               Filter
             </button>
-            <span className="text-[11px] text-gray-400 font-semibold hidden sm:block">
+            <span className="text-[11px] text-gray-400 font-semibold">
               {total} {total === 1 ? "item" : "items"}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <label htmlFor="sort-select" className="text-[12px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap hidden sm:block">
+            <label htmlFor="sort-select" className="text-[11px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap hidden sm:block">
               Sort:
             </label>
             <div className="relative">
@@ -255,13 +255,13 @@ export default function SubCategoryClientPage({
                 id="sort-select"
                 value={currentSort}
                 onChange={(e) => handleSortChange(e.target.value as FeedSortKey)}
-                className="appearance-none text-[12px] font-black uppercase tracking-widest text-black border border-gray-200 rounded-full pl-4 pr-8 py-2 bg-white hover:border-black transition-colors outline-none cursor-pointer"
+                className="appearance-none text-[11px] font-black uppercase tracking-widest text-black border border-gray-200 rounded-full pl-3.5 pr-7 py-1.5 bg-white hover:border-black transition-colors outline-none cursor-pointer"
               >
                 {SORT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
-              <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </div>
@@ -270,7 +270,7 @@ export default function SubCategoryClientPage({
 
         {/* Price range panel */}
         {filterOpen && products.length > 0 && minPrice < maxPrice && (
-          <div className="px-6 md:px-10 xl:px-16 pb-5 pt-1 border-t border-gray-100">
+          <div className="px-4 md:px-10 xl:px-16 pb-5 pt-1 border-t border-gray-100">
             <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
               <div className="flex flex-col gap-3 w-full max-w-xs">
                 <div className="flex justify-between items-center">
@@ -334,7 +334,7 @@ export default function SubCategoryClientPage({
       )}
 
       {/* ── Product Grid ──────────────────────────────────────────────────── */}
-      <div className="px-6 md:px-10 xl:px-16 py-10">
+      <div className="px-3 md:px-10 xl:px-16 py-5 md:py-10">
         {total === 0 ? (
           <div className="flex flex-col items-center justify-center py-28 gap-4 text-center">
             <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -358,7 +358,8 @@ export default function SubCategoryClientPage({
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-10">
+            {/* 2-col on mobile, 3-col on sm, 4-col on lg */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-2.5 gap-y-6 md:gap-x-5 md:gap-y-10">
               {displayed.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -366,11 +367,11 @@ export default function SubCategoryClientPage({
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-2 mt-16">
+              <div className="flex justify-center items-center gap-1.5 mt-10 md:mt-16">
                 <button
                   onClick={() => goToPage(currentPage - 1)}
                   disabled={currentPage <= 1 || isPending}
-                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-gray-200 disabled:opacity-30 hover:bg-black hover:text-white transition-colors"
+                  className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest border border-gray-200 disabled:opacity-30 hover:bg-black hover:text-white transition-colors min-w-[60px] text-center"
                   aria-label="Previous page"
                 >
                   ← Prev
@@ -384,7 +385,7 @@ export default function SubCategoryClientPage({
                         key={p}
                         onClick={() => goToPage(p as number)}
                         disabled={isPending}
-                        className={`w-8 h-8 flex items-center justify-center text-[11px] font-black transition-colors ${
+                        className={`w-9 h-9 flex items-center justify-center text-[11px] font-black transition-colors ${
                           currentPage === p ? "bg-black text-white" : "text-gray-500 hover:bg-gray-100"
                         }`}
                         aria-label={`Page ${p}`}
@@ -398,7 +399,7 @@ export default function SubCategoryClientPage({
                 <button
                   onClick={() => goToPage(currentPage + 1)}
                   disabled={currentPage >= totalPages || isPending}
-                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-gray-200 disabled:opacity-30 hover:bg-black hover:text-white transition-colors"
+                  className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest border border-gray-200 disabled:opacity-30 hover:bg-black hover:text-white transition-colors min-w-[60px] text-center"
                   aria-label="Next page"
                 >
                   Next →
@@ -407,7 +408,7 @@ export default function SubCategoryClientPage({
             )}
 
             {totalPages > 1 && (
-              <p className="text-center text-[10px] text-gray-400 font-semibold uppercase tracking-widest mt-4">
+              <p className="text-center text-[10px] text-gray-400 font-semibold uppercase tracking-widest mt-3">
                 Page {currentPage} of {totalPages} &nbsp;·&nbsp; {total} items
               </p>
             )}
