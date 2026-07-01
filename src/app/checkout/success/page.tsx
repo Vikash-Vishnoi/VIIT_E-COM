@@ -15,15 +15,15 @@ function SuccessContent() {
   const formattedDate = deliveryDate.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' });
 
   return (
-    <div className="min-h-screen bg-white pt-[10px] pb-20 px-6 xl:px-16 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-white pt-[10px] pb-20 px-4 md:px-6 xl:px-16 flex flex-col items-center justify-center">
       <div className="max-w-[600px] w-full flex flex-col items-center text-center">
         
         {/* Animated Checkmark */}
-        <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mb-8 animate-[bounce_1s_ease-in-out]">
-          <CheckCircle2 size={48} className="text-green-500" strokeWidth={2} />
+        <div className="w-20 h-20 md:w-24 md:h-24 bg-green-50 rounded-full flex items-center justify-center mb-6 md:mb-8 animate-[bounce_1s_ease-in-out]">
+          <CheckCircle2 className="w-10 h-10 md:w-12 md:h-12 text-green-500" strokeWidth={2} />
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-black uppercase tracking-widest text-black mb-4">
+        <h1 className="text-2xl md:text-4xl font-black uppercase tracking-widest text-black mb-4">
           Order Confirmed
         </h1>
         
@@ -32,7 +32,7 @@ function SuccessContent() {
         </p>
 
         {/* Order Details Card */}
-        <div className="w-full bg-gray-50 border border-gray-200 rounded-sm p-6 mb-10 text-left">
+        <div className="w-full bg-gray-50 border border-gray-200 rounded-sm p-4 md:p-6 mb-10 text-left">
           <div className="grid grid-cols-2 gap-6">
             
             <div className="flex flex-col gap-1">

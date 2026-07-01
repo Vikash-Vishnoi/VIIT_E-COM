@@ -150,7 +150,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-[10px] pb-20 px-6 xl:px-16">
+    <div className="min-h-screen bg-gray-50 pt-5 md:pt-[10px] pb-0 md:pb-20 px-3 md:px-6 xl:px-16">
       <div className="max-w-[1200px] mx-auto">
         
         <div className="mb-10 text-center">
@@ -167,21 +167,21 @@ export default function CheckoutPage() {
             
             {/* Step 1: Shipping Address */}
             <div className="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
-              <div className="bg-black px-6 py-4">
+              <div className="bg-black px-4 py-3 md:px-6 md:py-4">
                 <h2 className="text-sm font-black uppercase tracking-widest text-white flex items-center gap-3">
                   <span className="flex items-center justify-center w-5 h-5 rounded-full bg-white text-black text-[10px]">1</span>
                   Shipping Address
                 </h2>
               </div>
               
-              <div className="p-6">
+              <div className="p-4 md:p-6">
                 {!showNewAddress && addresses.length > 0 ? (
                   <div className="flex flex-col gap-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {addresses.map((addr) => (
                         <label 
                           key={addr._id}
-                          className={`relative flex flex-col gap-1 p-4 border rounded-sm cursor-pointer transition-all ${
+                          className={`relative flex flex-col gap-1 p-3 md:p-4 border rounded-sm cursor-pointer transition-all ${
                             selectedAddressId === addr._id 
                               ? "border-black bg-gray-50 ring-1 ring-black" 
                               : "border-gray-200 hover:border-gray-300"
@@ -241,14 +241,14 @@ export default function CheckoutPage() {
             </div>
 
             {/* Step 2: Payment */}
-            <div className={`bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden transition-opacity ${!selectedAddressId || showNewAddress ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
-              <div className={`${!selectedAddressId || showNewAddress ? "bg-gray-100 text-gray-400" : "bg-black text-white"} px-6 py-4 transition-colors`}>
+            <div className="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
+              <div className="bg-black text-white px-4 py-3 md:px-6 md:py-4">
                 <h2 className="text-sm font-black uppercase tracking-widest flex items-center gap-3">
-                  <span className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] ${!selectedAddressId || showNewAddress ? "bg-gray-300 text-white" : "bg-white text-black"}`}>2</span>
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] bg-white text-black">2</span>
                   Payment Method
                 </h2>
               </div>
-              <div className="p-6">
+              <div className="p-4 md:p-6">
                 <div className="flex flex-col gap-3">
                   {[
                     { id: "Card", label: "Credit / Debit Card", icon: CreditCard },
@@ -257,7 +257,7 @@ export default function CheckoutPage() {
                   ].map((method) => (
                     <label 
                       key={method.id}
-                      className={`relative flex items-center gap-4 p-4 border rounded-sm cursor-pointer transition-all ${
+                      className={`relative flex items-center gap-3 md:gap-4 p-3 md:p-4 border rounded-sm cursor-pointer transition-all ${
                         paymentMethod === method.id 
                           ? "border-black bg-gray-50 ring-1 ring-black" 
                           : "border-gray-200 hover:border-gray-300"
@@ -285,8 +285,8 @@ export default function CheckoutPage() {
 
           {/* Right Column: Order Summary */}
           <div className="lg:col-span-5 sticky top-24">
-            <div className="bg-white p-6 md:p-8 flex flex-col gap-6 border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-sm">
-              <h2 className="text-lg font-black uppercase tracking-widest text-black border-b border-gray-100 pb-4">
+            <div className="bg-white p-4 md:p-8 flex flex-col gap-5 md:gap-6 border-none md:border-solid md:border md:border-gray-200 shadow-none md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-sm pb-8 md:pb-8">
+              <h2 className="hidden md:block text-lg font-black uppercase tracking-widest text-black border-b border-gray-100 pb-4">
                 Review Order
               </h2>
 
@@ -344,7 +344,7 @@ export default function CheckoutPage() {
               <button 
                 onClick={handlePlaceOrder}
                 disabled={placingOrder || !selectedAddressId || showNewAddress}
-                className="w-full flex items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-[13px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-none disabled:cursor-not-allowed"
+                className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-[13px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-none disabled:cursor-not-allowed"
               >
                 {placingOrder ? "Processing..." : `Pay ₹${subtotal.toLocaleString("en-IN")}`}
               </button>
@@ -358,6 +358,24 @@ export default function CheckoutPage() {
             </div>
           </div>
 
+        </div>
+      </div>
+
+      {/* ── Sticky Mobile Checkout Bar ───────────────────────────────── */}
+      <div className="md:hidden sticky bottom-0 -mx-3 mt-4 bg-white border-t border-gray-200 p-4 pb-safe shadow-[0_-8px_20px_rgba(0,0,0,0.04)] z-50">
+        <div className="flex justify-between items-center mb-3">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Total</span>
+            <span className="text-lg font-black text-black leading-none mt-1">₹{subtotal.toLocaleString("en-IN")}</span>
+          </div>
+          <button 
+            onClick={handlePlaceOrder}
+            disabled={placingOrder || !selectedAddressId || showNewAddress}
+            className="flex items-center justify-center gap-2 bg-black text-white px-8 py-3.5 text-[11px] font-black uppercase tracking-widest active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {placingOrder ? "Processing..." : "Pay Now"}
+            <ArrowRight size={14} />
+          </button>
         </div>
       </div>
     </div>

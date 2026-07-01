@@ -105,13 +105,13 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pt-[10px] pb-20 px-6 xl:px-16">
+    <div className="min-h-screen bg-white pt-5 md:pt-[10px] pb-0 md:pb-20 px-3 md:px-6 xl:px-16">
       <div className="max-w-[1200px] mx-auto">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-6 mb-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-6 mb-5 md:mb-10">
           <div>
-            <h1 className="text-3xl font-black uppercase tracking-widest text-black mb-2">Shopping Bag</h1>
+            <h1 className="text-2xl md:text-3xl font-black uppercase tracking-wider md:tracking-widest text-black mb-2">Shopping Bag</h1>
             <p className="text-sm font-semibold tracking-wider text-gray-500 uppercase">
               {items.length} {items.length === 1 ? 'Item' : 'Items'}
             </p>
@@ -120,11 +120,11 @@ export default function CartPage() {
 
         {/* Empty State */}
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="flex flex-col items-center justify-center py-16 md:py-20 text-center">
             <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
               <ShoppingBag size={32} className="text-gray-300" strokeWidth={1.5} />
             </div>
-            <h2 className="text-xl font-black uppercase tracking-widest text-black mb-4">Your Bag is Empty</h2>
+            <h2 className="text-lg md:text-xl font-black uppercase tracking-widest text-black mb-4">Your Bag is Empty</h2>
             <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
               Looks like you haven't added anything to your bag yet. Start exploring our collections.
             </p>
@@ -136,15 +136,15 @@ export default function CartPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
             
             {/* Left: Cart Items */}
             <div className="lg:col-span-8 flex flex-col gap-8">
               {items.map((item) => (
-                <div key={item._id} className="flex gap-6 pb-8 border-b border-gray-100 last:border-0 relative group">
+                <div key={item._id} className="flex gap-4 md:gap-6 pb-8 border-b border-gray-100 last:border-0 relative group">
                   
                   {/* Image */}
-                  <Link href={`/products/${item.productId.slug}`} className="relative w-32 md:w-40 aspect-[3/4] bg-gray-50 flex-shrink-0">
+                  <Link href={`/products/${item.productId.slug}`} className="relative w-24 md:w-40 aspect-[3/4] bg-gray-50 flex-shrink-0">
                     <Image
                       src={item.productId.colors?.[0]?.images?.[0]?.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
                       alt={item.productId.title || "Product image"}
@@ -157,13 +157,13 @@ export default function CartPage() {
                   <div className="flex flex-col flex-1 py-1">
                     <div className="flex justify-between items-start gap-4">
                       <Link href={`/products/${item.productId.slug}`}>
-                        <h3 className="text-sm md:text-base font-bold uppercase tracking-wide text-black leading-snug hover:underline underline-offset-2 pr-8">
+                        <h3 className="text-xs md:text-base font-bold uppercase tracking-wide text-black leading-snug hover:underline underline-offset-2 md:pr-8">
                           {item.productId.title}
                         </h3>
                       </Link>
                       <button 
                         onClick={() => handleRemove(item._id)}
-                        className="absolute right-0 top-1 text-gray-400 hover:text-red-500 transition-colors p-1"
+                        className="hidden md:block absolute right-0 top-1 text-gray-400 hover:text-red-500 transition-colors p-1"
                         aria-label="Remove item"
                       >
                         <Trash2 size={18} />
@@ -191,42 +191,52 @@ export default function CartPage() {
                       )}
                     </div>
 
-                    {/* Quantity Selector */}
-                    <div className="mt-auto pt-6 flex items-center">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 mr-4">
-                        Qty:
-                      </span>
-                      <div className="flex items-center border border-gray-200 w-28 h-10">
-                        <button
-                          disabled={item.quantity <= 1}
-                          onClick={() => handleUpdateQuantity(item._id, item.quantity - 1)}
-                          className="w-8 h-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                          </svg>
-                        </button>
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (!isNaN(val) && val > 0) handleUpdateQuantity(item._id, val);
-                          }}
-                          className="flex-1 h-full w-full text-center text-[12px] font-bold focus:outline-none focus:bg-gray-50 transition-colors [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                          style={{ MozAppearance: 'textfield' }}
-                        />
-                        <button
-                          onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
-                          className="w-8 h-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 transition-colors"
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                          </svg>
-                        </button>
+                    {/* Quantity Selector + Mobile Delete */}
+                    <div className="mt-auto pt-5 md:pt-6 flex justify-between items-end">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-500 md:mr-4 md:inline-block">
+                          Qty:
+                        </span>
+                        <div className="flex items-center border border-gray-200 h-8 md:h-10 rounded-full md:rounded-none overflow-hidden">
+                          <button
+                            disabled={item.quantity <= 1}
+                            onClick={() => handleUpdateQuantity(item._id, item.quantity - 1)}
+                            className="w-8 h-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="md:w-[12px] md:h-[12px]">
+                              <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                          </button>
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.quantity}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              if (!isNaN(val) && val > 0) handleUpdateQuantity(item._id, val);
+                            }}
+                            className="w-8 md:w-12 h-full text-center text-[11px] md:text-[12px] font-bold focus:outline-none focus:bg-gray-50 transition-colors [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                            style={{ MozAppearance: 'textfield' }}
+                          />
+                          <button
+                            onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
+                            className="w-8 h-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 transition-colors"
+                          >
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="md:w-[12px] md:h-[12px]">
+                              <line x1="12" y1="5" x2="12" y2="19"></line>
+                              <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                          </button>
+                        </div>
                       </div>
+
+                      <button 
+                        onClick={() => handleRemove(item._id)}
+                        className="md:hidden text-gray-400 hover:text-red-500 transition-colors p-1"
+                        aria-label="Remove item"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
 
                   </div>
@@ -236,12 +246,12 @@ export default function CartPage() {
 
             {/* Right: Order Summary */}
             <div className="lg:col-span-4 sticky top-24">
-              <div className="bg-white p-6 md:p-8 flex flex-col gap-6 border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-sm">
-                <h2 className="text-lg font-black uppercase tracking-widest text-black mb-2">
+              <div className="bg-white p-0 md:p-8 flex flex-col gap-5 md:gap-6 border-none md:border-solid md:border md:border-gray-200 shadow-none md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-none md:rounded-sm">
+                <h2 className="hidden md:block text-lg font-black uppercase tracking-widest text-black mb-2">
                   Order Summary
                 </h2>
                 
-                <div className="flex flex-col gap-5 text-[13px] font-semibold text-gray-500">
+                <div className="flex flex-col gap-4 md:gap-5 text-[12px] md:text-[13px] font-semibold text-gray-500">
                   <div className="flex justify-between items-center">
                     <span>Subtotal (Excl. Tax)</span>
                     <span className="text-black font-bold">₹{subtotalExclTax.toLocaleString("en-IN")}</span>
@@ -252,21 +262,21 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Estimated Shipping</span>
-                    <span className="text-green-600 uppercase tracking-wider text-[11px] font-black bg-green-50 px-2 py-1 rounded-sm">Free</span>
+                    <span className="text-green-600 uppercase tracking-wider text-[10px] md:text-[11px] font-black bg-green-50 px-2 py-1 rounded-sm">Free</span>
                   </div>
                 </div>
 
-                <div className="flex justify-between items-end pt-6 border-t border-gray-100 mt-2">
+                <div className="flex justify-between items-end pt-5 md:pt-6 border-t border-gray-100 mt-1 md:mt-2">
                   <div className="flex flex-col">
-                    <span className="text-base font-black uppercase tracking-wide text-black">Total</span>
-                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Incl. of all taxes</span>
+                    <span className="text-sm md:text-base font-black uppercase tracking-wide text-black">Total</span>
+                    <span className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Incl. of all taxes</span>
                   </div>
-                  <span className="text-2xl font-black text-black leading-none">₹{subtotal.toLocaleString("en-IN")}</span>
+                  <span className="text-xl md:text-2xl font-black text-black leading-none">₹{subtotal.toLocaleString("en-IN")}</span>
                 </div>
 
                 <Link 
                   href="/checkout"
-                  className="w-full flex items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-[12px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg group"
+                  className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-[12px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg group"
                 >
                   Proceed to Checkout
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -287,6 +297,25 @@ export default function CartPage() {
           </div>
         )}
       </div>
+
+      {/* ── Sticky Mobile Checkout Bar ───────────────────────────────── */}
+      {items.length > 0 && (
+        <div className="md:hidden sticky bottom-0 -mx-3 mt-8 bg-white border-t border-gray-200 p-4 pb-safe shadow-[0_-8px_20px_rgba(0,0,0,0.04)] z-50">
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Total</span>
+              <span className="text-lg font-black text-black leading-none mt-1">₹{subtotal.toLocaleString("en-IN")}</span>
+            </div>
+            <Link 
+              href="/checkout"
+              className="flex items-center justify-center gap-2 bg-black text-white px-8 py-3.5 text-[11px] font-black uppercase tracking-widest active:scale-[0.98] transition-transform"
+            >
+              Checkout
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
