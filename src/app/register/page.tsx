@@ -113,9 +113,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6 py-20">
-      <div className="w-full max-w-lg bg-white p-10 shadow-sm border border-gray-100">
-        <h1 className="text-2xl font-black uppercase tracking-widest text-black text-center mb-6">
+    <div className="min-h-screen flex justify-center bg-gray-50 px-4 md:px-6 pt-[20px] pb-10 md:items-center md:pt-20 md:pb-20">
+      <div className="w-full max-w-lg bg-white px-6 pt-6 pb-2 md:px-10 md:pt-10 md:pb-0 shadow-sm border border-gray-100">
+        <h1 className="text-xl md:text-2xl font-black uppercase tracking-widest text-black text-center mb-6">
           Create Account
         </h1>
 
@@ -123,7 +123,7 @@ export default function RegisterPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Full Name</label>
+              <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Full Name</label>
               <input 
                 type="text" 
                 value={name}
@@ -137,7 +137,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Mobile Number</label>
+              <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Mobile Number</label>
               <div className="flex items-center border-b-2 border-gray-200 focus-within:border-black transition-colors">
                 <span className="text-sm font-medium text-gray-800 pr-2">+91</span>
                 <input 
@@ -154,8 +154,8 @@ export default function RegisterPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Email Address</label>
-            <div className="flex gap-2 items-end">
+            <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Email Address</label>
+            <div className="flex flex-row gap-2 items-end">
               <input 
                 type="email" 
                 value={email}
@@ -171,7 +171,7 @@ export default function RegisterPage() {
                 type="button"
                 onClick={handleSendOTP}
                 disabled={otpLoading || cooldown > 0}
-                className="px-4 py-2 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 disabled:opacity-50 transition-colors whitespace-nowrap min-w-[120px]"
+                className="px-3 md:px-4 py-2 bg-black text-white text-[9px] md:text-xs font-black uppercase tracking-widest hover:bg-gray-800 disabled:opacity-50 transition-colors whitespace-nowrap min-w-[90px] md:min-w-[120px]"
               >
                 {otpLoading ? "Sending..." : cooldown > 0 ? `Resend in ${cooldown}s` : otpSent ? "Resend OTP" : "Send OTP"}
               </button>
@@ -179,7 +179,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">5-Digit OTP</label>
+            <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">5-Digit OTP</label>
             <input 
               type="text" 
               maxLength={5}
@@ -189,11 +189,11 @@ export default function RegisterPage() {
               className="w-full border-b-2 border-gray-200 py-2 text-sm tracking-[0.5em] focus:outline-none focus:border-black transition-colors bg-transparent"
               placeholder="00000"
             />
-            {otpSent && <span className="text-[10px] font-bold text-gray-400 mt-1">Please check your email for the code.</span>}
+            {otpSent && <span className="text-[10px] md:text-xs font-bold text-gray-400 mt-1">Please check your email for the code.</span>}
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Password</label>
+            <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Password</label>
             <input 
               type="password" 
               value={password}
@@ -202,7 +202,7 @@ export default function RegisterPage() {
               className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
               placeholder="••••••••"
             />
-            <div className="mt-1 p-3 bg-gray-50/80 border border-gray-100 rounded-lg text-[10px] font-medium text-gray-500 leading-relaxed">
+            <div className="mt-1 p-3 bg-gray-50/80 border border-gray-100 rounded-lg text-[10px] md:text-[11px] font-medium text-gray-500 leading-relaxed">
               {passwordErrorMsg}
             </div>
           </div>
@@ -210,7 +210,7 @@ export default function RegisterPage() {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full py-4 bg-black text-white text-[12px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 disabled:opacity-50 transition-colors mt-4"
+            className="w-full py-3.5 md:py-4 bg-black text-white text-xs md:text-sm font-black uppercase tracking-[0.2em] hover:bg-gray-800 disabled:opacity-50 transition-colors mt-4"
           >
             {loading ? "Creating Account..." : "Register"}
           </button>

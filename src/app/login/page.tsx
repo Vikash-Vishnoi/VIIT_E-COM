@@ -57,15 +57,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6 py-20">
-      <div className="w-full max-w-md bg-white p-10 shadow-sm border border-gray-100">
-        <h1 className="text-2xl font-black uppercase tracking-widest text-black text-center mb-6">
+    <div className="min-h-screen flex justify-center bg-gray-50 px-4 md:px-6 pt-[20px] pb-10 md:items-center md:pt-20 md:pb-20">
+      <div className="w-full max-w-md bg-white px-6 pt-6 pb-2 md:px-10 md:pt-10 md:pb-0 shadow-sm border border-gray-100">
+        <h1 className="text-xl md:text-2xl font-black uppercase tracking-widest text-black text-center mb-6">
           Sign In
         </h1>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Email Address</label>
+            <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Email Address</label>
             <input 
               type="email" 
               value={email}
@@ -78,7 +78,7 @@ export default function LoginPage() {
 
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center">
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Password</label>
+              <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Password</label>
               <button 
                 type="button"
                 onClick={() => {
@@ -86,7 +86,7 @@ export default function LoginPage() {
                   const returnTo = searchParams.get('returnTo');
                   router.push(`/forgot-password${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`);
                 }}
-                className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black transition-colors"
+                className="text-[10px] md:text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-black transition-colors"
               >
                 Forgot Password?
               </button>
@@ -104,7 +104,7 @@ export default function LoginPage() {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full py-4 bg-black text-white text-[12px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 disabled:opacity-50 transition-colors mt-4"
+            className="w-full py-3.5 md:py-4 bg-black text-white text-xs md:text-sm font-black uppercase tracking-[0.2em] hover:bg-gray-800 disabled:opacity-50 transition-colors mt-4"
           >
             {loading ? "Signing In..." : "Sign In"}
           </button>
