@@ -111,6 +111,7 @@ function ProfileContent() {
   const [addrPincode, setAddrPincode] = useState("");
   const [addrCountry, setAddrCountry] = useState("India");
   const [addrIsDefault, setAddrIsDefault] = useState(false);
+  const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
 
   // Security Form
   const [currentPassword, setCurrentPassword] = useState("");
@@ -233,10 +234,14 @@ function ProfileContent() {
     }
   };
 
-  const handleDeleteAddress = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this address?")) return;
+  const handleDeleteAddress = (id: string) => {
+    setAddressToDelete(id);
+  };
+
+  const confirmDeleteAddress = async () => {
+    if (!addressToDelete) return;
     try {
-      const res = await fetch(`/api/user/addresses?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/user/addresses?id=${addressToDelete}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         toast.success("Address removed");
@@ -246,6 +251,8 @@ function ProfileContent() {
       }
     } catch (err) {
       toast.error("Failed to delete address");
+    } finally {
+      setAddressToDelete(null);
     }
   };
 
@@ -810,6 +817,35 @@ function ProfileContent() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {addressToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-sm shadow-2xl p-8 text-center border border-gray-100">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Trash2 className="text-red-600" size={28} />
+            </div>
+            <h2 className="text-lg font-black uppercase tracking-widest text-black mb-3">Delete Address?</h2>
+            <p className="text-xs text-gray-500 mb-8 font-medium leading-relaxed">
+              This action cannot be undone. Are you sure you want to permanently delete this address?
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setAddressToDelete(null)}
+                className="flex-1 px-4 py-3.5 border border-gray-200 text-xs font-black uppercase tracking-widest hover:border-black transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteAddress}
+                className="flex-1 px-4 py-3.5 bg-red-600 text-white text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

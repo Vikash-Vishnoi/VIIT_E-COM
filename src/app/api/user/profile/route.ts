@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { User } from '@/models';
+import { User, Address } from '@/models';
 import { getAuthUser } from '@/lib/auth';
 
 // GET: Fetch full user profile
@@ -18,7 +18,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: user });
+    const addresses = await Address.find({ user: userId }).lean();
+    const profileData = { ...user, address: addresses };
+
+    return NextResponse.json({ success: true, data: profileData });
   } catch (error: any) {
     console.error('GET /api/user/profile error:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });

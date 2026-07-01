@@ -101,9 +101,8 @@ export default function CheckoutPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setAddresses(data.data);
-        const added = data.data[data.data.length - 1]; // Latest
-        setSelectedAddressId(added._id);
+        setAddresses(prev => [...prev, data.data]);
+        setSelectedAddressId(data.data._id);
         setShowNewAddress(false);
       } else {
         alert(data.message || "Failed to save address");

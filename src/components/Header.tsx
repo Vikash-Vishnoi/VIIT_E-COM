@@ -293,7 +293,7 @@ export default function Header() {
                           {/* Header image */}
                           {headerImg && (
                             <div className="relative min-w-0 w-[370px] aspect-[4/5] justify-self-start">
-                              <Image src={headerImg.src} alt={headerImg.alt} fill className="rounded-md object-cover" />
+                              <Image src={headerImg.src} alt={headerImg.alt} fill sizes="(max-width: 768px) 100vw, 370px" className="rounded-md object-cover" />
                             </div>
                           )}
                           {cat.children.map(sub => (
@@ -320,7 +320,7 @@ export default function Header() {
                         <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-6 px-5 pb-5">
                           {headerImg && (
                             <div className="relative min-w-0 w-[370px] aspect-[4/5] justify-self-start">
-                              <Image src={headerImg.src} alt={headerImg.alt} fill className="rounded-md object-cover" />
+                              <Image src={headerImg.src} alt={headerImg.alt} fill sizes="(max-width: 768px) 100vw, 370px" className="rounded-md object-cover" />
                             </div>
                           )}
                           <div className="flex flex-col gap-2">
