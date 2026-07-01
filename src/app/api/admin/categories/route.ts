@@ -1,9 +1,10 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { SubCategory } from '@/models';
+import { SubCategory, AdminAuditLog } from '@/models';
 
 export const dynamic = 'force-dynamic';
 import { getAdminUser } from '@/lib/auth';
+import { validateObjectId } from '@/lib/productValidation';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,13 +13,9 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const { searchParams } = new URL(request.url);
-    const fetchAll = searchParams.get('all') === 'true';
-
-    const filter = fetchAll ? {} : { isActive: true };
-
     // Fetch categories sorted by level and sortOrder
-    const categories = await SubCategory.find(filter)
+    const categories = await SubCategory.find({})
+      .select('label slug level parentId isActive sortOrder')
       .sort({ level: 1, sortOrder: 1 })
       .lean();
 
@@ -29,6 +26,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
+
 export async function POST(request: NextRequest) {
   try {
     const adminId = await getAdminUser(request);
@@ -36,28 +34,52 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
     const body = await request.json();
-    const { label, parentId, image, isActive } = body;
+    const { label, parentId, isActive, sortOrder } = body;
 
-    if (!label) {
-      return NextResponse.json({ success: false, message: 'Label is required' }, { status: 400 });
+    if (typeof label !== 'string' || label.trim().length < 2 || label.trim().length > 50) {
+      return NextResponse.json({ success: false, message: 'Label must be a string between 2 and 50 characters' }, { status: 400 });
+    }
+    const safeLabel = label.trim();
+
+    if (parentId !== undefined && parentId !== null && parentId !== "") {
+      const idValidation = validateObjectId(parentId, 'parent category');
+      if (!idValidation.isValid) {
+        return NextResponse.json({ success: false, message: idValidation.error }, { status: 400 });
+      }
+    }
+
+    let safeIsActive = true;
+    if (isActive !== undefined) {
+      if (typeof isActive !== 'boolean') {
+        return NextResponse.json({ success: false, message: 'isActive must be a boolean' }, { status: 400 });
+      }
+      safeIsActive = isActive;
+    }
+
+    let safeSortOrder = 0;
+    if (sortOrder !== undefined) {
+      if (typeof sortOrder !== 'number' || sortOrder < 0 || !Number.isInteger(sortOrder)) {
+        return NextResponse.json({ success: false, message: 'sortOrder must be a positive integer' }, { status: 400 });
+      }
+      safeSortOrder = sortOrder;
     }
 
     // Auto-generate slug
-    let slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    let slug = safeLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     
     // Ensure slug is unique
-    let existing = await SubCategory.findOne({ slug });
+    let existing = await SubCategory.exists({ slug });
     let counter = 1;
     while (existing) {
-      slug = `${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}-${counter}`;
-      existing = await SubCategory.findOne({ slug });
+      slug = `${safeLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}-${counter}`;
+      existing = await SubCategory.exists({ slug });
       counter++;
     }
 
     // Calculate level
     let level: 0 | 1 | 2 = 0;
     if (parentId) {
-      const parent = await SubCategory.findById(parentId);
+      const parent = await SubCategory.findById(parentId).select('level').lean();
       if (!parent) {
         return NextResponse.json({ success: false, message: 'Parent category not found' }, { status: 400 });
       }
@@ -73,11 +95,23 @@ export async function POST(request: NextRequest) {
 
     const newCategory = await SubCategory.create({
       slug,
-      label,
+      label: safeLabel,
       parentId,
       level,
-      image: image || null,
-      isActive: isActive !== undefined ? isActive : true,
+      isActive: safeIsActive,
+      sortOrder: safeSortOrder,
+    });
+
+    await AdminAuditLog.create({
+      adminId,
+      action: 'CATEGORY_CREATED',
+      resourceId: newCategory._id.toString(),
+      resourceName: newCategory.label,
+      metadata: {
+        slug: newCategory.slug,
+        level: newCategory.level,
+        parentId: newCategory.parentId,
+      },
     });
 
     return NextResponse.json({ success: true, data: newCategory });

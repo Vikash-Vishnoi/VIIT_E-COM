@@ -10,8 +10,9 @@ type CategoryNode = {
   slug: string;
   level: number;
   parentId: string | null;
-  image?: string;
+
   isActive: boolean;
+  sortOrder: number;
 };
 
 export default function CategoriesPage() {
@@ -22,11 +23,14 @@ export default function CategoriesPage() {
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [activeCategory, setActiveCategory] = useState<CategoryNode | null>(null);
 
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     label: "",
     parentId: "",
-    image: "",
     isActive: true,
+    sortOrder: 0 as number | string,
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -35,7 +39,7 @@ export default function CategoriesPage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch("/api/admin/categories?all=true");
+      const res = await fetch("/api/admin/categories");
       const json = await res.json();
       if (json.success) setCategories(json.data);
     } catch (err) {
@@ -63,16 +67,16 @@ export default function CategoriesPage() {
       setFormData({
         label: category.label,
         parentId: category.parentId || "",
-        image: category.image || "",
         isActive: category.isActive,
+        sortOrder: category.sortOrder || 0,
       });
     } else {
       setActiveCategory(null);
       setFormData({
         label: "",
         parentId: defaultParentId || "",
-        image: "",
         isActive: true,
+        sortOrder: 0,
       });
     }
     setIsModalOpen(true);
@@ -88,10 +92,15 @@ export default function CategoriesPage() {
       const url = modalMode === "edit" ? `/api/admin/categories/${activeCategory?._id}` : "/api/admin/categories";
       const method = modalMode === "edit" ? "PUT" : "POST";
 
+      const payload = {
+        ...formData,
+        sortOrder: formData.sortOrder === "" ? 0 : formData.sortOrder,
+      };
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -109,11 +118,16 @@ export default function CategoriesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
+  const handleDelete = (id: string) => {
+    setCategoryToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!categoryToDelete) return;
 
     try {
-      const res = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/categories/${categoryToDelete}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         toast.success("Category deleted");
@@ -123,6 +137,9 @@ export default function CategoriesPage() {
       }
     } catch (err) {
       toast.error("Failed to delete category");
+    } finally {
+      setDeleteModalOpen(false);
+      setCategoryToDelete(null);
     }
   };
 
@@ -267,6 +284,19 @@ export default function CategoriesPage() {
                 </div>
               )}
 
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Sort Order</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.sortOrder}
+                  onChange={(e) => setFormData({ ...formData, sortOrder: e.target.value === '' ? '' : parseInt(e.target.value, 10) || 0 })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-black outline-none font-bold"
+                  placeholder="0"
+                />
+                <p className="text-[11px] text-gray-400 mt-1 font-medium">Lower numbers appear first (e.g. 0, 1, 2).</p>
+              </div>
+
               <div className="flex items-center gap-3 pt-2">
                 <input
                   type="checkbox"
@@ -298,6 +328,35 @@ export default function CategoriesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden p-6 text-center">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="text-red-600" size={28} />
+            </div>
+            <h2 className="text-xl font-black text-gray-900 mb-2">Delete Category?</h2>
+            <p className="text-sm text-gray-500 mb-8 font-medium">
+              This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteModalOpen(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-sm"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

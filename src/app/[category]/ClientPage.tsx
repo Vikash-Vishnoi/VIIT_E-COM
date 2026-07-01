@@ -9,13 +9,13 @@ import { FeedSortKey, SORT_OPTIONS } from "@/lib/feedTypes";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
-export type SubCatCard = { label: string; slug: string; image: string | null };
+export type SubCatCard = { label: string; slug: string };
 
 type Props = {
   products: FormattedProduct[];
   categorySlug: string;
   categoryLabel: string;
-  categoryImage: string | null;
+
   /** Level-1 sub-categories — shown as tab pills (none are "active" at this level) */
   subCats: SubCatCard[];
   currentSort: FeedSortKey;

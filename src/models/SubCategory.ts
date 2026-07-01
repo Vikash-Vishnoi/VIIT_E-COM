@@ -15,7 +15,7 @@ export interface ISubCategory extends Document {
    * 2 = sub-sub    (Denim Jacket)
    */
   level: 0 | 1 | 2;
-  image?: string;     // Cloudinary URL — used in header dropdown
+
   isActive: boolean;
   sortOrder: number;  // controls display order within the same parent
   createdAt: Date;
@@ -42,7 +42,7 @@ const SubCategorySchema = new Schema<ISubCategory>(
       required: true,
       enum: [0, 1, 2],
     },
-    image: { type: String },
+
     isActive: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
   },

@@ -45,7 +45,7 @@ export default async function CategoryPage({
   const subCats: SubCatCard[] = subCatsData.map((s) => ({
     label: s.label,
     slug: s.slug,
-    image: s.image ?? null,
+
   }));
 
   // 3. Paginated feed — all products in this top-level category
@@ -60,7 +60,7 @@ export default async function CategoryPage({
       products={products}
       categorySlug={category}
       categoryLabel={currentCat.label}
-      categoryImage={currentCat.image ?? null}
+
       subCats={subCats}
       currentSort={sort}
       currentPage={currentPage}
