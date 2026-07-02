@@ -44,6 +44,8 @@ export async function fetchFeedProducts(
     query.subCategory = filter.slug;
   } else if (filter.by === 'subSubCategory') {
     query.subSubCategory = filter.slug;
+  } else if (filter.by === 'search' && filter.q) {
+    query.$text = { $search: filter.q };
   }
 
   // Only show in-stock products (at least one size in one color > 0)

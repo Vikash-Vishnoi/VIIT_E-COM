@@ -18,7 +18,8 @@ export const SORT_OPTIONS: { value: FeedSortKey; label: string }[] = [
 export type FeedFilter =
   | { by: 'subSubCategory'; slug: string }
   | { by: 'subCategory';    slug: string }
-  | { by: 'category';       slug: string };
+  | { by: 'category';       slug: string }
+  | { by: 'search';         q: string };
 
 export interface FeedResult {
   products: FormattedProduct[];

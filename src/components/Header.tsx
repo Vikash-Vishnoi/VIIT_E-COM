@@ -79,6 +79,7 @@ export default function Header() {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileExpandedSlug, setMobileExpandedSlug] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
@@ -441,17 +442,25 @@ export default function Header() {
 
       {/* Expandable Search bar */}
       {searchOpen && (
-        <div className="border-t border-gray-100 px-4 md:px-10 xl:px-16 py-3 bg-gray-50">
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (searchQuery.trim()) {
+            router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+            setSearchOpen(false);
+          }
+        }} className="border-t border-gray-100 px-10 xl:px-16 py-3 bg-gray-50">
           <label htmlFor="site-search" className="sr-only">Search</label>
           <input
             id="site-search"
             autoFocus
             type="text"
             name="q"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search..."
             className="w-full bg-transparent text-sm outline-none text-black"
           />
-        </div>
+        </form>
       )}
 
       {/* Mobile menu drawer */}
