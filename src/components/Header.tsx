@@ -80,6 +80,7 @@ export default function Header() {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileExpandedSlug, setMobileExpandedSlug] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -224,14 +225,14 @@ export default function Header() {
     <header className="w-full bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
       <div className="w-full px-4 md:px-10 xl:px-16">
         {/* Single row: Logo | Nav | Icons */}
-        <div className="grid grid-cols-[auto_1fr_auto] items-center py-4 gap-3 md:flex md:justify-between md:gap-3">
+        <div className="grid grid-cols-[auto_1fr_auto] items-center py-4 gap-3 lg:flex lg:justify-between lg:gap-3">
 
           {/* Mobile menu */}
           <button
-            onClick={() => setMobileMenuOpen((open) => !open)}
+            onClick={() => { setMobileMenuOpen((open) => !open); setMobileExpandedSlug(null); }}
             aria-label="Open menu"
             aria-expanded={mobileMenuOpen}
-            className="md:hidden justify-self-start text-black hover:opacity-60 transition-opacity"
+            className="lg:hidden justify-self-start text-black hover:opacity-60 transition-opacity"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="4" y1="6" x2="20" y2="6" />
@@ -241,19 +242,19 @@ export default function Header() {
           </button>
 
           {/* LEFT — Logo */}
-          <Link href="/" aria-label="Home" className="justify-self-center md:justify-self-auto flex-shrink-0 relative w-[120px] h-[48px] flex items-center justify-center">
+          <Link href="/" aria-label="Home" className="justify-self-center lg:justify-self-auto flex-shrink-0 relative w-[120px] h-[48px] flex items-center justify-center">
             <Image
               src="/images/logo.png"
               alt="Logo"
               width={200}
               height={80}
-              className="object-contain absolute md:scale-[1] md:-translate-x-10 md:translate-y-3"
+              className="object-contain absolute lg:scale-[1] lg:-translate-x-10 lg:translate-y-3"
               priority
             />
           </Link>
 
           {/* CENTER — Nav links */}
-          <nav key={pathname} className="hidden md:flex items-center gap-7 mx-8">
+          <nav key={pathname} className="hidden lg:flex items-center gap-7 mx-8">
               {navLinks.map((link) => {
                 // Look up this level-0 slug in the dynamic tree
                 const cat = navTreeBySlug.get(link.slug);
@@ -425,8 +426,8 @@ export default function Header() {
               </div>
             ) : !loadingAuth && !user ? (
               <Link href={`/login?returnTo=${encodeURIComponent(pathname)}`} aria-label="Login / Register" className="flex items-center gap-2 text-black hover:opacity-60 transition-opacity">
-                <span className="hidden md:inline text-[12px] font-bold uppercase tracking-widest whitespace-nowrap">Login / Register</span>
-                <svg className="md:hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <span className="hidden lg:inline text-[12px] font-bold uppercase tracking-widest whitespace-nowrap">Login / Register</span>
+                <svg className="lg:hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                   <circle cx="12" cy="7" r="4" />
                 </svg>
@@ -455,12 +456,12 @@ export default function Header() {
 
       {/* Mobile menu drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white">
+        <div className="lg:hidden border-t border-gray-100 bg-white">
           {/* Drawer header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Menu</span>
             <button
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={() => { setMobileMenuOpen(false); setMobileExpandedSlug(null); }}
               aria-label="Close menu"
               className="text-black hover:opacity-60 transition-opacity p-1"
             >
@@ -471,16 +472,73 @@ export default function Header() {
             </button>
           </div>
           <nav className="flex flex-col px-5 py-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`py-3.5 border-b border-gray-100 last:border-0 text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 ${link.highlight ? "text-[#FFCC00]" : "text-black"}`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const cat = navTreeBySlug.get(link.slug);
+              const hasChildren = cat && cat.children.length > 0;
+              const isExpanded = mobileExpandedSlug === link.slug;
+
+              return (
+                <div key={link.label} className="border-b border-gray-100 last:border-0">
+                  <div className="flex items-center justify-between">
+                    <Link
+                      href={link.href}
+                      onClick={() => { setMobileMenuOpen(false); setMobileExpandedSlug(null); }}
+                      className={`flex-1 py-3.5 text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 ${link.highlight ? "text-[#FFCC00]" : "text-black"}`}
+                    >
+                      {link.label}
+                    </Link>
+                    {hasChildren && (
+                      <button
+                        onClick={() => setMobileExpandedSlug(isExpanded ? null : link.slug)}
+                        aria-label={isExpanded ? `Collapse ${link.label}` : `Expand ${link.label}`}
+                        className="p-3 text-gray-400 hover:text-black transition-colors"
+                      >
+                        <svg
+                          className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                  {hasChildren && isExpanded && (
+                    <div className="pb-3 pl-2 flex flex-col">
+                      {cat.children.map((sub) => (
+                        <div key={sub._id}>
+                          <Link
+                            href={`/${link.slug}/${sub.slug}`}
+                            onClick={() => { setMobileMenuOpen(false); setMobileExpandedSlug(null); }}
+                            className="block py-2 text-sm font-semibold text-gray-600 hover:text-black transition-colors"
+                          >
+                            {sub.label}
+                          </Link>
+                          {sub.children.length > 0 && (
+                            <div className="pl-4 flex flex-col">
+                              {sub.children.map((subsub) => (
+                                <Link
+                                  key={subsub._id}
+                                  href={`/${link.slug}/${sub.slug}/${subsub.slug}`}
+                                  onClick={() => { setMobileMenuOpen(false); setMobileExpandedSlug(null); }}
+                                  className="block py-1.5 text-xs text-gray-500 hover:text-black transition-colors"
+                                >
+                                  {subsub.label}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </nav>
         </div>
       )}
