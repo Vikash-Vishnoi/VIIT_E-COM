@@ -23,6 +23,7 @@ export default function Looks() {
             fill
             sizes="(max-width: 768px) 100vw, 20vw"
             className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+            style={{ willChange: "transform" }}
           />
         </div>
       ))}

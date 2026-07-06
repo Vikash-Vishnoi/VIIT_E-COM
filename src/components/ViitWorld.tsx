@@ -25,13 +25,14 @@ export default function Category() {
           aria-label={product.label}
           className="flex-none flex flex-col w-[calc(100vw-3rem)] md:w-[clamp(220px,24vw,340px)] snap-center"
         >
-          <div className="relative w-full bg-gray-100" style={{ aspectRatio: "3/4" }}>
+          <div className="relative w-full bg-gray-100 aspect-[3/4]">
             <Image
               src={product.src}
               alt={product.label}
               fill
               sizes="(max-width: 768px) 100vw, 20vw"
               className="object-cover object-top transition-transform duration-500 hover:scale-105"
+              style={{ willChange: "transform" }}
             />
           </div>
           <p className="mt-3 text-center text-sm md:text-base font-bold tracking-widest uppercase text-black">

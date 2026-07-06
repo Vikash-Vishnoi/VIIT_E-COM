@@ -107,7 +107,6 @@ export default function CarouselSection({
           ref={scrollRef}
           onScroll={handleScroll}
           className={`${baseRailClassName} ${railClassName}`.trim()}
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {children}
         </div>

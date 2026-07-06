@@ -21,7 +21,14 @@ export default function CategoryBanner({
   uppercase = true,
 }: CategoryBannerProps) {
   return (
-    <section className="relative w-full overflow-hidden" style={{ height: "clamp(300px, 55vw, 650px)" }}>
+    <section
+      className="relative w-full overflow-hidden"
+      style={{
+        height: "clamp(300px, 55vw, 650px)",
+        minHeight: "300px",
+        maxHeight: "650px",
+      }}
+    >
       {/* Background image */}
       <Image
         src={src}
@@ -30,7 +37,7 @@ export default function CategoryBanner({
         priority={priority}
         sizes="100vw"
         className="object-cover"
-        style={{ objectPosition }}
+        style={{ objectPosition, willChange: "transform" }}
       />
 
       {/* Subtle dark-to-transparent gradient on the left for text legibility */}

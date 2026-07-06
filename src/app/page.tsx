@@ -13,7 +13,14 @@ export default function Home() {
   return (
     <div className="flex flex-col flex-1">
       {/* Hero Banner */}
-      <section className="relative w-full h-[calc(100svh-80px)] md:h-[calc(100vh-80px)] overflow-hidden">
+      <section
+          className="relative w-full overflow-hidden"
+          style={{
+            height: "calc(100svh - 80px)",
+            /* Fallback for older iOS that doesn't understand svh */
+            minHeight: "-webkit-fill-available",
+          }}
+        >
         {/* Background image (replaced video) */}
         <Image
           src="/images/cala-look-01.JPG.jpeg"
@@ -22,6 +29,7 @@ export default function Home() {
           priority
           sizes="100vw"
           className="object-cover object-[center_38.5%] md:scale-[1.05] md:translate-x-[2%]"
+          style={{ willChange: "transform" }}
           aria-hidden="true"
         />
 

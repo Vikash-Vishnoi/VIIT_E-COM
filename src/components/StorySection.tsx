@@ -41,6 +41,7 @@ export default function StorySection() {
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover object-center scale-105"
+            style={{ willChange: "transform" }}
           />
         </div>
       </div>

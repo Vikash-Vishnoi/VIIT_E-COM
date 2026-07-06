@@ -56,14 +56,14 @@ export default function OurWorld() {
     <CarouselSection title="Our World" sectionClassName="py-8 px-6 md:px-10 overflow-hidden">
       {cards.map((card) => (
         <CardLink key={card.href} card={card}>
-          <div className="relative w-full overflow-hidden bg-gray-100" style={{ aspectRatio: "3/4" }}>
+          <div className="relative w-full overflow-hidden bg-gray-100 aspect-[3/4]">
             <Image
               src={card.src}
               alt={card.label}
               fill
               sizes="(max-width: 768px) 100vw, 20vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
-              style={{ objectPosition: card.objectPosition }}
+              style={{ objectPosition: card.objectPosition, willChange: "transform" }}
             />
           </div>
           <p className="mt-3 text-center text-sm md:text-base font-bold tracking-widest uppercase text-black">

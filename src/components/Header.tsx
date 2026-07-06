@@ -249,7 +249,7 @@ export default function Header() {
               alt="Logo"
               width={200}
               height={80}
-              className="object-contain absolute lg:scale-[1] lg:-translate-x-10 lg:translate-y-3"
+              className="object-contain absolute translate-y-3 lg:scale-[1] lg:-translate-x-10 lg:translate-y-3"
               priority
             />
           </Link>
