@@ -5,12 +5,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { User as UserIcon, MapPin, Package, ShieldCheck, LogOut } from "lucide-react";
 import SearchBar from "./SearchBar";
+import { useStore } from "../../store/useStore";
 
 export default function UserActions() {
-  const [cartCount, setCartCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
-  const [user, setUser] = useState<any>(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
+  const { cartCount, wishlistCount, user, loadingAuth, setWishlistData, setCartCount, setUser, setLoadingAuth } = useStore();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   const pathname = usePathname();
@@ -21,10 +19,8 @@ export default function UserActions() {
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data) {
-          setWishlistCount(data.data.length);
           const ids = data.data.map((item: any) => item.productId?._id || item.productId);
-          (window as any).__wishlistIds = new Set(ids);
-          window.dispatchEvent(new Event('wishlist-loaded'));
+          setWishlistData(ids);
         }
       })
       .catch(() => {});
@@ -58,7 +54,6 @@ export default function UserActions() {
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ productId: pendingProductId })
                 });
-                window.dispatchEvent(new Event('wishlist-change'));
               } catch (err) {}
             }
 
@@ -71,7 +66,6 @@ export default function UserActions() {
                   headers: { 'Content-Type': 'application/json' },
                   body: pendingCartAction
                 });
-                window.dispatchEvent(new Event('cart-change'));
               } catch (err) {}
             }
             
@@ -79,7 +73,7 @@ export default function UserActions() {
             fetchCartCount();
           } else {
             setUser(null);
-            setWishlistCount(0);
+            setWishlistData([]);
             setCartCount(0);
           }
         })
@@ -88,35 +82,7 @@ export default function UserActions() {
     };
 
     fetchAuth();
-
-    const handleAuthChange = () => fetchAuth();
-    
-    const handleWishlistChange = (e: any) => {
-      if (e.detail && e.detail.action) {
-        setWishlistCount(prev => e.detail.action === 'added' ? prev + 1 : Math.max(0, prev - 1));
-      } else {
-        fetchWishlistCount();
-      }
-    };
-
-    const handleCartChange = (e: any) => {
-      if (e.detail && e.detail.quantity) {
-         fetchCartCount();
-      } else {
-         fetchCartCount();
-      }
-    };
-    
-    window.addEventListener('auth-change', handleAuthChange);
-    window.addEventListener('wishlist-change', handleWishlistChange);
-    window.addEventListener('cart-change', handleCartChange);
-    
-    return () => {
-      window.removeEventListener('auth-change', handleAuthChange);
-      window.removeEventListener('wishlist-change', handleWishlistChange);
-      window.removeEventListener('cart-change', handleCartChange);
-    };
-  }, []);
+  }, [setUser, setWishlistData, setCartCount, setLoadingAuth]);
 
   useEffect(() => {
     setProfileMenuOpen(false);
@@ -124,7 +90,9 @@ export default function UserActions() {
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    window.dispatchEvent(new Event('auth-change'));
+    setUser(null);
+    setWishlistData([]);
+    setCartCount(0);
     setProfileMenuOpen(false);
     router.push('/');
   };

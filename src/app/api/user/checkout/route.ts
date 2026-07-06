@@ -41,7 +41,8 @@ export async function POST(req: NextRequest) {
 
     // 2. Fetch Cart Items and populate Product details securely (including colors for inventory check)
     const cartItems = await Cart.find({ userId })
-      .populate({ path: 'productId', select: 'title slug price sellingPrice colors' });
+      .populate({ path: 'productId', select: 'title slug price sellingPrice colors' })
+      .lean();
 
     if (cartItems.length === 0) {
       return NextResponse.json({ success: false, message: 'Your cart is empty' }, { status: 400 });

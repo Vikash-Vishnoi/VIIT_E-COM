@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Heart } from "lucide-react";
+import { useStore } from "../store/useStore";
 
 export type FormattedProduct = {
   id: string;
@@ -18,25 +19,10 @@ export type FormattedProduct = {
 
 export default function ProductCard({ product }: { product: FormattedProduct }) {
   const [hovered, setHovered] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
-
-  useEffect(() => {
-    // Check global variable for zero-network validation
-    const checkStatus = () => {
-      const ids = (window as any).__wishlistIds;
-      if (ids) {
-        setIsWishlisted(ids.has(product.id));
-      }
-    };
-    
-    // Check immediately in case it's already loaded
-    checkStatus();
-    
-    // Listen for when it loads
-    window.addEventListener('wishlist-loaded', checkStatus);
-    return () => window.removeEventListener('wishlist-loaded', checkStatus);
-  }, [product.id]);
+  
+  const { wishlistIds, toggleWishlistId } = useStore();
+  const isWishlisted = wishlistIds.has(product.id);
 
   const toggleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault(); // Stop navigation
@@ -47,7 +33,7 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
     
     // Optimistic UI
     const previousState = isWishlisted;
-    setIsWishlisted(!previousState);
+    toggleWishlistId(product.id, previousState ? 'removed' : 'added');
 
     try {
       const res = await fetch('/api/user/wishlist', {
@@ -58,24 +44,19 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
       const data = await res.json();
       
       if (data.success) {
-        if ((window as any).__wishlistIds) {
-          if (data.action === 'added') {
-            (window as any).__wishlistIds.add(product.id);
-          } else {
-            (window as any).__wishlistIds.delete(product.id);
-          }
-        }
-        window.dispatchEvent(new CustomEvent('wishlist-change', { detail: { action: data.action, productId: product.id } }));
+        // Success: state already correctly updated optimistically
       } else if (data.message === 'Unauthorized') {
         // Revert optimistic update and redirect
-        setIsWishlisted(previousState);
+        toggleWishlistId(product.id, previousState ? 'added' : 'removed');
         sessionStorage.setItem('pendingWishlistAction', product.id);
         window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`;
       } else {
-        setIsWishlisted(previousState);
+        // Revert on general error
+        toggleWishlistId(product.id, previousState ? 'added' : 'removed');
       }
     } catch (err) {
-      setIsWishlisted(previousState);
+      // Revert on network error
+      toggleWishlistId(product.id, previousState ? 'added' : 'removed');
     } finally {
       setLoadingWishlist(false);
     }

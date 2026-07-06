@@ -82,8 +82,8 @@ export async function POST(req: NextRequest) {
 
     if (isGenericToggle) {
       // Check if ANY variant of this product exists to toggle it off (remove)
-      const existingAny = await Wishlist.find({ userId, productId });
-      if (existingAny.length > 0) {
+      const existingAny = await Wishlist.exists({ userId, productId });
+      if (existingAny) {
         // Toggle off -> Remove ALL variants
         await Wishlist.deleteMany({ userId, productId });
         return NextResponse.json({ success: true, message: 'Removed from wishlist', action: 'removed' });

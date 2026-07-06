@@ -1,23 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
+import useSWR from "swr";
 import Image from "next/image";
 import { NavCategory } from "./header/types";
 import DesktopNav from "./header/DesktopNav";
 import MobileMenu from "./header/MobileMenu";
 import UserActions from "./header/UserActions";
 
-export default function Header() {
-  const [navTree, setNavTree] = useState<NavCategory[]>([]);
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-  // Fetch dynamic nav tree once on mount
-  useEffect(() => {
-    fetch('/api/categories/nav')
-      .then(res => res.json())
-      .then(data => { if (data.success) setNavTree(data.data); })
-      .catch(() => {});
-  }, []);
+export default function Header() {
+  const { data } = useSWR('/api/categories/nav', fetcher, { 
+    revalidateOnFocus: false, // Nav doesn't change often
+    dedupingInterval: 600000 // 10 minutes
+  });
+  
+  const navTree: NavCategory[] = data?.success ? data.data : [];
 
   // Build a quick lookup: level-0 slug → NavCategory
   const navTreeBySlug = new Map(navTree.map(c => [c.slug, c]));

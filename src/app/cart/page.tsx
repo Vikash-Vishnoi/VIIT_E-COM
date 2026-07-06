@@ -3,7 +3,9 @@
 import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import useSWR from "swr";
 import { Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import { useStore } from "@/store/useStore";
 
 type CartItem = {
   _id: string;
@@ -22,45 +24,40 @@ type CartItem = {
   };
 };
 
-export default function CartPage() {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(true);
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-  const fetchCart = async () => {
-    try {
-      const res = await fetch("/api/user/cart");
-      const data = await res.json();
-      if (data.success) {
-        setItems(data.data);
-      } else if (data.message === 'Unauthorized') {
-        window.location.href = "/login?returnTo=/cart";
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+export default function CartPage() {
+  const { cartCount, setCartCount } = useStore();
+  const { data, isLoading, mutate } = useSWR('/api/user/cart', fetcher);
 
   useEffect(() => {
-    fetchCart();
-  }, []);
+    if (data?.message === 'Unauthorized') {
+      window.location.href = "/login?returnTo=/cart";
+    }
+  }, [data]);
+
+  const items: CartItem[] = data?.success ? data.data : [];
 
   const handleRemove = async (id: string) => {
     // Optimistic UI
     const originalItems = [...items];
-    setItems(items.filter(item => item._id !== id));
+    const newItems = items.filter(item => item._id !== id);
+    mutate({ success: true, data: newItems }, false);
 
     try {
       const res = await fetch(`/api/user/cart?id=${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        window.dispatchEvent(new CustomEvent('cart-change', { detail: { action: 'removed', cartItemId: id } }));
+      const resData = await res.json();
+      if (resData.success) {
+        // Fetch new cart count
+        fetch('/api/user/cart/count').then(r => r.json()).then(d => {
+          if (d.success) setCartCount(d.count);
+        }).catch(() => {});
+        mutate(); // Revalidate from server
       } else {
-        setItems(originalItems);
+        mutate({ success: true, data: originalItems }, false);
       }
     } catch (err) {
-      setItems(originalItems);
+      mutate({ success: true, data: originalItems }, false);
     }
   };
 
@@ -69,7 +66,8 @@ export default function CartPage() {
 
     // Optimistic update
     const originalItems = [...items];
-    setItems(items.map(item => item._id === id ? { ...item, quantity: newQuantity } : item));
+    const newItems = items.map(item => item._id === id ? { ...item, quantity: newQuantity } : item);
+    mutate({ success: true, data: newItems }, false);
 
     try {
       const res = await fetch(`/api/user/cart`, {
@@ -77,14 +75,18 @@ export default function CartPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cartItemId: id, quantity: newQuantity })
       });
-      const data = await res.json();
-      if (data.success) {
-        window.dispatchEvent(new CustomEvent('cart-change', { detail: { action: 'updated', quantity: newQuantity } }));
+      const resData = await res.json();
+      if (resData.success) {
+        // Fetch new cart count
+        fetch('/api/user/cart/count').then(r => r.json()).then(d => {
+          if (d.success) setCartCount(d.count);
+        }).catch(() => {});
+        mutate(); // Revalidate from server
       } else {
-        setItems(originalItems);
+        mutate({ success: true, data: originalItems }, false);
       }
     } catch (err) {
-      setItems(originalItems);
+      mutate({ success: true, data: originalItems }, false);
     }
   };
 
@@ -96,7 +98,7 @@ export default function CartPage() {
   const taxAmount = useMemo(() => Math.round(subtotal - (subtotal / 1.18)), [subtotal]);
   const subtotalExclTax = subtotal - taxAmount;
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white pt-[120px]">
         <div className="animate-pulse text-xs font-bold uppercase tracking-widest text-gray-400">Loading Bag...</div>

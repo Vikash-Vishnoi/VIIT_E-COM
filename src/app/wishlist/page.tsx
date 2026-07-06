@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
+import useSWR from "swr";
 import { Heart } from "lucide-react";
 import ProductCard, { FormattedProduct } from "@/components/ProductCard";
+import { useStore } from "@/store/useStore";
 
 type WishlistItem = {
   _id: string;
@@ -21,41 +23,24 @@ type WishlistItem = {
   };
 };
 
-export default function WishlistPage() {
-  const [items, setItems] = useState<WishlistItem[]>([]);
-  const [loading, setLoading] = useState(true);
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-  const fetchWishlist = async () => {
-    try {
-      const res = await fetch("/api/user/wishlist");
-      const data = await res.json();
-      if (data.success) {
-        setItems(data.data);
-      } else if (data.message === 'Unauthorized') {
-        window.location.href = "/login?returnTo=/wishlist";
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+export default function WishlistPage() {
+  const { wishlistIds } = useStore();
+  const { data, isLoading } = useSWR('/api/user/wishlist', fetcher);
 
   useEffect(() => {
-    fetchWishlist();
-    
-    // Listen for global wishlist toggles to instantly remove items from the grid
-    const handleWishlistChange = (e: any) => {
-      if (e.detail && e.detail.action === 'removed' && e.detail.productId) {
-        setItems(prev => prev.filter(item => item.productId && item.productId._id !== e.detail.productId));
-      }
-    };
-    
-    window.addEventListener('wishlist-change', handleWishlistChange);
-    return () => window.removeEventListener('wishlist-change', handleWishlistChange);
-  }, []);
+    if (data?.message === 'Unauthorized') {
+      window.location.href = "/login?returnTo=/wishlist";
+    }
+  }, [data]);
 
-  if (loading) {
+  const items: WishlistItem[] = data?.success ? data.data : [];
+
+  // Reactively filter items that are still in the global wishlist store
+  const activeItems = items.filter(item => item.productId && wishlistIds.has(item.productId._id));
+
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white pt-[120px]">
         <div className="animate-pulse text-xs font-bold uppercase tracking-widest text-gray-400">Loading Wishlist...</div>
@@ -71,13 +56,13 @@ export default function WishlistPage() {
           <div>
             <h1 className="text-2xl md:text-3xl font-black uppercase tracking-wider md:tracking-widest text-black mb-2">My Wishlist</h1>
             <p className="text-sm font-semibold tracking-wider text-gray-500 uppercase">
-              {items.length} {items.length === 1 ? 'Item' : 'Items'} Saved
+              {activeItems.length} {activeItems.length === 1 ? 'Item' : 'Items'} Saved
             </p>
           </div>
         </div>
 
         {/* Empty State */}
-        {items.length === 0 && (
+        {activeItems.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 md:py-20 text-center">
             <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
               <Heart size={32} className="text-gray-300" strokeWidth={1.5} />
@@ -97,7 +82,7 @@ export default function WishlistPage() {
 
         {/* Wishlist Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-2.5 gap-y-6 md:gap-x-5 md:gap-y-10">
-          {items.filter(item => item.productId).map((item) => {
+          {activeItems.map((item) => {
             const formattedProduct: FormattedProduct = {
               id: item.productId._id,
               name: item.productId.title,

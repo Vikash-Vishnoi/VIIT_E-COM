@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import ProductCard, { FormattedProduct } from "@/components/ProductCard";
+import { useStore } from "@/store/useStore";
 
 type ProductDetails = {
   _id: string;
@@ -40,32 +41,16 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
   const [quantity, setQuantity] = useState<number | "">(1);
   const [addingToCart, setAddingToCart] = useState(false);
   
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { wishlistIds, toggleWishlistId, setCartCount } = useStore();
+  const isWishlisted = wishlistIds.has(product._id);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
-
-  // Sync with global wishlist cache
-  useEffect(() => {
-    const checkStatus = () => {
-      const ids = (window as any).__wishlistIds;
-      if (ids) {
-        setIsWishlisted(ids.has(product._id));
-      }
-    };
-    checkStatus();
-    window.addEventListener('wishlist-loaded', checkStatus);
-    window.addEventListener('wishlist-change', checkStatus);
-    return () => {
-      window.removeEventListener('wishlist-loaded', checkStatus);
-      window.removeEventListener('wishlist-change', checkStatus);
-    };
-  }, [product._id]);
 
   const toggleWishlist = async () => {
     setLoadingWishlist(true);
     
     // Optimistic update
     const previousState = isWishlisted;
-    setIsWishlisted(!previousState);
+    toggleWishlistId(product._id, previousState ? 'removed' : 'added');
 
     try {
       const res = await fetch('/api/user/wishlist', {
@@ -82,23 +67,16 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
       const data = await res.json();
       
       if (data.success) {
-        if ((window as any).__wishlistIds) {
-          if (data.action === 'added') {
-            (window as any).__wishlistIds.add(product._id);
-          } else {
-            (window as any).__wishlistIds.delete(product._id);
-          }
-        }
-        window.dispatchEvent(new CustomEvent('wishlist-change', { detail: { action: data.action, productId: product._id } }));
+        // Zustand already optimistically updated
       } else if (data.message === 'Unauthorized') {
-        setIsWishlisted(previousState);
+        toggleWishlistId(product._id, previousState ? 'added' : 'removed');
         sessionStorage.setItem('pendingWishlistAction', product._id);
         window.location.href = `/login?returnTo=/products/${product.slug}`;
       } else {
-        setIsWishlisted(previousState);
+        toggleWishlistId(product._id, previousState ? 'added' : 'removed');
       }
     } catch (error) {
-      setIsWishlisted(previousState);
+      toggleWishlistId(product._id, previousState ? 'added' : 'removed');
     } finally {
       setLoadingWishlist(false);
     }
@@ -125,7 +103,11 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
       const data = await res.json();
 
       if (data.success) {
-        window.dispatchEvent(new Event('cart-change'));
+        // Fetch new cart count to keep global state in sync
+        fetch('/api/user/cart/count').then(r => r.json()).then(d => {
+          if (d.success) setCartCount(d.count);
+        }).catch(() => {});
+        
         // Keep button disabled briefly to show feedback
         setTimeout(() => setAddingToCart(false), 500);
       } else if (data.message === 'Unauthorized') {

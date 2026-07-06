@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/db";
 import { Product } from "@/models";
 import ClientPage from "./ClientPage";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // Cache for 1 hour
 
 type PageProps = {
   params: Promise<{ slug: string }>;
