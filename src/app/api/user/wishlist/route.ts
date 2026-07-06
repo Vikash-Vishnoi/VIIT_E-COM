@@ -112,30 +112,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, message: 'Failed to update wishlist' }, { status: 500 });
   }
 }
-
-// DELETE: Remove a specific wishlist item by its own ID
-export async function DELETE(req: NextRequest) {
-  try {
-    const userId = await getAuthUser(req);
-    if (!userId) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
-
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json({ success: false, message: 'Wishlist Item ID is required' }, { status: 400 });
-    }
-
-    await connectDB();
-    const result = await Wishlist.deleteOne({ _id: id, userId });
-
-    if (result.deletedCount === 0) {
-      return NextResponse.json({ success: false, message: 'Item not found in your wishlist' }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, message: 'Removed from wishlist' });
-  } catch (error: any) {
-    console.error('DELETE /api/user/wishlist error:', error);
-    return NextResponse.json({ success: false, message: 'Failed to remove from wishlist' }, { status: 500 });
-  }
-}
