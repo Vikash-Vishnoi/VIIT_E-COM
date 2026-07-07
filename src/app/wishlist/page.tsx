@@ -8,10 +8,6 @@ import ProductCard, { FormattedProduct } from "@/components/ProductCard";
 import { useStore } from "@/store/useStore";
 
 type WishlistItem = {
-  _id: string;
-  colorName: string;
-  size: string;
-  addedAt: string;
   productId: {
     _id: string;
     title: string;
@@ -20,6 +16,8 @@ type WishlistItem = {
     sellingPrice: number;
     colors?: { images: { url: string }[] }[];
     badge?: string;
+    isActive?: boolean;
+    isOutOfStock?: boolean;
   };
 };
 
@@ -83,16 +81,28 @@ export default function WishlistPage() {
         {/* Wishlist Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-2.5 gap-y-6 md:gap-x-5 md:gap-y-10">
           {activeItems.map((item) => {
+            const product = item.productId;
+            
+            const isUnavailable = product.isActive === false;
+            // Use pre-calculated isOutOfStock from the optimized backend payload
+            const isOutOfStock = !isUnavailable && product.isOutOfStock;
+
+            let badge = product.badge || undefined;
+            if (isUnavailable) badge = "UNAVAILABLE";
+            else if (isOutOfStock) badge = "OUT OF STOCK";
+
             const formattedProduct: FormattedProduct = {
-              id: item.productId._id,
-              name: item.productId.title,
-              price: item.productId.sellingPrice,
-              originalPrice: item.productId.price,
-              image: item.productId.colors?.[0]?.images?.[0]?.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa",
-              badge: item.productId.badge || undefined,
-              slug: item.productId.slug,
+              id: product._id,
+              name: product.title,
+              price: product.sellingPrice,
+              originalPrice: product.price,
+              image: product.colors?.[0]?.images?.[0]?.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa",
+              badge,
+              slug: product.slug,
+              isUnavailable,
+              isOutOfStock
             };
-            return <ProductCard key={item._id} product={formattedProduct} />;
+            return <ProductCard key={product._id} product={formattedProduct} />;
           })}
         </div>
     </div>

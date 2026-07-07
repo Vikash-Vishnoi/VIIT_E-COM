@@ -290,6 +290,7 @@ export default function CategoriesPage() {
                   type="number"
                   min="0"
                   value={formData.sortOrder}
+                  onWheel={(e) => (e.target as HTMLInputElement).blur()}
                   onChange={(e) => setFormData({ ...formData, sortOrder: e.target.value === '' ? '' : parseInt(e.target.value, 10) || 0 })}
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-black outline-none font-bold"
                   placeholder="0"

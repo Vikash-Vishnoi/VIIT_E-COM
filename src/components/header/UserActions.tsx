@@ -19,7 +19,8 @@ export default function UserActions() {
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data) {
-          const ids = data.data.map((item: any) => item.productId?._id || item.productId);
+          // Backend now returns a flat array of strings: ['id1', 'id2']
+          const ids = data.data.map((item: any) => typeof item === 'string' ? item : (item.productId?._id || item.productId));
           setWishlistData(ids);
         }
       })

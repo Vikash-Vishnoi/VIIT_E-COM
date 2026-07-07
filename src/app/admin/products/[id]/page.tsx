@@ -6,7 +6,7 @@ import { Save, Plus, Trash2, ArrowLeft, Upload, X, Loader2, ChevronLeft, Chevron
 import Link from "next/link";
 import Image from "next/image";
 
-type Size = { size: string; quantity: number; sku: string };
+type Size = { size: string; quantity: number | string; sku: string };
 type ProductImage = { url: string; order: number; file?: File; isLocal?: boolean };
 type ColorVariant = { colorName: string; images: ProductImage[]; sizes: Size[] };
 
@@ -24,8 +24,8 @@ type FormData = {
   category: string;
   subCategory: string;
   subSubCategory: string;
-  price: number;
-  sellingPrice: number;
+  price: number | string;
+  sellingPrice: number | string;
   badge: string;
   isFeatured: boolean;
   isActive: boolean;
@@ -139,12 +139,14 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   ) => {
     const { name, value, type } = e.target;
     setFormData((prev) => {
-      const newValue: string | number | boolean =
-        type === "checkbox"
-          ? (e.target as HTMLInputElement).checked
-          : type === "number"
-          ? Number(value)
-          : value;
+      let newValue: string | number | boolean;
+      if (type === "checkbox") {
+        newValue = (e.target as HTMLInputElement).checked;
+      } else if (type === "number") {
+        newValue = value === "" ? "" : Number(value);
+      } else {
+        newValue = value;
+      }
 
       if (name === "title") {
         const newColors = prev.colors.map((color) => ({
@@ -331,7 +333,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         return;
       }
 
-      if (current.price < current.sellingPrice) {
+      if (Number(current.price) < Number(current.sellingPrice)) {
         setSaveError("Regular price must be greater than or equal to the selling price.");
         setSaving(false);
         return;
@@ -685,7 +687,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                 required
                                 min="0"
                                 value={size.quantity}
-                                onChange={(e) => handleSizeChange(colorIdx, sizeIdx, "quantity", Number(e.target.value))}
+                                onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                                onChange={(e) => handleSizeChange(colorIdx, sizeIdx, "quantity", e.target.value === "" ? "" : Number(e.target.value))}
                                 className="w-24 px-3 py-1.5 text-sm font-bold border border-gray-200 rounded-lg outline-none focus:border-black"
                               />
                               <input
@@ -832,6 +835,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 min="0"
                 step="0.01"
                 value={formData.price}
+                onWheel={(e) => (e.target as HTMLInputElement).blur()}
                 onChange={handleChange}
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all font-black text-sm"
               />
@@ -848,6 +852,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 min="0"
                 step="0.01"
                 value={formData.sellingPrice}
+                onWheel={(e) => (e.target as HTMLInputElement).blur()}
                 onChange={handleChange}
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all font-black text-sm text-green-600"
               />

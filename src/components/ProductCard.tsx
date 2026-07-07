@@ -15,6 +15,8 @@ export type FormattedProduct = {
   badge?: string;
   slug: string;
   ratings?: { average: number; count: number };
+  isUnavailable?: boolean;
+  isOutOfStock?: boolean;
 };
 
 export default function ProductCard({ product }: { product: FormattedProduct }) {
@@ -70,7 +72,7 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
           alt={product.name || "Product image"}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className={`object-cover transition-transform duration-500 ${hovered ? "scale-105" : "scale-100"}`}
+          className={`object-cover transition-transform duration-500 ${hovered ? "scale-105" : "scale-100"} ${product.isUnavailable || product.isOutOfStock ? "grayscale opacity-75" : ""}`}
         />
 
         {product.badge && (() => {
@@ -79,6 +81,8 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
             "New":         "bg-emerald-500 text-white",
             "Best Seller": "bg-amber-400 text-black",
             "Limited":     "bg-purple-500 text-white",
+            "UNAVAILABLE": "bg-gray-800 text-white",
+            "OUT OF STOCK": "bg-gray-600 text-white",
           };
           const cls = badgeStyles[product.badge] ?? "bg-black text-white";
           return (

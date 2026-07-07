@@ -108,6 +108,7 @@ function EditableQuantity({
           type="number"
           min="0"
           value={val}
+          onWheel={(e) => (e.target as HTMLInputElement).blur()}
           onChange={e => setVal(e.target.value)}
           className="w-16 px-2 py-1 text-sm border border-black rounded-sm focus:outline-none"
           autoFocus

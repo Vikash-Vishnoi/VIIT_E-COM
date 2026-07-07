@@ -12,12 +12,14 @@ export async function GET(req: NextRequest) {
     await connectDB();
     
     const wishlist = await Wishlist.find({ userId })
-      .select('productId')
+      .select('productId -_id')
       .lean();
 
-    return NextResponse.json({ success: true, data: wishlist });
+    const ids = wishlist.map((w: any) => w.productId.toString());
+
+    return NextResponse.json({ success: true, data: ids });
   } catch (error: any) {
     console.error('GET /api/user/wishlist/ids error:', error);
     return NextResponse.json({ success: false, message: 'Failed to fetch wishlist IDs' }, { status: 500 });
-  }
+  } 
 }

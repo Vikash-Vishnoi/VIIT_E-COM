@@ -57,11 +57,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          productId: product._id,
-          // If they haven't explicitly picked a color/size yet, the API handles fallbacks, 
-          // but let's pass what we have
-          colorName: product.colors[selectedColorIndex]?.colorName,
-          size: selectedSize || undefined
+          productId: product._id
         })
       });
       const data = await res.json();

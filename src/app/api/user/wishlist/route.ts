@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import { connectDB } from '@/lib/db';
 import { Wishlist, Product } from '@/models';
 import { getAuthUser } from '@/lib/auth';
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
         select: 'title slug price sellingPrice colors badge isActive',
       })
       .sort({ addedAt: -1 })
-      .lean();
+      .lean(); 
 
     // Filter out items where the product has been deleted
     const validWishlist = wishlist.filter((item: any) => item.productId !== null);
@@ -29,7 +30,42 @@ export async function GET(req: NextRequest) {
       Wishlist.deleteMany({ _id: { $in: orphanedIds } }).exec().catch(console.error);
     }
 
-    return NextResponse.json({ success: true, data: validWishlist });
+    const minimizedWishlist = validWishlist.map((item: any) => {
+      const p = item.productId;
+      
+      // Calculate stock
+      let totalQty = 0;
+      if (p.colors) {
+        p.colors.forEach((c: any) => {
+          if (c.sizes) {
+            c.sizes.forEach((s: any) => {
+              totalQty += s.quantity || 0;
+            });
+          }
+        });
+      }
+      
+      let firstImageUrl = null;
+      if (p.colors && p.colors.length > 0 && p.colors[0].images && p.colors[0].images.length > 0) {
+         firstImageUrl = p.colors[0].images[0].url;
+      }
+
+      return {
+        productId: {
+          _id: p._id,
+          title: p.title,
+          slug: p.slug,
+          price: p.price,
+          sellingPrice: p.sellingPrice,
+          badge: p.badge,
+          isActive: p.isActive,
+          isOutOfStock: totalQty <= 0,
+          colors: firstImageUrl ? [{ images: [{ url: firstImageUrl }] }] : []
+        }
+      };
+    });
+
+    return NextResponse.json({ success: true, data: minimizedWishlist });
   } catch (error: any) {
     console.error('GET /api/user/wishlist error:', error);
     return NextResponse.json({ success: false, message: 'Failed to fetch wishlist' }, { status: 500 });
@@ -50,65 +86,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Product ID is required to update your wishlist' }, { status: 400 });
     }
 
-    let { productId, colorName, size } = body;
+    let { productId } = body;
 
     if (!productId) {
       return NextResponse.json({ success: false, message: 'Product ID is required' }, { status: 400 });
     }
 
-    let isGenericToggle = false;
-
-    // If color or size isn't provided (e.g. from a generic Product Card click), find the defaults
-    if (!colorName || !size) {
-      isGenericToggle = true;
-      const product = await Product.findById(productId);
-      if (!product) {
-        return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
-      }
-      
-      // Pick first color
-      if (!colorName && product.colors && product.colors.length > 0) {
-        colorName = product.colors[0].colorName;
-      }
-      // Pick first size from the selected color
-      if (!size && product.colors && product.colors.length > 0 && product.colors[0].sizes && product.colors[0].sizes.length > 0) {
-        size = product.colors[0].sizes[0].size;
-      }
-      
-      // Fallbacks in case the product has no colors/sizes array defined
-      if (!colorName) colorName = "Default";
-      if (!size) size = "Default";
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return NextResponse.json({ success: false, message: 'Invalid Product ID format' }, { status: 400 });
     }
 
-    if (isGenericToggle) {
-      // Check if ANY variant of this product exists to toggle it off (remove)
-      const existingAny = await Wishlist.exists({ userId, productId });
-      if (existingAny) {
-        // Toggle off -> Remove ALL variants
-        await Wishlist.deleteMany({ userId, productId });
-        return NextResponse.json({ success: true, message: 'Removed from wishlist', action: 'removed' });
-      }
-    } else {
-      // Check if SPECIFIC variant exists
-      const existing = await Wishlist.findOne({ userId, productId, colorName, size });
-      if (existing) {
-        // Toggle off -> Remove it
-        await Wishlist.deleteOne({ _id: existing._id });
-        return NextResponse.json({ success: true, message: 'Removed from wishlist', action: 'removed' });
-      }
+    // Validate productId exists
+    const productExists = await Product.exists({ _id: productId });
+    if (!productExists) {
+      return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
+    }
+
+    // Try deleting first (toggle off)
+    const deleteResult = await Wishlist.deleteOne({ userId, productId });
+    if (deleteResult.deletedCount > 0) {
+      return NextResponse.json({ success: true, message: 'Removed from wishlist' });
+    }
+
+    // Check wishlist limit
+    const currentCount = await Wishlist.countDocuments({ userId });
+    if (currentCount >= 20) {
+      return NextResponse.json({ success: false, message: 'Wishlist limit reached. You can only save up to 20 items.' }, { status: 400 });
     }
 
     // Add it
     const newItem = await Wishlist.create({
       userId,
       productId,
-      colorName,
-      size
     });
 
-    return NextResponse.json({ success: true, message: 'Added to wishlist', action: 'added', data: newItem });
+    return NextResponse.json({ success: true, message: 'Added to wishlist' });
   } catch (error: any) {
     console.error('POST /api/user/wishlist error:', error);
     return NextResponse.json({ success: false, message: 'Failed to update wishlist' }, { status: 500 });
   }
 }
+ 
