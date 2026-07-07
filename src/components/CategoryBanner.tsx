@@ -22,12 +22,7 @@ export default function CategoryBanner({
 }: CategoryBannerProps) {
   return (
     <section
-      className="relative w-full overflow-hidden"
-      style={{
-        height: "clamp(300px, 55vw, 650px)",
-        minHeight: "300px",
-        maxHeight: "650px",
-      }}
+      className="relative w-full overflow-hidden h-[calc(100svh-80px)] md:h-[clamp(300px,55vw,650px)] md:min-h-[300px] md:max-h-[650px]"
     >
       {/* Background image */}
       <Image
