@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Heart } from "lucide-react";
 import ProductCard, { FormattedProduct } from "@/components/ProductCard";
 import { useStore } from "@/store/useStore";
@@ -32,9 +33,20 @@ type ClientPageProps = {
 };
 
 export default function ClientPage({ product, similarProducts }: ClientPageProps) {
-  const [selectedColorIndex, setSelectedColorIndex] = useState(0);
+  const searchParams = useSearchParams();
+  const colorQuery = searchParams.get('color');
+
+  const initialColorIndex = (() => {
+    if (colorQuery) {
+      const idx = product.colors.findIndex(c => c.colorName.toLowerCase() === colorQuery.toLowerCase());
+      if (idx !== -1) return idx;
+    }
+    return 0;
+  })();
+
+  const [selectedColorIndex, setSelectedColorIndex] = useState(initialColorIndex);
   const [selectedSize, setSelectedSize] = useState<string | null>(() => {
-    const defaultSizes = product.colors[0]?.sizes || [];
+    const defaultSizes = product.colors[initialColorIndex]?.sizes || [];
     const firstAvailable = defaultSizes.find(s => s.quantity > 0);
     return firstAvailable ? firstAvailable.size : null;
   });

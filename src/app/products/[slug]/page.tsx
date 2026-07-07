@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { notFound } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import { Product } from "@/models";
@@ -53,6 +54,12 @@ export default async function ProductPage({ params }: PageProps) {
   }));
 
   return (
-    <ClientPage product={product} similarProducts={formattedSimilar} />
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center pt-[120px]">
+        <div className="animate-pulse text-xs font-bold uppercase tracking-widest text-gray-400">Loading Product...</div>
+      </div>
+    }>
+      <ClientPage product={product} similarProducts={formattedSimilar} />
+    </Suspense>
   );
 }
