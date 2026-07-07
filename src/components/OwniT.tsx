@@ -15,7 +15,7 @@ export default function Looks() {
       {looks.map((look) => (
         <div
           key={look.src}
-          className="flex-none relative overflow-hidden bg-gray-50 group cursor-pointer w-[calc(100vw-3rem)] md:w-[clamp(220px,24vw,340px)] snap-center aspect-[3/4]"
+          className="flex-none relative overflow-hidden bg-gray-50 group cursor-pointer w-[calc(100vw-3rem)] md:w-[65vw] lg:w-[clamp(220px,24vw,340px)] snap-center aspect-[3/4]"
         >
           <Image
             src={look.src}

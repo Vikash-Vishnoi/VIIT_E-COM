@@ -23,7 +23,7 @@ export default function Category() {
           key={product.href}
           href={product.href}
           aria-label={product.label}
-          className="flex-none flex flex-col w-[calc(100vw-3rem)] md:w-[clamp(220px,24vw,340px)] snap-center"
+          className="flex-none flex flex-col w-[calc(100vw-3rem)] md:w-[65vw] lg:w-[clamp(220px,24vw,340px)] snap-center"
         >
           <div className="relative w-full bg-gray-100 aspect-[3/4]">
             <Image

@@ -25,7 +25,7 @@ type CardLinkProps = {
 };
 
 const cardLinkClassName =
-  "flex-none flex flex-col group w-[calc(100vw-3rem)] md:w-[clamp(220px,22vw,305px)] snap-center";
+  "flex-none flex flex-col group w-[calc(100vw-3rem)] md:w-[65vw] lg:w-[clamp(220px,22vw,305px)] snap-center";
 
 function CardLink({ card, children }: CardLinkProps) {
   if (card.external) {
