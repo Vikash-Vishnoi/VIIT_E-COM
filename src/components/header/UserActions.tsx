@@ -150,16 +150,16 @@ export default function UserActions() {
                   <span className="block text-xs font-black uppercase tracking-widest text-black">{user.name}</span>
                   <span className="block text-[10px] text-gray-400 mt-1">{user.email}</span>
                 </div>
-                <Link href="/profile?tab=overview" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
+                <Link href="/profile" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
                   <UserIcon size={14} /> My Profile
                 </Link>
-                <Link href="/profile?tab=orders" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
+                <Link href="/profile/orders" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
                   <Package size={14} /> My Orders
                 </Link>
-                <Link href="/profile?tab=addresses" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
+                <Link href="/profile/addresses" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
                   <MapPin size={14} /> Address Book
                 </Link>
-                <Link href="/profile?tab=security" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
+                <Link href="/profile/password-change" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
                   <ShieldCheck size={14} /> Security
                 </Link>
                 <div className="h-px bg-gray-50 my-2"></div>

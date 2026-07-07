@@ -10,9 +10,9 @@ export const revalidate = 86400; // Cache for 24 hours
  * Returns the full 3-level nav tree for all active categories:
  * [
  *   {
- *     _id, slug, label, level: 0, image,
+ *     _id, slug, label, level: 0,
  *     children: [
- *       { _id, slug, label, level: 1, image, parentId,
+ *       { _id, slug, label, level: 1, parentId,
  *         children: [
  *           { _id, slug, label, level: 2, parentId }
  *         ]
@@ -30,7 +30,7 @@ export async function GET() {
     // Fetch all active categories in one query, sorted by level + sortOrder
     const all = await SubCategory.find({ isActive: true })
       .sort({ level: 1, sortOrder: 1 })
-      .select('_id slug label parentId level image sortOrder')
+      .select('_id slug label parentId level sortOrder')
       .lean();
 
     // Build lookup maps

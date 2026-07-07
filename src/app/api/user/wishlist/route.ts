@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     if (!userId) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
 
     await connectDB();
-    
+
     // Fetch and populate the product details
     const wishlist = await Wishlist.find({ userId })
       .populate({
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
         select: 'title slug price sellingPrice colors badge isActive',
       })
       .sort({ addedAt: -1 })
-      .lean(); 
+      .lean();
 
     // Filter out items where the product has been deleted
     const validWishlist = wishlist.filter((item: any) => item.productId !== null);
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
     const minimizedWishlist = validWishlist.map((item: any) => {
       const p = item.productId;
-      
+
       // Calculate stock
       let totalQty = 0;
       if (p.colors) {
@@ -44,10 +44,10 @@ export async function GET(req: NextRequest) {
           }
         });
       }
-      
+
       let firstImageUrl = null;
       if (p.colors && p.colors.length > 0 && p.colors[0].images && p.colors[0].images.length > 0) {
-         firstImageUrl = p.colors[0].images[0].url;
+        firstImageUrl = p.colors[0].images[0].url;
       }
 
       return {
@@ -126,4 +126,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, message: 'Failed to update wishlist' }, { status: 500 });
   }
 }
- 

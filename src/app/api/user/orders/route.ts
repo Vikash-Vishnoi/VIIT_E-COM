@@ -15,11 +15,35 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
-    const orders = await Order.find({ userId })
-      .sort({ createdAt: -1 })
-      .lean();
+    const { searchParams } = new URL(req.url);
+    
+    let page = parseInt(searchParams.get('page') || '1', 10);
+    if (isNaN(page) || page < 1) page = 1;
+    
+    const limit = 20; // Hardcoded limit to prevent user manipulation
+    
+    const skip = (page - 1) * limit;
 
-    return NextResponse.json({ success: true, data: orders });
+    const [orders, total] = await Promise.all([
+      Order.find({ userId })
+        .select('-__v -userId -updatedAt -items.productId -shippingAddress.isDefault -shippingAddress.createdAt -shippingAddress.updatedAt -shippingAddress.__v -shippingAddress.user')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Order.countDocuments({ userId })
+    ]);
+
+    return NextResponse.json({ 
+      success: true, 
+      data: orders, 
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (error: any) {
     console.error('GET /api/user/orders error:', error);
     return NextResponse.json({ success: false, message: 'Failed to fetch orders' }, { status: 500 });

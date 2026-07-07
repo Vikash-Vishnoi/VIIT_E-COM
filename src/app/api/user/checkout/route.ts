@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import { connectDB } from '@/lib/db';
 import { User, Cart, Order, Product, Address } from '@/models';
 import { getAuthUser } from '@/lib/auth';
@@ -25,23 +26,29 @@ export async function POST(req: NextRequest) {
     }
 
     const { addressId, paymentMethod } = body;
-
-    if (!addressId || !paymentMethod) {
-      return NextResponse.json({ success: false, message: 'Address and Payment Method are required' }, { status: 400 });
+    
+    if (!mongoose.Types.ObjectId.isValid(addressId)) {
+      return NextResponse.json({ success: false, message: 'Invalid Address ID format' }, { status: 400 });
     }
 
-    // 1. Fetch User and Validate Address
-    const user = await User.findById(userId).select('_id');
-    if (!user) return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
+    const VALID_PAYMENT_METHODS = ['UPI', 'Card', 'COD'];
+    if (!paymentMethod || !VALID_PAYMENT_METHODS.includes(paymentMethod)) {
+      return NextResponse.json({ success: false, message: `Payment method must be one of: ${VALID_PAYMENT_METHODS.join(', ')}` }, { status: 400 });
+    }
 
-    const selectedAddress = await Address.findOne({ _id: addressId, user: userId }).lean();
+    // 1. Validate Address and User Ownership
+
+    const selectedAddress = await Address.findOne({ _id: addressId, user: userId })
+      .select('-user -createdAt -updatedAt -__v')
+      .lean();
     if (!selectedAddress) {
       return NextResponse.json({ success: false, message: 'Invalid shipping address' }, { status: 400 });
     }
 
     // 2. Fetch Cart Items and populate Product details securely (including colors for inventory check)
     const cartItems = await Cart.find({ userId })
-      .populate({ path: 'productId', select: 'title slug price sellingPrice colors' })
+      .select('productId quantity colorName size')
+      .populate({ path: 'productId', select: 'title sellingPrice colors' })
       .lean();
 
     if (cartItems.length === 0) {
@@ -76,12 +83,15 @@ export async function POST(req: NextRequest) {
         }, { status: 400 });
       }
 
-      // Add to bulk operations to decrement inventory
+      // Add to bulk operations to decrement inventory WITH concurrency safety
       bulkOperations.push({
         updateOne: {
           filter: { _id: product._id },
           update: { $inc: { 'colors.$[c].sizes.$[s].quantity': -item.quantity } },
-          arrayFilters: [{ 'c.colorName': item.colorName }, { 's.size': item.size }]
+          arrayFilters: [
+            { 'c.colorName': item.colorName }, 
+            { 's.size': item.size, 's.quantity': { $gte: item.quantity } } // Strict constraint: prevents going below 0
+          ]
         }
       });
       
@@ -105,7 +115,19 @@ export async function POST(req: NextRequest) {
     const tax = Math.round(subtotal - (subtotal / 1.18)); // Included 18% GST calculation
     const total = subtotal; // Assuming Free Shipping for now
 
-    // 4. Create Order
+    // 4. Deduct Inventory FIRST (Detect Race Conditions)
+    if (bulkOperations.length > 0) {
+      const bulkResult = await Product.bulkWrite(bulkOperations);
+      // If the modified count doesn't match the operations, someone bought the last item between our read and write!
+      if (bulkResult.modifiedCount !== bulkOperations.length) {
+        return NextResponse.json({ 
+          success: false, 
+          message: 'An item in your cart just went out of stock! Please refresh your cart.' 
+        }, { status: 409 });
+      }
+    }
+
+    // 5. Create Order
     const newOrder = await Order.create({
       orderId: generateOrderId(),
       userId,
@@ -125,17 +147,13 @@ export async function POST(req: NextRequest) {
       timeline: [{ status: 'Placed', message: 'Order placed successfully' }],
     });
 
-    // 5. Deduct Inventory
-    if (bulkOperations.length > 0) {
-      await Product.bulkWrite(bulkOperations);
-    }
-
     // 6. Clear the User's Cart
     await Cart.deleteMany({ userId });
 
-    return NextResponse.json({ success: true, message: 'Order placed successfully', orderId: newOrder.orderId });
+    return NextResponse.json({ success: true, message: 'Order placed successfully' });
+
   } catch (error: any) {
     console.error('POST /api/user/checkout error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'Failed to place order' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Failed to place order' }, { status: 500 });
   }
 }

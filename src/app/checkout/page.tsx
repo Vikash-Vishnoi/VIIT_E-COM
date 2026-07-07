@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Check, ArrowRight, ShieldCheck, CreditCard, Banknote, MapPin } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Check, ArrowRight, ShieldCheck, CreditCard, Banknote, X, AlertCircle, CheckCircle, Pencil, Plus } from "lucide-react";
+
+export const dynamic = 'force-dynamic';
 
 type CartItem = {
   _id: string;
@@ -31,7 +34,8 @@ type Address = {
   isDefault: boolean;
 };
 
-export default function CheckoutPage() {
+function CheckoutPage() {
+  const searchParams = useSearchParams();
   const [items, setItems] = useState<CartItem[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,14 +43,14 @@ export default function CheckoutPage() {
 
   // Selections
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<string>("Card");
+  const [paymentMethod, setPaymentMethod] = useState<string>("UPI");
 
-  // New Address Form State
-  const [showNewAddress, setShowNewAddress] = useState(false);
-  const [newAddress, setNewAddress] = useState({
-    fullName: "", mobile: "", line1: "", city: "", state: "", pincode: "", isDefault: true
-  });
-  const [savingAddress, setSavingAddress] = useState(false);
+  // Toast notification state
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
+  const showToast = (message: string, type: 'error' | 'success' = 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   useEffect(() => {
     const fetchCheckoutData = async () => {
@@ -68,10 +72,16 @@ export default function CheckoutPage() {
 
         if (addrData.success) {
           setAddresses(addrData.data);
-          const defaultAddr = addrData.data.find((a: Address) => a.isDefault);
-          if (defaultAddr) setSelectedAddressId(defaultAddr._id);
-          else if (addrData.data.length > 0) setSelectedAddressId(addrData.data[0]._id);
-          else setShowNewAddress(true); // Force form if no addresses
+          // If returning from an edit, select that address; otherwise use default
+          const selectId = searchParams.get('selectAddress');
+          if (selectId && addrData.data.find((a: Address) => a._id === selectId)) {
+            setSelectedAddressId(selectId);
+          } else {
+            const defaultAddr = addrData.data.find((a: Address) => a.isDefault);
+            if (defaultAddr) setSelectedAddressId(defaultAddr._id);
+            else if (addrData.data.length > 0) setSelectedAddressId(addrData.data[0]._id);
+            // zero addresses: stay on page, show link button
+          }
         }
       } catch (error) {
         console.error(error);
@@ -90,32 +100,8 @@ export default function CheckoutPage() {
   const taxAmount = useMemo(() => Math.round(subtotal - (subtotal / 1.18)), [subtotal]);
   const subtotalExclTax = subtotal - taxAmount;
 
-  const handleSaveAddress = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingAddress(true);
-    try {
-      const res = await fetch("/api/user/addresses", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newAddress)
-      });
-      const data = await res.json();
-      if (data.success) {
-        setAddresses(prev => [...prev, data.data]);
-        setSelectedAddressId(data.data._id);
-        setShowNewAddress(false);
-      } else {
-        alert(data.message || "Failed to save address");
-      }
-    } catch (error) {
-      alert("Error saving address");
-    } finally {
-      setSavingAddress(false);
-    }
-  };
-
   const handlePlaceOrder = async () => {
-    if (!selectedAddressId) return alert("Please select a shipping address");
+    if (!selectedAddressId) return showToast("Please select a shipping address");
     
     setPlacingOrder(true);
     try {
@@ -131,11 +117,11 @@ export default function CheckoutPage() {
         window.dispatchEvent(new CustomEvent('cart-change', { detail: { action: 'cleared' } }));
         window.location.href = `/checkout/success?orderId=${data.orderId}`;
       } else {
-        alert(data.message || "Checkout failed");
+        showToast(data.message || "Checkout failed");
         setPlacingOrder(false);
       }
     } catch (error) {
-      alert("An error occurred during checkout");
+      showToast("An error occurred during checkout");
       setPlacingOrder(false);
     }
   };
@@ -159,6 +145,23 @@ export default function CheckoutPage() {
           </p>
         </div>
 
+        {/* Toast Notification */}
+        {toast && (
+          <div className={`fixed top-6 right-6 z-[9999] flex items-start gap-3 px-5 py-4 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 max-w-sm ${
+            toast.type === 'error' ? 'bg-black text-white' : 'bg-white border border-gray-100 text-black'
+          }`}>
+            <div className="flex-shrink-0 mt-0.5">
+              {toast.type === 'error'
+                ? <AlertCircle size={16} className="text-red-400" />
+                : <CheckCircle size={16} className="text-green-500" />}
+            </div>
+            <p className="text-xs font-bold uppercase tracking-widest leading-relaxed flex-1">{toast.message}</p>
+            <button onClick={() => setToast(null)} className="flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity ml-2">
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
           {/* Left Column: Accordions */}
@@ -174,7 +177,7 @@ export default function CheckoutPage() {
               </div>
               
               <div className="p-4 md:p-6">
-                {!showNewAddress && addresses.length > 0 ? (
+                {addresses.length > 0 ? (
                   <div className="flex flex-col gap-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {addresses.map((addr) => (
@@ -195,7 +198,17 @@ export default function CheckoutPage() {
                           />
                           <div className="flex justify-between items-start mb-2">
                             <span className="text-xs font-black uppercase tracking-wider">{addr.label}</span>
-                            {selectedAddressId === addr._id && <Check size={16} strokeWidth={3} className="text-black" />}
+                            <div className="flex items-center gap-2">
+                              {selectedAddressId === addr._id && <Check size={16} strokeWidth={3} className="text-black" />}
+                              <Link
+                                href={`/profile/addresses?edit=${addr._id}&returnTo=${encodeURIComponent(`/checkout?selectAddress=${addr._id}`)}`}
+                                onClick={e => e.stopPropagation()}
+                                className="text-gray-400 hover:text-black transition-colors"
+                                title="Edit address"
+                              >
+                                <Pencil size={12} />
+                              </Link>
+                            </div>
                           </div>
                           <span className="text-sm font-bold text-black capitalize">{addr.fullName}</span>
                           <span className="text-xs md:text-sm text-gray-500">{addr.line1}</span>
@@ -205,36 +218,23 @@ export default function CheckoutPage() {
                         </label>
                       ))}
                     </div>
-                    <button 
-                      onClick={() => setShowNewAddress(true)}
-                      className="mt-2 text-xs font-black uppercase tracking-widest text-black underline underline-offset-4 self-start hover:opacity-60"
+                    <Link
+                      href="/profile/addresses?returnTo=/checkout"
+                      className="mt-2 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-black underline underline-offset-4 self-start hover:opacity-60"
                     >
-                      + Add New Address
-                    </button>
+                      <Plus size={12} /> Add New Address
+                    </Link>
                   </div>
                 ) : (
-                  <form onSubmit={handleSaveAddress} className="flex flex-col gap-4 max-w-md">
-                    <div className="grid grid-cols-1 gap-4">
-                      <input required type="text" placeholder="Full Name" value={newAddress.fullName} onChange={e => setNewAddress({...newAddress, fullName: e.target.value})} className="w-full border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black rounded-sm" />
-                      <input required type="text" placeholder="Mobile Number" value={newAddress.mobile} onChange={e => setNewAddress({...newAddress, mobile: e.target.value})} className="w-full border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black rounded-sm" />
-                      <input required type="text" placeholder="Flat / House No. / Building" value={newAddress.line1} onChange={e => setNewAddress({...newAddress, line1: e.target.value})} className="w-full border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black rounded-sm" />
-                      <div className="grid grid-cols-2 gap-4">
-                        <input required type="text" placeholder="City" value={newAddress.city} onChange={e => setNewAddress({...newAddress, city: e.target.value})} className="w-full border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black rounded-sm" />
-                        <input required type="text" placeholder="State" value={newAddress.state} onChange={e => setNewAddress({...newAddress, state: e.target.value})} className="w-full border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black rounded-sm" />
-                      </div>
-                      <input required type="text" placeholder="Pincode" value={newAddress.pincode} onChange={e => setNewAddress({...newAddress, pincode: e.target.value})} className="w-full border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-black rounded-sm" />
-                    </div>
-                    <div className="flex gap-4 mt-2">
-                      <button type="submit" disabled={savingAddress} className="flex-1 bg-black text-white py-3 text-xs font-black uppercase tracking-widest rounded-sm hover:bg-gray-800 disabled:opacity-50">
-                        {savingAddress ? "Saving..." : "Save & Deliver Here"}
-                      </button>
-                      {addresses.length > 0 && (
-                        <button type="button" onClick={() => setShowNewAddress(false)} className="flex-1 bg-white border border-gray-300 text-black py-3 text-xs font-black uppercase tracking-widest rounded-sm hover:bg-gray-50">
-                          Cancel
-                        </button>
-                      )}
-                    </div>
-                  </form>
+                  <div className="flex flex-col items-center gap-4 py-10 text-center">
+                    <p className="text-xs font-bold uppercase tracking-widest text-gray-400">No saved addresses yet</p>
+                    <Link
+                      href="/profile/addresses?returnTo=/checkout"
+                      className="flex items-center gap-2 bg-black text-white px-6 py-3 text-xs font-black uppercase tracking-widest hover:bg-gray-800 transition-colors"
+                    >
+                      <Plus size={14} /> Add New Address
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>
@@ -342,7 +342,7 @@ export default function CheckoutPage() {
 
               <button 
                 onClick={handlePlaceOrder}
-                disabled={placingOrder || !selectedAddressId || showNewAddress}
+                disabled={placingOrder || !selectedAddressId}
                 className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-sm font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-none disabled:cursor-not-allowed"
               >
                 {placingOrder ? "Processing..." : `Pay ₹${subtotal.toLocaleString("en-IN")}`}
@@ -369,7 +369,7 @@ export default function CheckoutPage() {
           </div>
           <button 
             onClick={handlePlaceOrder}
-            disabled={placingOrder || !selectedAddressId || showNewAddress}
+            disabled={placingOrder || !selectedAddressId}
             className="flex items-center justify-center gap-2 bg-black text-white px-8 py-3.5 text-xs font-black uppercase tracking-widest active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {placingOrder ? "Processing..." : "Pay Now"}
@@ -378,5 +378,17 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-[120px]">
+        <div className="animate-pulse text-xs font-bold uppercase tracking-widest text-gray-400">Securing Checkout...</div>
+      </div>
+    }>
+      <CheckoutPage />
+    </Suspense>
   );
 }

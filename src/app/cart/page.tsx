@@ -22,6 +22,9 @@ type CartItem = {
     colors?: { images: { url: string }[] }[];
     badge?: string;
   };
+  isUnavailable?: boolean;
+  isOutOfStock?: boolean;
+  availableQuantity?: number;
 };
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());

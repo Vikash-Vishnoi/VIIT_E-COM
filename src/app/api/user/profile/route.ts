@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { User, Address } from '@/models';
+import { User } from '@/models';
 import { getAuthUser } from '@/lib/auth';
 
 // GET: Fetch full user profile
@@ -12,16 +12,13 @@ export async function GET(req: NextRequest) {
     }
 
     await connectDB();
-    const user = await User.findById(userId).select('-passwordHash').lean();
+    const user = await User.findById(userId).select('name email mobile').lean();
 
     if (!user) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
 
-    const addresses = await Address.find({ user: userId }).lean();
-    const profileData = { ...user, address: addresses };
-
-    return NextResponse.json({ success: true, data: profileData });
+    return NextResponse.json({ success: true, data: user });
   } catch (error: any) {
     console.error('GET /api/user/profile error:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
@@ -46,12 +43,16 @@ export async function PATCH(req: NextRequest) {
     }
 
 
-    if (!name || !mobile) {
-      return NextResponse.json({ success: false, message: 'Name and mobile are required' }, { status: 400 });
+    if (!name || typeof name !== 'string' || name.trim().length === 0 || name.trim().length > 50) {
+      return NextResponse.json({ success: false, message: 'Invalid Name (max 50 chars)' }, { status: 400 });
+    }
+    
+    if (!mobile || !/^\d{10}$/.test(mobile)) {
+      return NextResponse.json({ success: false, message: 'Mobile must be a 10-digit number' }, { status: 400 });
     }
 
     // Check if mobile is being used by another account (excluding current user)
-    const existingMobileUser = await User.findOne({ mobile, _id: { $ne: userId } });
+    const existingMobileUser = await User.exists({ mobile, _id: { $ne: userId } });
     if (existingMobileUser) {
       return NextResponse.json({ success: false, message: 'This mobile number is already in use by another account.' }, { status: 400 });
     }
@@ -60,13 +61,13 @@ export async function PATCH(req: NextRequest) {
       userId,
       { $set: { name, mobile } },
       { new: true, runValidators: true }
-    ).select('-passwordHash').lean();
+    ).select('_id').lean();
 
     if (!updatedUser) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, message: 'Profile updated successfully', data: updatedUser });
+    return NextResponse.json({ success: true, message: 'Profile updated successfully' });
   } catch (error: any) {
     console.error('PATCH /api/user/profile error:', error);
     return NextResponse.json({ success: false, message: 'Failed to update profile' }, { status: 500 });
