@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { Product, InventoryLog } from '@/models';
+import { Product, InventoryLog, AdminAuditLog } from '@/models';
 import { parseAdminQuery } from '@/lib/adminQueryParser';
 
 export const dynamic = 'force-dynamic';
@@ -173,6 +173,17 @@ export async function PATCH(req: NextRequest) {
         quantityAfter: newQuantity,
         reference: 'Admin Manual Adjustment'
       });
+
+      await AdminAuditLog.create({
+        adminId,
+        action: 'INVENTORY_ADJUSTED',
+        resourceId: product._id.toString(),
+        metadata: {
+          sku,
+          oldQuantity,
+          newQuantity
+        }
+      }).catch(err => console.error('[Audit] Failed to log INVENTORY_ADJUSTED:', err));
     }
 
     return Response.json({ success: true, message: 'Stock updated' });

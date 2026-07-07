@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { connectDB } from './db';
 import { AuthLog } from '@/models';
 
-type AuthAction = 'LOGIN_SUCCESS' | 'LOGIN_FAILED' | 'ACCOUNT_LOCKED' | 'REGISTER' | 'PASSWORD_CHANGED' | 'LOGOUT';
+type AuthAction = 'LOGIN_SUCCESS' | 'LOGIN_FAILED' | 'ACCOUNT_LOCKED' | 'REGISTER' | 'PASSWORD_CHANGED' | 'LOGOUT' | 'FORGOT_PASSWORD' | 'PASSWORD_RESET';
 
 export const logAuthEvent = (req: NextRequest, email: string, action: AuthAction) => {
   // Fire and forget, we don't want to block the main response

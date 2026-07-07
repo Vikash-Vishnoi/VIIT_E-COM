@@ -1,9 +1,10 @@
 import { NextRequest } from 'next/server';
 import mongoose from 'mongoose';
 import { connectDB } from '@/lib/db';
-import { Order } from '@/models';
+import { Order, AdminAuditLog } from '@/models';
 
 export const dynamic = 'force-dynamic';
+import { getAdminUser } from '@/lib/auth';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -31,6 +32,8 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
 export async function PATCH(req: NextRequest, { params }: RouteContext) {
   try {
     await connectDB();
+    const adminId = await getAdminUser(req);
+    if (!adminId) return Response.json({ success: false, message: 'Forbidden' }, { status: 403 });
     const { id } = await params;
     let body: any;
     try {
@@ -60,6 +63,17 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       };
       const order = await Order.findOneAndUpdate(query, update, { new: true }).lean();
       if (!order) return Response.json({ success: false, message: 'Order not found' }, { status: 404 });
+      
+      await AdminAuditLog.create({
+        adminId,
+        action: 'ORDER_UPDATED',
+        resourceId: order._id.toString(),
+        metadata: {
+          status: body.status,
+          message: body.message
+        }
+      }).catch(err => console.error('[Audit] Failed to log ORDER_UPDATED:', err));
+      
       return Response.json({ success: true, data: order });
     }
 
@@ -75,6 +89,13 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
     const order = await Order.findOneAndUpdate(query, allowed, { new: true }).lean();
     if (!order) return Response.json({ success: false, message: 'Order not found' }, { status: 404 });
+
+    await AdminAuditLog.create({
+      adminId,
+      action: 'ORDER_UPDATED',
+      resourceId: order._id.toString(),
+      metadata: allowed
+    }).catch(err => console.error('[Audit] Failed to log ORDER_UPDATED:', err));
 
     return Response.json({ success: true, data: order });
   } catch (error: any) {

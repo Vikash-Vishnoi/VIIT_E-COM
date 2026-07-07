@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/db';
 import { User, OTP } from '@/models';
 import { signToken } from '@/lib/jwt';
 import { validatePassword, passwordErrorMsg, validateEmail, emailErrorMsg, hashOTP } from '@/lib/validation';
+import { logAuthEvent } from '@/lib/audit';
 
 export async function POST(req: NextRequest) {
   try {
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
     // Generate JWT and set HttpOnly Cookie to auto-login
     const token = await signToken({ email: user.email, name: user.name });
     
-    const response = NextResponse.json({ success: true, message: 'Password reset successfully! You are now logged in.' });
+    const response = NextResponse.json({ success: true, message: 'Password reset successfully' });
     
     response.cookies.set('auth_token', token, {
       httpOnly: true,
@@ -87,6 +88,8 @@ export async function POST(req: NextRequest) {
       path: '/',
       maxAge: 7 * 24 * 60 * 60, // 7 days
     });
+
+    logAuthEvent(req, normalizedEmail, 'PASSWORD_RESET');
 
     return response;
   } catch (error: any) {

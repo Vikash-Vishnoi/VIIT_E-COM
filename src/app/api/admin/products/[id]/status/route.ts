@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import mongoose from 'mongoose';
 import { connectDB } from '@/lib/db';
-import { Product } from '@/models';
+import { Product, AdminAuditLog } from '@/models';
 
 export const dynamic = 'force-dynamic';
 import { getAdminUser } from '@/lib/auth';
@@ -55,6 +55,13 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
         { status: 404 }
       );
     }
+
+    await AdminAuditLog.create({
+      adminId,
+      action: 'PRODUCT_STATUS_UPDATED',
+      resourceId: updated._id.toString(),
+      metadata: allowed
+    }).catch(err => console.error('[Audit] Failed to log PRODUCT_STATUS_UPDATED:', err));
 
     return Response.json({ success: true, data: updated });
   } catch (error) {

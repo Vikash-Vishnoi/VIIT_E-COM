@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/db';
 import { User } from '@/models';
 import { validateEmail, emailErrorMsg } from '@/lib/validation';
 import { handleOTPGenerationAndSend } from '@/lib/auth';
+import { logAuthEvent } from '@/lib/audit';
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,6 +31,11 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await handleOTPGenerationAndSend(normalizedEmail);
+
+    if (result.success) {
+      logAuthEvent(req, normalizedEmail, 'FORGOT_PASSWORD');
+    }
+
     return NextResponse.json(
       { success: result.success, message: result.message },
       { status: result.status }

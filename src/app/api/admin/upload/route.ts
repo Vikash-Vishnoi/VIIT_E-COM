@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import cloudinary from '@/lib/cloudinary';
+import { getAdminUser } from '@/lib/auth';
+import { AdminAuditLog } from '@/models';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const adminId = await getAdminUser(req);
+    if (!adminId) return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+
     const formData = await req.formData();
     const file = formData.get('file') as File;
 
@@ -36,6 +41,16 @@ export async function POST(req: NextRequest) {
       );
       uploadStream.end(buffer);
     });
+    await AdminAuditLog.create({
+      adminId,
+      action: 'FILE_UPLOADED',
+      metadata: {
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type,
+        url: result.secure_url
+      }
+    }).catch(err => console.error('[Audit] Failed to log FILE_UPLOADED:', err));
 
     return NextResponse.json({ success: true, url: result.secure_url });
   } catch (error: any) {

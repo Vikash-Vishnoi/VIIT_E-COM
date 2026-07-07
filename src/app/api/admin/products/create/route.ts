@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { Product } from '@/models';
+import { Product, Category, SubCategory, AdminAuditLog } from '@/models';
 import { validateTitle, validateDescription, validatePrice, validateColors, validateCategory, validateBadge } from '@/lib/productValidation';
 
 import { getAdminUser } from '@/lib/auth';
@@ -78,6 +78,17 @@ export async function POST(req: NextRequest) {
 
     const product = new Product(safeData);
     await product.save();
+
+    await AdminAuditLog.create({
+      adminId,
+      action: 'PRODUCT_CREATED',
+      resourceId: product._id.toString(),
+      resourceName: product.title,
+      metadata: {
+        price: product.price,
+        sellingPrice: product.sellingPrice,
+      }
+    }).catch(err => console.error('[Audit] Failed to log PRODUCT_CREATED:', err));
 
     return Response.json({ success: true, message: 'Product added successfully' }, { status: 201 });
   } catch (error: any) {
