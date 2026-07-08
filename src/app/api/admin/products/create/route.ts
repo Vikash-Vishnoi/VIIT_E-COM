@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { Product, Category, SubCategory, AdminAuditLog } from '@/models';
+import { Product, SubCategory, AdminAuditLog } from '@/models';
 import { validateTitle, validateDescription, validatePrice, validateColors, validateCategory, validateBadge } from '@/lib/productValidation';
 
 import { getAdminUser } from '@/lib/auth';

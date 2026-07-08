@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Check, ArrowRight, ShieldCheck, CreditCard, Banknote, X, AlertCircle, CheckCircle, Pencil, Plus } from "lucide-react";
+import OrderSummaryCard from "@/components/OrderSummaryCard";
 
 export const dynamic = 'force-dynamic';
 
@@ -284,77 +285,48 @@ function CheckoutPage() {
 
           {/* Right Column: Order Summary */}
           <div className="lg:col-span-5 sticky top-24">
-            <div className="bg-white p-4 md:p-8 flex flex-col gap-5 md:gap-6 border-none md:border-solid md:border md:border-gray-200 shadow-none md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-sm pb-8 md:pb-8">
-              <h2 className="hidden md:block text-lg font-black uppercase tracking-widest text-black border-b border-gray-100 pb-4">
-                Review Order
-              </h2>
-
-              {/* Items Preview */}
-              <div className="flex flex-col gap-4 border-b border-gray-100 pb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                {items.map(item => (
-                  <div key={item._id} className="flex items-center gap-4">
-                    <div className="relative w-16 aspect-[3/4] bg-gray-100 flex-shrink-0">
-                      <Image
-                        src={item.productId.colors?.[0]?.images?.[0]?.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
-                        alt={item.productId.title}
-                        fill
-                        className="object-cover"
-                      />
+              <OrderSummaryCard subtotal={subtotal} title="Review Order" headerContent={
+                <div className="flex flex-col gap-4 border-b border-gray-100 pb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  {items.map(item => (
+                    <div key={item._id} className="flex items-center gap-4">
+                      <div className="relative w-16 aspect-[3/4] bg-gray-100 flex-shrink-0">
+                        <Image
+                          src={item.productId.colors?.[0]?.images?.[0]?.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
+                          alt={item.productId.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex flex-col flex-1">
+                        <span className="text-xs font-bold uppercase truncate max-w-[180px]">{item.productId.title}</span>
+                        <span className="text-[10px] text-gray-500 uppercase mt-1">
+                          {item.colorName !== "Default" && `${item.colorName}`}
+                          {item.size !== "Default" && ` | Size: ${item.size}`}
+                        </span>
+                        <span className="text-[10px] font-bold text-gray-500 mt-1">Qty: {item.quantity}</span>
+                      </div>
+                      <div className="text-xs font-black">
+                        ₹{(item.productId.sellingPrice * item.quantity).toLocaleString("en-IN")}
+                      </div>
                     </div>
-                    <div className="flex flex-col flex-1">
-                      <span className="text-xs font-bold uppercase truncate max-w-[180px]">{item.productId.title}</span>
-                      <span className="text-[10px] text-gray-500 uppercase mt-1">
-                        {item.colorName !== "Default" && `${item.colorName}`}
-                        {item.size !== "Default" && ` | Size: ${item.size}`}
-                      </span>
-                      <span className="text-[10px] font-bold text-gray-500 mt-1">Qty: {item.quantity}</span>
-                    </div>
-                    <div className="text-xs font-black">
-                      ₹{(item.productId.sellingPrice * item.quantity).toLocaleString("en-IN")}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Calculations */}
-              <div className="flex flex-col gap-4 text-xs md:text-sm font-semibold text-gray-500 pt-2">
-                <div className="flex justify-between items-center">
-                  <span>Subtotal (Excl. Tax)</span>
-                  <span className="text-black font-bold">₹{subtotalExclTax.toLocaleString("en-IN")}</span>
+                  ))}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>Estimated Tax (18% GST)</span>
-                  <span className="text-black font-bold">₹{taxAmount.toLocaleString("en-IN")}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Estimated Shipping</span>
-                  <span className="text-green-600 uppercase tracking-wider text-[10px] md:text-xs font-black bg-green-50 px-2 py-1 rounded-sm">Free</span>
-                </div>
-              </div>
+              }>
+                <button 
+                  onClick={handlePlaceOrder}
+                  disabled={placingOrder || !selectedAddressId}
+                  className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-sm font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-none disabled:cursor-not-allowed"
+                >
+                  {placingOrder ? "Processing..." : `Pay ₹${subtotal.toLocaleString("en-IN")}`}
+                </button>
 
-              <div className="flex justify-between items-end pt-6 border-t border-gray-200 mt-2">
-                <div className="flex flex-col">
-                  <span className="text-base font-black uppercase tracking-wide text-black">Total</span>
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Incl. of all taxes</span>
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  <ShieldCheck size={14} className="text-gray-400" />
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                    Payments encrypted by standard SSL
+                  </p>
                 </div>
-                <span className="text-2xl font-black text-black leading-none">₹{subtotal.toLocaleString("en-IN")}</span>
-              </div>
-
-              <button 
-                onClick={handlePlaceOrder}
-                disabled={placingOrder || !selectedAddressId}
-                className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-sm font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-none disabled:cursor-not-allowed"
-              >
-                {placingOrder ? "Processing..." : `Pay ₹${subtotal.toLocaleString("en-IN")}`}
-              </button>
-
-              <div className="flex items-center justify-center gap-2 mt-1">
-                <ShieldCheck size={14} className="text-gray-400" />
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                  Payments encrypted by standard SSL
-                </p>
-              </div>
-            </div>
+              </OrderSummaryCard>
           </div>
 
         </div>

@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IAuthLog extends Document {
   email: string;
-  action: 'LOGIN_SUCCESS' | 'LOGIN_FAILED' | 'ACCOUNT_LOCKED' | 'REGISTER' | 'PASSWORD_CHANGED' | 'LOGOUT';
+  action: 'LOGIN_SUCCESS' | 'LOGIN_FAILED' | 'ACCOUNT_LOCKED' | 'REGISTER' | 'PASSWORD_CHANGED' | 'LOGOUT' | 'FORGOT_PASSWORD' | 'PASSWORD_RESET';
   ipAddress?: string;
   userAgent?: string;
   createdAt: Date;
@@ -13,7 +13,7 @@ const AuthLogSchema = new Schema<IAuthLog>(
     email: { type: String, required: true, trim: true, lowercase: true, index: true },
     action: { 
       type: String, 
-      enum: ['LOGIN_SUCCESS', 'LOGIN_FAILED', 'ACCOUNT_LOCKED', 'REGISTER', 'PASSWORD_CHANGED', 'LOGOUT'], 
+      enum: ['LOGIN_SUCCESS', 'LOGIN_FAILED', 'ACCOUNT_LOCKED', 'REGISTER', 'PASSWORD_CHANGED', 'LOGOUT', 'FORGOT_PASSWORD', 'PASSWORD_RESET'], 
       required: true 
     },
     ipAddress: { type: String, trim: true },

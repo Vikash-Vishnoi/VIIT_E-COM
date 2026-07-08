@@ -70,11 +70,19 @@ export default function CategoryFeedLayout({
 
   // ─── URL Builder ─────────────────────────────────────────────────────────
   function buildUrl(sort: FeedSortKey, page: number, minP?: number, maxP?: number): string {
-    const p = new URLSearchParams();
+    const p = new URLSearchParams(searchParams.toString());
+    
     if (sort !== "featured") p.set("sort", sort);
+    else p.delete("sort");
+
     if (page > 1) p.set("page", String(page));
+    else p.delete("page");
+
     if (minP !== undefined && minP > 0) p.set("minPrice", String(minP));
+    else p.delete("minPrice");
+
     if (maxP !== undefined && maxP < 10000) p.set("maxPrice", String(maxP));
+    else p.delete("maxPrice");
     
     const qs = p.toString();
     return qs ? `${pathname}?${qs}` : pathname;

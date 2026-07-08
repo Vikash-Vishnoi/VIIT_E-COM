@@ -3,7 +3,7 @@ import { fetchFeedProducts } from "@/lib/productFeed";
 import { FeedSortKey, SORT_OPTIONS } from "@/lib/feedTypes";
 import SearchClientPage from "./ClientPage";
 
-type SearchParams = { q?: string; page?: string; sort?: string };
+type SearchParams = { q?: string; page?: string; sort?: string; minPrice?: string; maxPrice?: string; };
 
 export default async function SearchPage({
   searchParams,
@@ -11,7 +11,7 @@ export default async function SearchPage({
   searchParams: Promise<SearchParams>;
 }) {
   await connectDB();
-  const { q = "", page: pageParam, sort: sortParam } = await searchParams;
+  const { q = "", page: pageParam, sort: sortParam, minPrice, maxPrice } = await searchParams;
 
   // Resolve sort & page
   const validSorts = SORT_OPTIONS.map((o) => o.value);
@@ -19,10 +19,12 @@ export default async function SearchPage({
     ? (sortParam as FeedSortKey)
     : "featured";
   const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+  const minP = minPrice ? parseInt(minPrice, 10) : undefined;
+  const maxP = maxPrice ? parseInt(maxPrice, 10) : undefined;
 
   // Paginated feed — all products matching search query
   const { products, total, totalPages, currentPage } = await fetchFeedProducts(
-    { by: "search", q },
+    { by: "search", q, minPrice: minP, maxPrice: maxP },
     sort,
     page
   );

@@ -6,6 +6,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import { Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useStore } from "@/store/useStore";
+import OrderSummaryCard from "@/components/OrderSummaryCard";
 
 type CartItem = {
   _id: string;
@@ -299,34 +300,7 @@ export default function CartPage() {
 
             {/* Right: Order Summary */}
             <div className="lg:col-span-4 sticky top-24">
-              <div className="bg-white p-0 md:p-8 flex flex-col gap-5 md:gap-6 border-none md:border-solid md:border md:border-gray-200 shadow-none md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-none md:rounded-sm">
-                <h2 className="hidden md:block text-lg font-black uppercase tracking-widest text-black mb-2">
-                  Order Summary
-                </h2>
-                
-                <div className="flex flex-col gap-4 md:gap-5 text-xs md:text-sm font-semibold text-gray-500">
-                  <div className="flex justify-between items-center">
-                    <span>Subtotal (Excl. Tax)</span>
-                    <span className="text-black font-bold">₹{subtotalExclTax.toLocaleString("en-IN")}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Estimated Tax (18% GST)</span>
-                    <span className="text-black font-bold">₹{taxAmount.toLocaleString("en-IN")}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Estimated Shipping</span>
-                    <span className="text-green-600 uppercase tracking-wider text-[10px] md:text-xs font-black bg-green-50 px-2 py-1 rounded-sm">Free</span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-end pt-5 md:pt-6 border-t border-gray-100 mt-1 md:mt-2">
-                  <div className="flex flex-col">
-                    <span className="text-sm md:text-base font-black uppercase tracking-wide text-black">Total</span>
-                    <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Incl. of all taxes</span>
-                  </div>
-                  <span className="text-xl md:text-2xl font-black text-black leading-none">₹{subtotal.toLocaleString("en-IN")}</span>
-                </div>
-
+              <OrderSummaryCard subtotal={subtotal}>
                 <Link 
                   href="/checkout"
                   className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-xs font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg group"
@@ -344,7 +318,7 @@ export default function CartPage() {
                     Secure checkout powered by Razorpay
                   </p>
                 </div>
-              </div>
+              </OrderSummaryCard>
             </div>
 
           </div>
