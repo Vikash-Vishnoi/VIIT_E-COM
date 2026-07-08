@@ -72,10 +72,13 @@ export async function POST(req: NextRequest) {
     await user.save();
 
     // Generate JWT — admins get a short-lived 8h token, customers get 30d for good UX
+    // userId and role are included so getAuthUser/getAdminUser can authenticate
+    // from the cryptographically-verified payload alone — no DB lookup needed.
+    // role is only embedded in admin tokens; customer tokens don't need it.
     const isAdmin = user.role === 'admin';
     const token = isAdmin
-      ? await signAdminToken({ email: normalizedEmail, name: user.name })
-      : await signToken({ email: normalizedEmail, name: user.name });
+      ? await signAdminToken({ userId: user._id.toString(), email: normalizedEmail, name: user.name, role: user.role })
+      : await signToken({ userId: user._id.toString(), email: normalizedEmail, name: user.name });
 
     logAuthEvent(req, normalizedEmail, 'LOGIN_SUCCESS');
 

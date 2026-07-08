@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user exists
-    const user = await User.findOne({ email: normalizedEmail }).select('_id passwordHash');
+    const user = await User.findOne({ email: normalizedEmail }).select('_id name passwordHash');
     if (!user) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
@@ -77,7 +77,9 @@ export async function POST(req: NextRequest) {
     await OTP.deleteOne({ _id: otpRecord._id });
 
     // Generate JWT and set HttpOnly Cookie to auto-login
-    const token = await signToken({ email: user.email, name: user.name });
+    // Include userId so getAuthUser can authenticate purely from the
+    // cryptographically-verified JWT payload — no DB lookup required.
+    const token = await signToken({ userId: user._id.toString(), email: normalizedEmail, name: user.name });
     
     const response = NextResponse.json({ success: true, message: 'Password reset successfully' });
     

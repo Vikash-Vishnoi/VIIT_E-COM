@@ -14,38 +14,20 @@ export default function UserActions() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const fetchWishlistCount = () => {
-    fetch('/api/user/wishlist/ids')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data) {
-          // Backend now returns a flat array of strings: ['id1', 'id2']
-          const ids = data.data.map((item: any) => typeof item === 'string' ? item : (item.productId?._id || item.productId));
-          setWishlistData(ids);
-        }
-      })
-      .catch(() => {});
-  };
-
-  const fetchCartCount = () => {
-    fetch('/api/user/cart/count')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && typeof data.count === 'number') {
-          setCartCount(data.count);
-        }
-      })
-      .catch(() => {});
-  };
-
+  // Single session fetch replaces the previous 3 separate calls:
+  //   GET /api/auth/me  +  GET /api/user/cart/count  +  GET /api/user/wishlist/ids
+  // The server runs cart and wishlist queries in parallel after one JWT verify.
   useEffect(() => {
-    const fetchAuth = () => {
-      fetch('/api/auth/me')
+    const fetchSession = () => {
+      fetch('/api/user/session')
         .then(res => res.json())
         .then(async data => {
-          if (data.success) {
-            setUser(data.user);
-            
+          if (data.authenticated) {
+            setUser(true);
+            setCartCount(data.cartCount ?? 0);
+            setWishlistData(data.wishlistIds ?? []);
+
+            // Handle pending wishlist action (set before redirect to login)
             const pendingProductId = sessionStorage.getItem('pendingWishlistAction');
             if (pendingProductId) {
               sessionStorage.removeItem('pendingWishlistAction');
@@ -58,6 +40,7 @@ export default function UserActions() {
               } catch (err) {}
             }
 
+            // Handle pending cart action (set before redirect to login)
             const pendingCartAction = sessionStorage.getItem('pendingCartAction');
             if (pendingCartAction) {
               sessionStorage.removeItem('pendingCartAction');
@@ -69,9 +52,6 @@ export default function UserActions() {
                 });
               } catch (err) {}
             }
-            
-            fetchWishlistCount();
-            fetchCartCount();
           } else {
             setUser(null);
             setWishlistData([]);
@@ -82,7 +62,7 @@ export default function UserActions() {
         .finally(() => setLoadingAuth(false));
     };
 
-    fetchAuth();
+    fetchSession();
   }, [setUser, setWishlistData, setCartCount, setLoadingAuth]);
 
   useEffect(() => {

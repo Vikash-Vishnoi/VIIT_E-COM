@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
     const passwordHash = await bcrypt.hash(password, salt);
 
     // ── Create user ──────────────────────────────────────────────────────────
-    await User.create({
+    const createdUser = await User.create({
       name:         trimmedName,
       email:        normalizedEmail,
       mobile:       trimmedMobile,
@@ -129,7 +129,10 @@ export async function POST(req: NextRequest) {
     await OTP.deleteOne({ _id: otpRecord._id });
 
     // ── Issue JWT and set HttpOnly cookie ────────────────────────────────────
+    // Include userId and role so getAuthUser can authenticate purely from the
+    // cryptographically-verified JWT payload — no DB lookup required.
     const token = await signToken({
+      userId: createdUser._id.toString(),
       email:  normalizedEmail,
       name:   trimmedName,
     });

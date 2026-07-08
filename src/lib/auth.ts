@@ -7,42 +7,39 @@ import { sendOTP } from '@/lib/mail';
 
 /**
  * Extracts and verifies the JWT from the request cookies.
- * Looks up the user by email (since userId is no longer in the payload for security reasons),
- * and returns the user's ObjectId as a string if valid and active.
+ * Returns the user's ObjectId string from the JWT payload if the token is valid.
+ *
+ * NO database query is performed — the JWT signature is cryptographic proof
+ * that the userId inside the payload was written by this server at login time.
+ * This eliminates a MongoDB round trip on every authenticated request.
  */
 export async function getAuthUser(req: NextRequest): Promise<string | null> {
   const token = req.cookies.get('auth_token')?.value;
   if (!token) return null;
 
   const payload = await verifyToken(token);
-  if (!payload || typeof payload.email !== 'string') return null;
+  if (!payload || typeof payload.userId !== 'string') return null;
 
-  await connectDB();
-  const user = await User.findOne({ email: payload.email }).select('_id isActive');
-  
-  if (!user || !user.isActive) return null;
-
-  return user._id.toString();
+  return payload.userId;
 }
 
 /**
- * Verifies the JWT and securely checks the database to ensure the user is an admin.
- * Returns the user's ObjectId if valid, active, and an admin.
+ * Verifies the JWT and checks that the role claim is 'admin'.
+ * Returns the user's ObjectId if valid and an admin.
+ *
+ * NO database query is performed — the role was written into the JWT
+ * by this server at login time and is protected by the JWT signature.
  */
 export async function getAdminUser(req: NextRequest): Promise<string | null> {
   const token = req.cookies.get('auth_token')?.value;
   if (!token) return null;
 
   const payload = await verifyToken(token);
-  
-  if (!payload || typeof payload.email !== 'string') return null;
+  if (!payload || typeof payload.userId !== 'string') return null;
 
-  await connectDB();
-  const user = await User.findOne({ email: payload.email }).select('_id isActive role');
-  
-  if (!user || !user.isActive || user.role !== 'admin') return null;
+  if (payload.role !== 'admin') return null;
 
-  return user._id.toString();
+  return payload.userId;
 }
 
 /**

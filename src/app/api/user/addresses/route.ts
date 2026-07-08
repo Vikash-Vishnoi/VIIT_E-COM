@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { connectDB } from '@/lib/db';
-import { User, Address } from '@/models';
+import { Address } from '@/models';
 import { getAuthUser } from '@/lib/auth';
 
 const INDIAN_STATES = [
