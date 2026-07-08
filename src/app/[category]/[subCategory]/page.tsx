@@ -6,7 +6,7 @@ import { FeedSortKey, SORT_OPTIONS } from "@/lib/feedTypes";
 import SubCategoryClientPage, { SubCatChild } from "./ClientPage";
 
 type RouteParams = { category: string; subCategory: string };
-type SearchParams = { page?: string; sort?: string };
+type SearchParams = { page?: string; sort?: string; minPrice?: string; maxPrice?: string; };
 
 export default async function SubCategoryPage({
   params,
@@ -17,7 +17,7 @@ export default async function SubCategoryPage({
 }) {
   await connectDB();
   const { category, subCategory } = await params;
-  const { page: pageParam, sort: sortParam } = await searchParams;
+  const { page: pageParam, sort: sortParam, minPrice, maxPrice } = await searchParams;
 
   // Resolve sort & page
   const validSorts = SORT_OPTIONS.map((o) => o.value);
@@ -25,6 +25,8 @@ export default async function SubCategoryPage({
     ? (sortParam as FeedSortKey)
     : "featured";
   const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+  const minP = minPrice ? parseInt(minPrice, 10) : undefined;
+  const maxP = maxPrice ? parseInt(maxPrice, 10) : undefined;
 
   // 1. Verify the sub-category exists at level 1
   const currentCat = await SubCategory.findOne({
@@ -59,7 +61,7 @@ export default async function SubCategoryPage({
 
   // 4. Paginated feed — all products in this subCategory
   const { products, total, totalPages, currentPage } = await fetchFeedProducts(
-    { by: "subCategory", slug: subCategory },
+    { by: "subCategory", slug: subCategory, minPrice: minP, maxPrice: maxP },
     sort,
     page
   );

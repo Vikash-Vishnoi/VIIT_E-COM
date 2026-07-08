@@ -14,6 +14,8 @@ type RouteParams = {
 type SearchParams = {
   page?: string;
   sort?: string;
+  minPrice?: string;
+  maxPrice?: string;
 };
 
 export default async function CategoryPage({
@@ -25,7 +27,7 @@ export default async function CategoryPage({
 }) {
   await connectDB();
   const { category, subCategory, subSubCategory } = await params;
-  const { page: pageParam, sort: sortParam } = await searchParams;
+  const { page: pageParam, sort: sortParam, minPrice, maxPrice } = await searchParams;
 
   // ── Resolve sort ────────────────────────────────────────────────────────
   const validSortValues = SORT_OPTIONS.map((o) => o.value);
@@ -35,6 +37,8 @@ export default async function CategoryPage({
 
   // ── Resolve page number ──────────────────────────────────────────────────
   const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+  const minP = minPrice ? parseInt(minPrice, 10) : undefined;
+  const maxP = maxPrice ? parseInt(maxPrice, 10) : undefined;
 
   // ── 1. Verify the sub-sub-category exists ────────────────────────────────
   const currentCat = await SubCategory.findOne({
@@ -60,7 +64,7 @@ export default async function CategoryPage({
 
   // ── 3. Fetch paginated, scored, OOS-filtered products ───────────────────
   const { products, total, totalPages, currentPage } = await fetchFeedProducts(
-    { by: 'subSubCategory', slug: subSubCategory },
+    { by: 'subSubCategory', slug: subSubCategory, minPrice: minP, maxPrice: maxP },
     sort,
     page
   );

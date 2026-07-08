@@ -51,6 +51,13 @@ export async function fetchFeedProducts(
   // Only show in-stock products (at least one size in one color > 0)
   query['colors.sizes.quantity'] = { $gt: 0 };
 
+  // ── Price Filter ────────────────────────────────────────────────────────
+  if (filter.minPrice !== undefined || filter.maxPrice !== undefined) {
+    query.sellingPrice = {};
+    if (filter.minPrice !== undefined) query.sellingPrice.$gte = filter.minPrice;
+    if (filter.maxPrice !== undefined) query.sellingPrice.$lte = filter.maxPrice;
+  }
+
   // ── Step 2: Determine final sort stage ──────────────────────────────────
   const sortStage: Record<string, 1 | -1> =
     sort === 'featured'   ? { popularityScore: -1, createdAt: -1 } :

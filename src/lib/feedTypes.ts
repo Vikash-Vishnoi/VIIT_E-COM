@@ -15,11 +15,15 @@ export const SORT_OPTIONS: { value: FeedSortKey; label: string }[] = [
 ];
 
 /** Discriminated union so the aggregation $match can filter by any category level. */
-export type FeedFilter =
+export type FeedFilter = (
   | { by: 'subSubCategory'; slug: string }
   | { by: 'subCategory';    slug: string }
   | { by: 'category';       slug: string }
-  | { by: 'search';         q: string };
+  | { by: 'search';         q: string }
+) & {
+  minPrice?: number;
+  maxPrice?: number;
+};
 
 export interface FeedResult {
   products: FormattedProduct[];
