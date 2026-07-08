@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { validatePassword, passwordErrorMsg, validateName, nameErrorMsg, validateMobile, mobileErrorMsg } from "@/lib/validation";
 import toast from "react-hot-toast";
+import { getAuthRedirectUrl } from "@/lib/authRedirect";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -84,22 +85,7 @@ export default function RegisterPage() {
       if (data.success) {
         toast.success("Registration successful!");
         window.dispatchEvent(new Event('auth-change'));
-        // Find where to redirect the user back to
-        let returnUrl = '/';
-        const searchParams = new URLSearchParams(window.location.search);
-        const returnToParam = searchParams.get('returnTo');
-
-        if (returnToParam && returnToParam.startsWith('/') && !returnToParam.startsWith('//')) {
-          returnUrl = returnToParam;
-        } else if (document.referrer) {
-          try {
-            const referrerUrl = new URL(document.referrer);
-            // Check if referrer is from the same site and isn't just the login/register page
-            if (referrerUrl.origin === window.location.origin && !referrerUrl.pathname.includes('/login') && !referrerUrl.pathname.includes('/register')) {
-              returnUrl = referrerUrl.pathname + referrerUrl.search;
-            }
-          } catch (e) {}
-        }
+        const returnUrl = getAuthRedirectUrl();
 
         router.push(returnUrl); 
       } else {
