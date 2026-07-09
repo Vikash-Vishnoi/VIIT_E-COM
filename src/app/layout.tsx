@@ -19,6 +19,8 @@ const dancingScript = Dancing_Script({
   variable: "--font-dancing-script",
   subsets: ["latin"],
   weight: ["400", "700"],
+  preload: false,
+  display: "swap",
 });
 
 export const viewport: Viewport = {

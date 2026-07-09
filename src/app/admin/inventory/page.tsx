@@ -150,18 +150,25 @@ function AdminInventoryContent() {
 
   // Filters
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [limit, setLimit] = useState(20);
   const [page, setPage] = useState(1);
 
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const buildQuery = useCallback(() => {
     const p = new URLSearchParams();
-    if (search) p.set('search', search);
+    if (debouncedSearch) p.set('search', debouncedSearch);
     if (status !== 'all') p.set('status', status);
     p.set('page', String(page));
     p.set('limit', String(limit));
     return p.toString();
-  }, [search, status, page, limit]);
+  }, [debouncedSearch, status, page, limit]);
 
   const fetchInventory = useCallback(async () => {
     setLoading(true);
