@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, cache } from 'react';
 import { notFound } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import { Product } from "@/models";
@@ -10,10 +10,14 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
+const getProduct = cache(async (slug: string) => {
+  await connectDB();
+  return await Product.findOne({ slug, isActive: true }).lean();
+});
+
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
-  await connectDB();
-  const product = await Product.findOne({ slug }).lean() as any;
+  const product = await getProduct(slug) as any;
   if (!product) return { title: "Product Not Found" };
   return {
     title: `${product.title} | VIIT`,
@@ -23,9 +27,8 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params;
-  await connectDB();
 
-  const productDoc = await Product.findOne({ slug, isActive: true }).lean();
+  const productDoc = await getProduct(slug);
   if (!productDoc) {
     notFound();
   }

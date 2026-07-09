@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import { connectDB } from '@/lib/db';
 import { Cart } from '@/models';
 import { getAuthUser } from '@/lib/auth';
@@ -11,12 +12,13 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
     
-    // Fetch only the quantity field to minimize payload size and processing time
-    const cartItems = await Cart.find({ userId })
-      .select('quantity')
-      .lean();
+    // Use MongoDB aggregation to sum quantity directly in the database
+    const result = await Cart.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      { $group: { _id: null, totalQuantity: { $sum: '$quantity' } } }
+    ]);
 
-    const count = cartItems.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0);
+    const count = result.length > 0 ? result[0].totalQuantity : 0;
 
     return NextResponse.json({ success: true, count });
   } catch (error: any) {

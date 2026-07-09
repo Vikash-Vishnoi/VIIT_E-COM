@@ -99,8 +99,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Quantity must be between 1 and 20' }, { status: 400 });
     }
 
-    // 4. Validate existence in DB
-    const product = await Product.findById(productId).select('_id isActive colors.colorName colors.sizes');
+    // 4. Validate existence in DB and check if it already exists in cart (Parallel)
+    const [product, existing] = await Promise.all([
+      Product.findById(productId).select('_id isActive colors.colorName colors.sizes'),
+      Cart.findOne({ userId, productId, colorName, size }).select('_id quantity')
+    ]);
+
     if (!product || !product.isActive) {
       return NextResponse.json({ success: false, message: 'Product not found or unavailable' }, { status: 404 });
     }
@@ -114,9 +118,6 @@ export async function POST(req: NextRequest) {
     if (!sizeObj) {
       return NextResponse.json({ success: false, message: 'Selected size is not available' }, { status: 400 });
     }
-
-    // Check if it already exists to increment quantity
-    const existing = await Cart.findOne({ userId, productId, colorName, size }).select('_id quantity');
 
     if (existing) {
       const newQuantity = existing.quantity + quantity;

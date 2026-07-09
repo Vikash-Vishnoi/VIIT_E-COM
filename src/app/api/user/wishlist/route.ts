@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { connectDB } from '@/lib/db';
 import { Wishlist, Product } from '@/models';
 import { getAuthUser } from '@/lib/auth';
-
+ 
 // GET: Fetch user's wishlist items
 export async function GET(req: NextRequest) {
   try {
@@ -96,20 +96,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Invalid Product ID format' }, { status: 400 });
     }
 
-    // Validate productId exists
-    const productExists = await Product.exists({ _id: productId });
-    if (!productExists) {
-      return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
-    }
-
+    
     // Try deleting first (toggle off)
     const deleteResult = await Wishlist.deleteOne({ userId, productId });
     if (deleteResult.deletedCount > 0) {
       return NextResponse.json({ success: true, message: 'Removed from wishlist' });
     }
+    
+    // Validate productId exists and check wishlist limit in parallel
+    const [productExists, currentCount] = await Promise.all([
+      Product.exists({ _id: productId }),
+      Wishlist.countDocuments({ userId })
+    ]);
 
-    // Check wishlist limit
-    const currentCount = await Wishlist.countDocuments({ userId });
+    if (!productExists) {
+      return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
+    }
+
     if (currentCount >= 20) {
       return NextResponse.json({ success: false, message: 'Wishlist limit reached. You can only save up to 20 items.' }, { status: 400 });
     }
