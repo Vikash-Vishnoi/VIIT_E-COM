@@ -609,7 +609,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                       <div className="flex flex-wrap gap-3">
                         {color.images.map((img, imgIdx) => (
                           <div key={imgIdx} className="relative w-20 h-24 rounded-lg overflow-hidden border border-gray-200 group/img bg-white">
-                            <Image src={img.url} alt="Uploaded" fill className="object-cover" unoptimized={img.isLocal} />
+                            <Image src={img.url} alt="Uploaded" fill sizes="80px" className="object-cover" unoptimized={img.isLocal} />
                             <div className="absolute top-1 left-1 bg-black/70 text-white text-[9px] font-black px-1.5 py-0.5 rounded backdrop-blur-sm z-10 shadow-sm">
                               #{img.order + 1}
                             </div>

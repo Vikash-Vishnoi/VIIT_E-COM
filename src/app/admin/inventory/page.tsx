@@ -293,7 +293,7 @@ function AdminInventoryContent() {
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-16 relative bg-gray-100 rounded-sm overflow-hidden shrink-0">
                       {item.image ? (
-                        <Image src={item.image} alt={item.title} fill className="object-cover" />
+                        <Image src={item.image} alt={item.title} fill sizes="48px" className="object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-300"><Box size={16} /></div>
                       )}

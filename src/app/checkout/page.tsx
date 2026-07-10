@@ -294,6 +294,7 @@ function CheckoutPage() {
                           src={item.productId.colors?.[0]?.images?.[0]?.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
                           alt={item.productId.title}
                           fill
+                          sizes="64px"
                           className="object-cover"
                         />
                       </div>

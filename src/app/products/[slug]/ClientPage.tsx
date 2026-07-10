@@ -276,6 +276,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                         src={c.images[0]?.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
                         alt={c.colorName}
                         fill
+                        sizes="48px"
                         className="object-cover"
                       />
                     </button>

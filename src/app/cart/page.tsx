@@ -192,6 +192,7 @@ export default function CartPage() {
                       src={imageUrl}
                       alt={item.productId.title || "Product image"}
                       fill
+                      sizes="(max-width: 768px) 96px, 160px"
                       className={`object-cover ${item.isUnavailable || item.isOutOfStock ? 'opacity-50 grayscale' : ''}`}
                     />
                     {(item.isUnavailable || item.isOutOfStock) && (
