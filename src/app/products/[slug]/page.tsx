@@ -57,12 +57,6 @@ export default async function ProductPage({ params }: PageProps) {
   }));
 
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center pt-[120px]">
-        <div className="animate-pulse text-xs font-bold uppercase tracking-widest text-gray-400">Loading Product...</div>
-      </div>
-    }>
-      <ClientPage product={product} similarProducts={formattedSimilar} />
-    </Suspense>
+    <ClientPage product={product} similarProducts={formattedSimilar} />
   );
 }
