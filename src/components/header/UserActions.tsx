@@ -23,7 +23,7 @@ export default function UserActions() {
         .then(res => res.json())
         .then(async data => {
           if (data.authenticated) {
-            setUser(true);
+            setUser({ authenticated: true });
             setCartCount(data.cartCount ?? 0);
             setWishlistData(data.wishlistIds ?? []);
 
@@ -127,8 +127,7 @@ export default function UserActions() {
               <div className="fixed inset-0 z-40" onClick={() => setProfileMenuOpen(false)}></div>
               <div className="absolute top-[120%] right-0 w-[200px] bg-white border border-gray-100 shadow-xl z-50 flex flex-col py-2 animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="px-4 py-3 border-b border-gray-50 mb-2">
-                  <span className="block text-xs font-black uppercase tracking-widest text-black">{user.name}</span>
-                  <span className="block text-[10px] text-gray-400 mt-1">{user.email}</span>
+                  <span className="block text-xs font-black uppercase tracking-widest text-black">My Account</span>
                 </div>
                 <Link href="/profile" onClick={() => setProfileMenuOpen(false)} className="px-4 py-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
                   <UserIcon size={14} /> My Profile

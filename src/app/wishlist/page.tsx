@@ -36,7 +36,7 @@ export default function WishlistPage() {
   const items: WishlistItem[] = data?.success ? data.data : [];
 
   // Reactively filter items that are still in the global wishlist store
-  const activeItems = items.filter(item => item.productId && wishlistIds.has(item.productId._id));
+  const activeItems = items.filter(item => item.productId && wishlistIds.has(String(item.productId._id)));
 
   if (isLoading) {
     return (

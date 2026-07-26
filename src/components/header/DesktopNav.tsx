@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { NavCategory, navLinks, HEADER_IMAGES } from "./types";
@@ -23,6 +26,16 @@ function NavLabelWithArrow({ label }: NavLabelWithArrowProps) {
 }
 
 export default function DesktopNav({ navTreeBySlug }: { navTreeBySlug: Map<string, NavCategory> }) {
+  const [hoverEnabled, setHoverEnabled] = useState(true);
+
+  const handleLinkClick = () => {
+    // Temporarily disable the "group" hover class to close the dropdown
+    setHoverEnabled(false);
+    setTimeout(() => {
+      setHoverEnabled(true);
+    }, 500);
+  };
+
   return (
     <nav className="hidden lg:flex items-center gap-7 mx-8">
       {navLinks.map((link) => {
@@ -36,6 +49,7 @@ export default function DesktopNav({ navTreeBySlug }: { navTreeBySlug: Map<strin
             <Link
               key={link.label}
               href={link.href}
+              onClick={handleLinkClick}
               className={`group text-sm font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap ${link.highlight ? "text-[#FFCC00]" : "text-black"}`}
             >
               {link.label}
@@ -49,15 +63,16 @@ export default function DesktopNav({ navTreeBySlug }: { navTreeBySlug: Map<strin
         const hasSubSub = cat.children.some(sub => sub.children.length > 0);
 
         return (
-          <div key={link.label} className="group">
+          <div key={link.label} className={hoverEnabled ? "group" : ""}>
             <Link
               href={link.href}
-              className={`relative inline-flex text-[15px] font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:transition-transform after:duration-200 after:content-[''] group-hover:after:scale-x-100 ${link.highlight ? "text-[#FFCC00] after:bg-[#FFCC00]" : "text-black after:bg-current"}`}
+              onClick={handleLinkClick}
+              className={`relative inline-flex text-[15px] font-bold tracking-wider uppercase transition-opacity hover:opacity-70 whitespace-nowrap after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:transition-transform after:duration-200 after:content-[''] ${hoverEnabled ? "group-hover:after:scale-x-100" : ""} ${link.highlight ? "text-[#FFCC00] after:bg-[#FFCC00]" : "text-black after:bg-current"}`}
             >
               <NavLabelWithArrow label={link.label} />
             </Link>
 
-            <div className="absolute left-0 right-0 top-full mt-0 w-screen rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto z-50 before:absolute before:left-0 before:right-0 before:-top-10 before:h-10 before:content-[''] before:block">
+            <div className={`absolute left-0 right-0 top-full mt-0 w-screen rounded-lg border border-gray-200 bg-white shadow-lg pt-4 opacity-0 translate-y-2 pointer-events-none transition-all duration-200 z-50 before:absolute before:left-0 before:right-0 before:-top-10 before:h-10 before:content-[''] before:block ${hoverEnabled ? "group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto" : ""}`}>
               {hasSubSub ? (
                 // ── Two-column layout: each level-1 becomes a column ──
                 <div className="grid gap-6 px-5 pb-5" style={{ gridTemplateColumns: `auto repeat(${cat.children.length}, minmax(0,1fr))` }}>
@@ -70,13 +85,14 @@ export default function DesktopNav({ navTreeBySlug }: { navTreeBySlug: Map<strin
                   {cat.children.map(sub => (
                     <div key={sub._id} className="min-w-0">
                       <div className="text-xs font-bold uppercase tracking-wider text-gray-600 mb-3">
-                        <Link href={`/${link.slug}/${sub.slug}`} className="hover:underline">{sub.label}</Link>
+                        <Link href={`/${link.slug}/${sub.slug}`} onClick={handleLinkClick} className="hover:underline">{sub.label}</Link>
                       </div>
                       <div className="flex flex-col gap-2">
                         {sub.children.map(subsub => (
                           <Link
                             key={subsub._id}
                             href={`/${link.slug}/${sub.slug}/${subsub.slug}`}
+                            onClick={handleLinkClick}
                             className="text-sm font-semibold text-black hover:opacity-70 hover:underline underline-offset-4"
                           >
                             {subsub.label}
@@ -99,6 +115,7 @@ export default function DesktopNav({ navTreeBySlug }: { navTreeBySlug: Map<strin
                       <Link
                         key={sub._id}
                         href={`/${link.slug}/${sub.slug}`}
+                        onClick={handleLinkClick}
                         className="text-sm font-semibold text-black hover:opacity-70 hover:underline underline-offset-4 whitespace-nowrap"
                       >
                         {sub.label}

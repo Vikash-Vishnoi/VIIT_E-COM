@@ -55,6 +55,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  const [colorToDelete, setColorToDelete] = useState<number | null>(null);
   const [originalData, setOriginalData] = useState<FormData | null>(null);
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -580,7 +581,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                   <div key={colorIdx} className="p-5 rounded-xl border border-gray-200 bg-gray-50/30 space-y-5 relative">
                     <button
                       type="button"
-                      onClick={() => removeColor(colorIdx)}
+                      onClick={() => setColorToDelete(colorIdx)}
                       className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <Trash2 size={16} />
@@ -894,6 +895,56 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
         </div>
       </form>
+
+      {/* ── Delete Confirmation Modal ──────────── */}
+      {colorToDelete !== null && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setColorToDelete(null)}
+          />
+          <div className="relative bg-white rounded-2xl border border-gray-200 shadow-2xl max-w-sm w-full p-6 space-y-4">
+            {/* Icon */}
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto">
+              <AlertTriangle size={24} strokeWidth={1.8} className="text-red-500" />
+            </div>
+
+            {/* Text */}
+            <div className="text-center">
+              <h3 className="text-[14px] font-black uppercase tracking-wider text-black">
+                Delete Color Variant
+              </h3>
+              <p className="text-[12px] font-medium text-gray-500 mt-1.5 leading-relaxed">
+                Are you sure you want to delete{" "}
+                <span className="font-bold text-black">&ldquo;{formData.colors[colorToDelete]?.colorName || `Color #${colorToDelete + 1}`}&rdquo;</span>?
+                This action cannot be undone.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => setColorToDelete(null)}
+                className="flex-1 py-2.5 rounded-lg border border-gray-200 text-[11px] font-bold uppercase tracking-widest text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  removeColor(colorToDelete);
+                  setColorToDelete(null);
+                }}
+                className="flex-1 py-2.5 rounded-lg bg-red-500 text-white text-[11px] font-bold uppercase tracking-widest hover:bg-red-600 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <Trash2 size={13} strokeWidth={2} />
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
