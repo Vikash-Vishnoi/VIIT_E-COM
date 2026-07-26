@@ -7,6 +7,7 @@ import useSWR from "swr";
 import { Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import OrderSummaryCard from "@/components/OrderSummaryCard";
+import toast from "react-hot-toast";
 
 type CartItem = {
   _id: string;
@@ -118,9 +119,11 @@ export default function CartPage() {
         mutate(); // Revalidate from server
       } else {
         mutate({ success: true, data: originalItems }, false);
+        toast.error(resData.message || "Could not update quantity.");
       }
     } catch (err) {
       mutate({ success: true, data: originalItems }, false);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 

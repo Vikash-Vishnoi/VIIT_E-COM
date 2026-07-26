@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { Heart } from "lucide-react";
 import ProductCard, { FormattedProduct } from "@/components/ProductCard";
 import { useStore } from "@/store/useStore";
+import toast from "react-hot-toast";
 
 type ProductDetails = {
   _id: string;
@@ -56,6 +57,11 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
   const { wishlistIds, toggleWishlistId, setCartCount } = useStore();
   const isWishlisted = wishlistIds.has(product._id);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
+
+  // Reset quantity to 1 whenever the user switches size or color
+  useEffect(() => {
+    setQuantity(1);
+  }, [selectedSize, selectedColorIndex]);
 
   const toggleWishlist = async () => {
     setLoadingWishlist(true);
@@ -123,9 +129,11 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
         window.location.href = `/login?returnTo=/products/${product.slug}`;
       } else {
         setAddingToCart(false);
+        toast.error(data.message || "Failed to add to bag. Please try again.");
       }
     } catch (error) {
       setAddingToCart(false);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 
@@ -141,6 +149,8 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
   const sizes = currentColor?.sizes || [];
   const currentSizeObj = sizes.find(s => s.size === selectedSize);
   const displaySku = currentSizeObj?.sku || sizes[0]?.sku || product.productId;
+  // Max purchasable qty = min(actual stock for selected size, API hard-cap of 20)
+  const maxStock = Math.min(currentSizeObj?.quantity ?? 0, 20);
 
   // Carousel ref and scroll function
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -352,7 +362,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                       setQuantity("");
                     } else {
                       const val = parseInt(e.target.value);
-                      if (!isNaN(val) && val > 0) setQuantity(val);
+                      if (!isNaN(val) && val > 0) setQuantity(Math.min(val, maxStock));
                     }
                   }}
                   onBlur={() => {
@@ -362,8 +372,9 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                   style={{ MozAppearance: 'textfield' }}
                 />
                 <button
-                  onClick={() => setQuantity(q => q === "" ? 2 : q + 1)}
-                  className="w-10 h-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 transition-colors"
+                  disabled={typeof quantity === "number" && quantity >= maxStock}
+                  onClick={() => setQuantity(q => q === "" ? 2 : Math.min(q + 1, maxStock))}
+                  className="w-10 h-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -371,20 +382,26 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                   </svg>
                 </button>
               </div>
+              {maxStock > 0 && maxStock < 20 && (
+                <p className="text-[10px] font-bold text-amber-600 tracking-wider">Only {maxStock} left in stock</p>
+              )}
+              {maxStock === 0 && selectedSize && (
+                <p className="text-[10px] font-bold text-red-500 tracking-wider">Out of stock</p>
+              )}
             </div>
 
             {/* Action Buttons (Desktop) */}
             <div className="hidden md:flex gap-4 mt-6">
               <button
                 onClick={handleAddToCart}
-                disabled={!selectedSize || addingToCart}
+                disabled={!selectedSize || addingToCart || maxStock === 0}
                 className={`flex-1 py-4 text-sm font-black uppercase tracking-[0.2em] transition-all ${
-                  selectedSize && !addingToCart
+                  selectedSize && !addingToCart && maxStock > 0
                     ? "bg-black text-white hover:bg-gray-800"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
               >
-                {addingToCart ? "ADDING..." : "Add To Bag"}
+                {addingToCart ? "ADDING..." : maxStock === 0 && selectedSize ? "OUT OF STOCK" : "Add To Bag"}
               </button>
             </div>
 
@@ -499,16 +516,16 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
         </div>
         <button
           onClick={handleAddToCart}
-          disabled={addingToCart}
+          disabled={addingToCart || maxStock === 0}
           className={`w-[65%] py-4 text-xs font-black uppercase tracking-widest transition-all ${
-            addingToCart
+            addingToCart || maxStock === 0
               ? "bg-gray-200 text-gray-400 cursor-not-allowed"
               : selectedSize
               ? "bg-black text-white hover:bg-gray-800 active:scale-[0.98]"
               : "bg-gray-100 text-black border border-black/10 active:scale-[0.98]"
           }`}
         >
-          {addingToCart ? "Adding..." : selectedSize ? "Add To Bag" : "Select A Size First"}
+          {addingToCart ? "Adding..." : maxStock === 0 && selectedSize ? "Out of Stock" : selectedSize ? "Add To Bag" : "Select A Size First"}
         </button>
       </div>
     </div>
