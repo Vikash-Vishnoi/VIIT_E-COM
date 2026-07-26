@@ -108,7 +108,7 @@ export default function ProfilePage() {
             type="text" 
             value={editMobile}
             onChange={(e) => setEditMobile(e.target.value.replace(/\D/g, ''))}
-            className="w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
+            className="placeholder:text-gray-400 w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
             placeholder="Enter mobile number"
           />
         </div>

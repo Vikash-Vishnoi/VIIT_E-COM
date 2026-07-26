@@ -256,7 +256,7 @@ export default function CategoriesPage() {
                   required
                   value={formData.label}
                   onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-black outline-none font-bold"
+                  className="placeholder:text-gray-400 w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-black outline-none font-bold"
                   placeholder="e.g. Denim Jackets"
                 />
               </div>
@@ -292,7 +292,7 @@ export default function CategoriesPage() {
                   value={formData.sortOrder}
                   onWheel={(e) => (e.target as HTMLInputElement).blur()}
                   onChange={(e) => setFormData({ ...formData, sortOrder: e.target.value === '' ? '' : parseInt(e.target.value, 10) || 0 })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-black outline-none font-bold"
+                  className="placeholder:text-gray-400 w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-black outline-none font-bold"
                   placeholder="0"
                 />
                 <p className="text-[11px] text-gray-400 mt-1 font-medium">Lower numbers appear first (e.g. 0, 1, 2).</p>
