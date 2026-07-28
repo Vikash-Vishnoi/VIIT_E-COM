@@ -15,14 +15,14 @@ type ProductDetails = {
   title: string;
   slug: string;
   description: string;
-  price: number;
-  sellingPrice: number;
   category: string;
   subCategory?: string;
   subSubCategory?: string;
   badge?: string;
   colors: {
     colorName: string;
+    price: number;
+    sellingPrice: number;
     images: { url: string; order: number }[];
     sizes: { size: string; quantity: number; sku: string }[];
   }[];
@@ -53,7 +53,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
   });
   const [quantity, setQuantity] = useState<number | "">(1);
   const [addingToCart, setAddingToCart] = useState(false);
-  
+
   const { wishlistIds, toggleWishlistId, setCartCount } = useStore();
   const isWishlisted = wishlistIds.has(product._id);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
@@ -65,7 +65,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
 
   const toggleWishlist = async () => {
     setLoadingWishlist(true);
-    
+
     // Optimistic update
     const previousState = isWishlisted;
     toggleWishlistId(product._id, previousState ? 'removed' : 'added');
@@ -74,12 +74,12 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
       const res = await fetch('/api/user/wishlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           productId: product._id
         })
       });
       const data = await res.json();
-      
+
       if (data.success) {
         // Zustand already optimistically updated
       } else if (data.message === 'Unauthorized') {
@@ -98,9 +98,9 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
 
   const handleAddToCart = async () => {
     if (!selectedSize) return;
-    
+
     setAddingToCart(true);
-    
+
     const payload = {
       productId: product._id,
       colorName: product.colors[selectedColorIndex]?.colorName,
@@ -120,8 +120,8 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
         // Fetch new cart count to keep global state in sync
         fetch('/api/user/cart/count').then(r => r.json()).then(d => {
           if (d.success) setCartCount(d.count);
-        }).catch(() => {});
-        
+        }).catch(() => { });
+
         // Keep button disabled briefly to show feedback
         setTimeout(() => setAddingToCart(false), 500);
       } else if (data.message === 'Unauthorized') {
@@ -209,7 +209,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
 
       <div className="px-0 md:px-10 xl:px-16 pb-0 md:pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16 items-start">
-          
+
           {/* ── Left side: Image Gallery ── */}
           <div className="lg:col-span-7 relative group/image">
             {/* Left Arrow (Mobile only) */}
@@ -227,7 +227,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
               {images.map((img, idx) => (
                 <div key={idx} className="relative aspect-[3/4] w-full flex-shrink-0 snap-center bg-gray-50 overflow-hidden">
                   <Image
-                    src={img.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
+                    src={img.url}
                     alt={`${product.title} - ${currentColor.colorName} - ${idx + 1}`}
                     fill
                     priority={idx < 2}
@@ -252,7 +252,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
 
           {/* ── Right side: Sticky Info Panel ── */}
           <div className="lg:col-span-5 sticky top-24 flex flex-col gap-5 md:gap-6 px-4 md:px-0 pt-4 md:pt-0">
-            
+
             <div className="flex flex-col gap-2">
               <span className="text-[10px] md:text-xs font-black tracking-widest uppercase text-gray-500">
                 {product.subSubCategory ? product.subSubCategory.replace(/-/g, ' ') : product.category}
@@ -281,11 +281,11 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
 
               <div className="flex items-baseline gap-3 mt-1">
                 <span className="text-lg font-bold text-black">
-                  ₹{product.sellingPrice.toLocaleString("en-IN")}
+                  ₹{currentColor.sellingPrice.toLocaleString("en-IN")}
                 </span>
-                {product.price > product.sellingPrice && (
+                {currentColor.price > currentColor.sellingPrice && (
                   <span className="text-sm font-semibold text-gray-400 line-through">
-                    ₹{product.price.toLocaleString("en-IN")}
+                    ₹{currentColor.price.toLocaleString("en-IN")}
                   </span>
                 )}
               </div>
@@ -310,12 +310,11 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                         const firstAvailable = newSizes.find(s => s.quantity > 0);
                         setSelectedSize(firstAvailable ? firstAvailable.size : null);
                       }}
-                      className={`w-12 h-16 relative rounded-sm overflow-hidden border-2 transition-all ${
-                        selectedColorIndex === idx ? "border-black" : "border-transparent hover:border-gray-300"
-                      }`}
+                      className={`w-12 h-16 relative rounded-sm overflow-hidden border-2 transition-all ${selectedColorIndex === idx ? "border-black" : "border-transparent hover:border-gray-300"
+                        }`}
                     >
                       <Image
-                        src={c.images[0]?.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
+                        src={c.images[0]?.url}
                         alt={c.colorName}
                         fill
                         sizes="48px"
@@ -337,7 +336,7 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                   Size Guide
                 </button>
               </div>
-              
+
               <div className="flex flex-wrap gap-3">
                 {sizes.map((s) => {
                   const isOutOfStock = s.quantity === 0;
@@ -347,13 +346,12 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                       key={s.size}
                       disabled={isOutOfStock}
                       onClick={() => setSelectedSize(s.size)}
-                      className={`relative w-14 h-12 flex items-center justify-center text-xs md:text-sm font-bold tracking-widest border transition-all ${
-                        isOutOfStock
+                      className={`relative w-14 h-12 flex items-center justify-center text-xs md:text-sm font-bold tracking-widest border transition-all ${isOutOfStock
                           ? "opacity-40 bg-gray-50 border-gray-200 cursor-not-allowed text-gray-400"
                           : isSelected
-                          ? "bg-black text-white border-black"
-                          : "bg-white text-black border-gray-200 hover:border-black"
-                      }`}
+                            ? "bg-black text-white border-black"
+                            : "bg-white text-black border-gray-200 hover:border-black"
+                        }`}
                     >
                       {s.size}
                       {isOutOfStock && (
@@ -427,11 +425,10 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
               <button
                 onClick={handleAddToCart}
                 disabled={!selectedSize || addingToCart || maxStock === 0}
-                className={`flex-1 py-4 text-sm font-black uppercase tracking-[0.2em] transition-all ${
-                  selectedSize && !addingToCart && maxStock > 0
+                className={`flex-1 py-4 text-sm font-black uppercase tracking-[0.2em] transition-all ${selectedSize && !addingToCart && maxStock > 0
                     ? "bg-black text-white hover:bg-gray-800"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
+                  }`}
               >
                 {addingToCart ? "ADDING..." : maxStock === 0 && selectedSize ? "OUT OF STOCK" : "Add To Bag"}
               </button>
@@ -455,10 +452,10 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
 
             {/* Accordions */}
             <div className="flex flex-col border-b border-gray-100">
-              <AccordionItem 
-                id="details" 
-                title="Product Details and Overview" 
-                isOpen={openAccordion === "details"} 
+              <AccordionItem
+                id="details"
+                title="Product Details and Overview"
+                isOpen={openAccordion === "details"}
                 onClick={() => toggleAccordion("details")}
               >
                 <div className="text-xs md:text-sm leading-relaxed text-gray-600 space-y-4">
@@ -466,11 +463,11 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                   <p className="font-semibold text-gray-400 pt-2 border-t border-gray-100">Style ID: {displaySku}</p>
                 </div>
               </AccordionItem>
-              
-              <AccordionItem 
-                id="delivery" 
-                title="Delivery & Return" 
-                isOpen={openAccordion === "delivery"} 
+
+              <AccordionItem
+                id="delivery"
+                title="Delivery & Return"
+                isOpen={openAccordion === "delivery"}
                 onClick={() => toggleAccordion("delivery")}
               >
                 <p className="text-xs md:text-sm leading-relaxed text-gray-600">
@@ -480,10 +477,10 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                 </p>
               </AccordionItem>
 
-              <AccordionItem 
-                id="contact" 
-                title="Contact Us" 
-                isOpen={openAccordion === "contact"} 
+              <AccordionItem
+                id="contact"
+                title="Contact Us"
+                isOpen={openAccordion === "contact"}
                 onClick={() => toggleAccordion("contact")}
               >
                 <p className="text-xs md:text-sm leading-relaxed text-gray-600">
@@ -507,12 +504,12 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
             <h2 className="text-xl font-bold uppercase tracking-widest text-black">
               Similar Products
             </h2>
-            
+
             <div className="relative group/carousel">
               {/* Left Arrow */}
-              <button 
-                onClick={() => scrollCarousel('left')} 
-                className="hidden md:flex absolute left-[-40px] top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center text-gray-300 hover:text-black transition-colors" 
+              <button
+                onClick={() => scrollCarousel('left')}
+                className="hidden md:flex absolute left-[-40px] top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center text-gray-300 hover:text-black transition-colors"
                 aria-label="Scroll left"
               >
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -528,9 +525,9 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
               </div>
 
               {/* Right Arrow */}
-              <button 
-                onClick={() => scrollCarousel('right')} 
-                className="hidden md:flex absolute right-[-40px] top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center text-gray-300 hover:text-black transition-colors" 
+              <button
+                onClick={() => scrollCarousel('right')}
+                className="hidden md:flex absolute right-[-40px] top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center text-gray-300 hover:text-black transition-colors"
                 aria-label="Scroll right"
               >
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -544,18 +541,17 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
       <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-3 pb-safe shadow-[0_-8px_20px_rgba(0,0,0,0.04)] z-50 flex items-center justify-between gap-4">
         <div className="flex flex-col flex-1 pl-2">
           <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Price</span>
-          <span className="text-base font-black text-black leading-none mt-1">₹{product.sellingPrice.toLocaleString("en-IN")}</span>
+          <span className="text-base font-black text-black leading-none mt-1">₹{currentColor.sellingPrice.toLocaleString("en-IN")}</span>
         </div>
         <button
           onClick={handleAddToCart}
           disabled={addingToCart || maxStock === 0}
-          className={`w-[65%] py-4 text-xs font-black uppercase tracking-widest transition-all ${
-            addingToCart || maxStock === 0
+          className={`w-[65%] py-4 text-xs font-black uppercase tracking-widest transition-all ${addingToCart || maxStock === 0
               ? "bg-gray-200 text-gray-400 cursor-not-allowed"
               : selectedSize
-              ? "bg-black text-white hover:bg-gray-800 active:scale-[0.98]"
-              : "bg-gray-100 text-black border border-black/10 active:scale-[0.98]"
-          }`}
+                ? "bg-black text-white hover:bg-gray-800 active:scale-[0.98]"
+                : "bg-gray-100 text-black border border-black/10 active:scale-[0.98]"
+            }`}
         >
           {addingToCart ? "Adding..." : maxStock === 0 && selectedSize ? "Out of Stock" : selectedSize ? "Add To Bag" : "Select A Size First"}
         </button>
@@ -568,22 +564,21 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
 function AccordionItem({ id, title, isOpen, onClick, children }: { id: string, title: string, isOpen: boolean, onClick: () => void, children: React.ReactNode }) {
   return (
     <div className="border-t border-gray-100">
-      <button 
+      <button
         onClick={onClick}
         className="w-full flex items-center justify-between py-5 text-left transition-colors hover:bg-gray-50/50"
       >
         <span className="text-xs font-bold uppercase tracking-widest text-black">{title}</span>
-        <svg 
+        <svg
           className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
           width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
         >
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
-      <div 
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? "max-h-[500px] opacity-100 pb-5" : "max-h-0 opacity-0"
-        }`}
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? "max-h-[500px] opacity-100 pb-5" : "max-h-0 opacity-0"
+          }`}
       >
         {children}
       </div>

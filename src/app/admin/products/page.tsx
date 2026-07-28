@@ -24,8 +24,13 @@ import {
 
 type ProductColor = {
   colorName: string;
+  price: number;
+  sellingPrice: number;
   images: { url: string; order: number }[];
   sizes: { size: string; quantity: number; sku: string }[];
+  badge: string | null;
+  isFeatured: boolean;
+  isActive: boolean;
 };
 
 type Product = {
@@ -36,12 +41,8 @@ type Product = {
   subSubCategory?: string;
   title: string;
   slug: string;
-  price: number;
-  sellingPrice: number;
+  minSellingPrice: number;
   colors: ProductColor[];
-  badge: string | null;
-  isFeatured: boolean;
-  isActive: boolean;
   ratings: { average: number; count: number };
   createdAt: string;
 };
@@ -210,7 +211,14 @@ function AdminProductsContent() {
   const toggleField = async (id: string, field: "isActive" | "isFeatured", current: boolean) => {
     // Optimistic update
     setProducts((prev) =>
-      prev.map((p) => (p._id === id ? { ...p, [field]: !current } : p))
+      prev.map((p) =>
+        p._id === id
+          ? {
+              ...p,
+              colors: p.colors.map((c) => ({ ...c, [field]: !current })),
+            }
+          : p
+      )
     );
     try {
       const res = await fetch(`/api/admin/products/${id}/status`, {
@@ -221,7 +229,14 @@ function AdminProductsContent() {
       if (!res.ok) {
         // Revert on failure
         setProducts((prev) =>
-          prev.map((p) => (p._id === id ? { ...p, [field]: current } : p))
+          prev.map((p) =>
+            p._id === id
+              ? {
+                  ...p,
+                  colors: p.colors.map((c) => ({ ...c, [field]: current })),
+                }
+              : p
+          )
         );
         toast.error(`Failed to update ${field}`);
       } else {
@@ -229,7 +244,14 @@ function AdminProductsContent() {
       }
     } catch {
       setProducts((prev) =>
-        prev.map((p) => (p._id === id ? { ...p, [field]: current } : p))
+        prev.map((p) =>
+          p._id === id
+            ? {
+                ...p,
+                colors: p.colors.map((c) => ({ ...c, [field]: current })),
+              }
+            : p
+        )
       );
       toast.error(`An error occurred updating ${field}`);
     }
@@ -511,6 +533,11 @@ function AdminProductsContent() {
                   const thumb = getThumbnail(product.colors);
                   const stock = getTotalStock(product.colors);
                   const hasOutOfStockVariant = product.colors.some((c) => c.sizes.some((sz) => sz.quantity === 0));
+                  
+                  // Compute aggregate metadata for root display
+                  const productIsActive = product.colors.some((c) => c.isActive);
+                  const productIsFeatured = product.colors.some((c) => c.isFeatured);
+                  const productBadge = product.colors.find((c) => c.badge)?.badge || null;
 
                   return (
                     <tr
@@ -557,9 +584,9 @@ function AdminProductsContent() {
                             <p className="text-[12px] font-bold text-black truncate group-hover/title:underline underline-offset-2">
                               {product.title}
                             </p>
-                            {product.badge && (
-                              <span className={`flex-shrink-0 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${badgeColor(product.badge)}`}>
-                                {product.badge}
+                            {productBadge && (
+                              <span className={`flex-shrink-0 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${badgeColor(productBadge)}`}>
+                                {productBadge}
                               </span>
                             )}
                           </div>
@@ -582,13 +609,8 @@ function AdminProductsContent() {
                       {/* Price */}
                       <td className="px-3 py-3 text-right">
                         <p className="text-[12px] font-bold text-black">
-                          {formatPrice(product.sellingPrice)}
+                          {formatPrice(product.minSellingPrice || Math.min(...product.colors.map(c => c.sellingPrice)) || 0)}
                         </p>
-                        {product.price !== product.sellingPrice && (
-                          <p className="text-[10px] font-medium text-gray-400 line-through mt-0.5">
-                            {formatPrice(product.price)}
-                          </p>
-                        )}
                       </td>
 
                       {/* Stock */}
@@ -616,18 +638,18 @@ function AdminProductsContent() {
                       {/* Active toggle */}
                       <td className="px-3 py-3 text-center">
                         <button
-                          onClick={() => toggleField(product._id, "isActive", product.isActive)}
+                          onClick={() => toggleField(product._id, "isActive", productIsActive)}
                           className="inline-flex items-center gap-1.5 cursor-pointer group/toggle"
-                          title={product.isActive ? "Click to deactivate" : "Click to activate"}
+                          title={productIsActive ? "Click to deactivate" : "Click to activate"}
                         >
                           <span
                             className={`w-7 h-4 rounded-full relative transition-colors duration-200 ${
-                              product.isActive ? "bg-emerald-500" : "bg-gray-300"
+                              productIsActive ? "bg-emerald-500" : "bg-gray-300"
                             }`}
                           >
                             <span
                               className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow transition-all duration-200 ${
-                                product.isActive ? "left-3.5" : "left-0.5"
+                                productIsActive ? "left-3.5" : "left-0.5"
                               }`}
                             />
                           </span>
@@ -637,15 +659,15 @@ function AdminProductsContent() {
                       {/* Featured toggle */}
                       <td className="px-3 py-3 text-center">
                         <button
-                          onClick={() => toggleField(product._id, "isFeatured", product.isFeatured)}
+                          onClick={() => toggleField(product._id, "isFeatured", productIsFeatured)}
                           className="cursor-pointer mx-auto"
-                          title={product.isFeatured ? "Remove from featured" : "Mark as featured"}
+                          title={productIsFeatured ? "Remove from featured" : "Mark as featured"}
                         >
                           <Star
                             size={16}
                             strokeWidth={1.8}
                             className={`transition-colors duration-150 ${
-                              product.isFeatured
+                              productIsFeatured
                                 ? "fill-amber-400 text-amber-400"
                                 : "text-gray-300 hover:text-amber-300"
                             }`}

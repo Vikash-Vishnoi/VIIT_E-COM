@@ -12,7 +12,7 @@ type PageProps = {
 
 const getProduct = cache(async (slug: string) => {
   await connectDB();
-  return await Product.findOne({ slug, isActive: true }).lean();
+  return await Product.findOne({ slug, 'colors.isActive': true }).lean();
 });
 
 export async function generateMetadata({ params }: PageProps) {
@@ -37,7 +37,7 @@ export default async function ProductPage({ params }: PageProps) {
   const similarDocs = await Product.find({
     subCategory: (productDoc as any).subCategory,
     _id: { $ne: (productDoc as any)._id },
-    isActive: true,
+    'colors.isActive': true,
   })
     .limit(8)
     .lean();
@@ -46,15 +46,21 @@ export default async function ProductPage({ params }: PageProps) {
   const product = JSON.parse(JSON.stringify(productDoc));
 
   // Format similar products for the ProductCard component
-  const formattedSimilar = similarDocs.map((p: any) => ({
-    id: p._id.toString(),
-    name: p.title,
-    price: p.sellingPrice,
-    originalPrice: p.price,
-    image: p.colors?.[0]?.images?.[0]?.url || "",
-    badge: p.badge || undefined,
-    slug: p.slug,
-  }));
+  const formattedSimilar = similarDocs.map((p: any) => {
+    const prices = (p.colors as any[])?.map(c => c.sellingPrice) ?? [];
+    const lowestSp = Math.min(...prices);
+    const allSame  = prices.every(sp => sp === lowestSp);
+    return {
+      id: p._id.toString(),
+      name: p.title,
+      price: lowestSp,
+      originalPrice: (p.colors as any[])?.[0]?.price ?? lowestSp,
+      pricePrefix: allSame ? undefined : 'From',
+      image: p.colors?.[0]?.images?.[0]?.url || "",
+      badge: p.colors?.[0]?.badge || undefined,
+      slug: p.slug,
+    };
+  });
 
   return (
     <ClientPage product={product} similarProducts={formattedSimilar} />

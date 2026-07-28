@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const wishlist = await Wishlist.find({ userId })
       .populate({
         path: 'productId',
-        select: 'title slug price sellingPrice colors badge isActive',
+        select: 'title slug colors.price colors.sellingPrice colors.images colors.sizes badge isActive',
       })
       .sort({ addedAt: -1 })
       .lean();
@@ -55,8 +55,8 @@ export async function GET(req: NextRequest) {
           _id: p._id,
           title: p.title,
           slug: p.slug,
-          price: p.price,
-          sellingPrice: p.sellingPrice,
+          price: p.colors?.[0]?.price ?? 0,
+          sellingPrice: p.colors?.[0]?.sellingPrice ?? 0,
           badge: p.badge,
           isActive: p.isActive,
           isOutOfStock: totalQty <= 0,

@@ -22,17 +22,17 @@ export type FormattedProduct = {
 export default function ProductCard({ product }: { product: FormattedProduct }) {
   const [hovered, setHovered] = useState(false);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
-  
+
   const { wishlistIds, toggleWishlistId } = useStore();
   const isWishlisted = wishlistIds.has(product.id);
 
   const toggleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault(); // Stop navigation
     e.stopPropagation();
-    
+
     if (loadingWishlist) return;
     setLoadingWishlist(true);
-    
+
     // Optimistic UI
     const previousState = isWishlisted;
     toggleWishlistId(product.id, previousState ? 'removed' : 'added');
@@ -44,7 +44,7 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
         body: JSON.stringify({ productId: product.id })
       });
       const data = await res.json();
-      
+
       if (data.success) {
         // Success: state already correctly updated optimistically
       } else if (data.message === 'Unauthorized') {
@@ -68,7 +68,7 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
     <Link href={`/products/${product.slug}`} className="group flex flex-col cursor-pointer" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-50 rounded-sm mb-2 md:mb-3">
         <Image
-          src={product.image || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
+          src={product.image}
           alt={product.name || "Product image"}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -77,10 +77,10 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
 
         {product.badge && (() => {
           const badgeStyles: Record<string, string> = {
-            "Sale":        "bg-red-500 text-white",
-            "New":         "bg-emerald-500 text-white",
+            "Sale": "bg-red-500 text-white",
+            "New": "bg-emerald-500 text-white",
             "Best Seller": "bg-amber-400 text-black",
-            "Limited":     "bg-purple-500 text-white",
+            "Limited": "bg-purple-500 text-white",
             "UNAVAILABLE": "bg-gray-800 text-white",
             "OUT OF STOCK": "bg-gray-600 text-white",
           };
@@ -98,9 +98,9 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
           disabled={loadingWishlist}
           className="absolute top-2 right-2 p-1.5 md:p-2 bg-white/80 hover:bg-white rounded-full text-black shadow-sm transition-all z-10"
         >
-          <Heart 
-            size={16} 
-            className={`transition-colors ${isWishlisted ? "fill-black text-black" : "fill-transparent"}`} 
+          <Heart
+            size={16}
+            className={`transition-colors ${isWishlisted ? "fill-black text-black" : "fill-transparent"}`}
           />
         </button>
 

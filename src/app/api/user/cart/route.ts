@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
       .select('-userId -addedAt -createdAt -updatedAt -__v')
       .populate({
         path: 'productId',
-        select: '-_id title slug price sellingPrice colors.colorName colors.images colors.sizes isActive badge',
+        select: '-_id title slug colors.colorName colors.price colors.sellingPrice colors.images colors.sizes isActive badge',
       })
       .sort({ addedAt: -1 })
       .lean();
@@ -49,12 +49,14 @@ export async function GET(req: NextRequest) {
       item.isOutOfStock = availableQty <= 0;
       item.availableQuantity = availableQty;
 
-      // Strip sizes to minimize payload size
-      if (item.productId && item.productId.colors) {
-        item.productId.colors.forEach((c: any) => {
-          delete c.sizes;
-        });
-      }
+      // Extract price for the matched color
+      const matchedColor = p.colors?.find((c: any) => c.colorName === item.colorName);
+      item.productId.matchedColorPrice = matchedColor?.sellingPrice ?? 0;
+      item.productId.matchedColorOriginalPrice = matchedColor?.price ?? 0;
+      item.productId.matchedColorImage = matchedColor?.images?.[0]?.url ?? "";
+
+      // Strip colors to minimize payload size
+      delete item.productId.colors;
 
       return item;
     });

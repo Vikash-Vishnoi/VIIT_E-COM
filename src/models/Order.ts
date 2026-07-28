@@ -10,6 +10,7 @@ const OrderItemSchema = new Schema(
     size: { type: String, required: true },
     quantity: { type: Number, required: true, min: 1 },
     priceAtOrder: { type: Number, required: true }, // locked — never changes
+    originalPriceAtOrder: { type: Number, required: true },
   },
   { _id: false }
 );
@@ -47,6 +48,7 @@ export interface IOrder extends Document {
     size: string;
     quantity: number;
     priceAtOrder: number;
+    originalPriceAtOrder: number;
   }[];
   shippingAddress: Record<string, unknown>;
   pricing: {

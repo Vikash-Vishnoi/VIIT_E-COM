@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { Product, SubCategory, AdminAuditLog } from '@/models';
-import { validateTitle, validateDescription, validatePrice, validateColors, validateCategory, validateBadge } from '@/lib/productValidation';
+import { validateTitle, validateDescription, validateColors, validateCategory, validateBadge } from '@/lib/productValidation';
 
 import { getAdminUser } from '@/lib/auth';
 
@@ -27,15 +27,7 @@ export async function POST(req: NextRequest) {
     const descResult = validateDescription(body.description);
     if (!descResult.isValid) return Response.json({ success: false, message: descResult.error, errors: { description: descResult.error } }, { status: 400 });
 
-    const priceResult = validatePrice(body.price);
-    if (!priceResult.isValid) return Response.json({ success: false, message: priceResult.error, errors: { price: priceResult.error } }, { status: 400 });
 
-    const sellingPriceResult = validatePrice(body.sellingPrice);
-    if (!sellingPriceResult.isValid) return Response.json({ success: false, message: 'Selling price must be a valid number greater than 0', errors: { sellingPrice: 'Selling price must be greater than 0' } }, { status: 400 });
-
-    if (priceResult.value! < sellingPriceResult.value!) {
-      return Response.json({ success: false, message: 'Regular price must be greater than or equal to selling price', errors: { price: 'Regular price must be greater than or equal to selling price' } }, { status: 400 });
-    }
 
     let safeColors: any[] = [];
     if (body.colors !== undefined) {
@@ -68,8 +60,6 @@ export async function POST(req: NextRequest) {
       subCategory: subCategoryResult.value,
       subSubCategory: safeSubSubCategory,
       description: descResult.value,
-      price: priceResult.value,
-      sellingPrice: sellingPriceResult.value,
       colors: safeColors,
       badge: badgeResult.value,
     };
@@ -85,8 +75,7 @@ export async function POST(req: NextRequest) {
       resourceId: product._id.toString(),
       resourceName: product.title,
       metadata: {
-        price: product.price,
-        sellingPrice: product.sellingPrice,
+        minSellingPrice: product.minSellingPrice,
       }
     }).catch(err => console.error('[Audit] Failed to log PRODUCT_CREATED:', err));
 

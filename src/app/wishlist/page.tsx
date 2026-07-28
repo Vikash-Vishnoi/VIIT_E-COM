@@ -48,63 +48,63 @@ export default function WishlistPage() {
 
   return (
     <div className="min-h-screen bg-white pt-5 md:pt-[10px] pb-16 md:pb-20 px-3 md:px-6 xl:px-16">
-        
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-6 mb-5 md:mb-10">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-black uppercase tracking-wider md:tracking-widest text-black mb-2">My Wishlist</h1>
-            <p className="text-sm font-semibold tracking-wider text-gray-500 uppercase">
-              {activeItems.length} {activeItems.length === 1 ? 'Item' : 'Items'} Saved
-            </p>
-          </div>
+
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-6 mb-5 md:mb-10">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-wider md:tracking-widest text-black mb-2">My Wishlist</h1>
+          <p className="text-sm font-semibold tracking-wider text-gray-500 uppercase">
+            {activeItems.length} {activeItems.length === 1 ? 'Item' : 'Items'} Saved
+          </p>
         </div>
+      </div>
 
-        {/* Empty State */}
-        {activeItems.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 md:py-20 text-center">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-              <Heart size={32} className="text-gray-300" strokeWidth={1.5} />
-            </div>
-            <h2 className="text-lg md:text-xl font-black uppercase tracking-widest text-black mb-4">Your Wishlist is Empty</h2>
-            <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
-              Looks like you haven't saved any items yet. Start exploring our collections and click the heart icon to save your favorites for later!
-            </p>
-            <Link 
-              href="/"
-              className="inline-flex items-center justify-center bg-black text-white px-8 py-4 text-[11px] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors"
-            >
-              Start Exploring
-            </Link>
+      {/* Empty State */}
+      {activeItems.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 md:py-20 text-center">
+          <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+            <Heart size={32} className="text-gray-300" strokeWidth={1.5} />
           </div>
-        )}
-
-        {/* Wishlist Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-2.5 gap-y-6 md:gap-x-5 md:gap-y-10">
-          {activeItems.map((item) => {
-            const product = item.productId;
-            
-            const isUnavailable = product.isActive === false;
-            // Use pre-calculated isOutOfStock from the optimized backend payload
-            const isOutOfStock = !isUnavailable && product.isOutOfStock;
-
-            let badge = product.badge || undefined;
-            if (isUnavailable) badge = "UNAVAILABLE";
-            else if (isOutOfStock) badge = "OUT OF STOCK";
-
-            const formattedProduct: FormattedProduct = {
-              id: product._id,
-              name: product.title,
-              price: product.sellingPrice,
-              originalPrice: product.price,
-              image: product.colors?.[0]?.images?.[0]?.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa",
-              badge,
-              slug: product.slug,
-              isUnavailable,
-              isOutOfStock
-            };
-            return <ProductCard key={product._id} product={formattedProduct} />;
-          })}
+          <h2 className="text-lg md:text-xl font-black uppercase tracking-widest text-black mb-4">Your Wishlist is Empty</h2>
+          <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
+            Looks like you haven't saved any items yet. Start exploring our collections and click the heart icon to save your favorites for later!
+          </p>
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center bg-black text-white px-8 py-4 text-[11px] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors"
+          >
+            Start Exploring
+          </Link>
         </div>
+      )}
+
+      {/* Wishlist Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-2.5 gap-y-6 md:gap-x-5 md:gap-y-10">
+        {activeItems.map((item) => {
+          const product = item.productId;
+
+          const isUnavailable = product.isActive === false;
+          // Use pre-calculated isOutOfStock from the optimized backend payload
+          const isOutOfStock = !isUnavailable && product.isOutOfStock;
+
+          let badge = product.badge || undefined;
+          if (isUnavailable) badge = "UNAVAILABLE";
+          else if (isOutOfStock) badge = "OUT OF STOCK";
+
+          const formattedProduct: FormattedProduct = {
+            id: product._id,
+            name: product.title,
+            price: product.sellingPrice,
+            originalPrice: product.price,
+            image: product.colors?.[0]?.images?.[0]?.url,
+            badge,
+            slug: product.slug,
+            isUnavailable,
+            isOutOfStock
+          };
+          return <ProductCard key={product._id} product={formattedProduct} />;
+        })}
+      </div>
     </div>
   );
 }

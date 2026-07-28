@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 
 type Size = { size: string; quantity: number | "" };
 type ProductImage = { url: string; order: number; file?: File; isLocal?: boolean };
-type ColorVariant = { colorName: string; images: ProductImage[]; sizes: Size[] };
+type ColorVariant = { colorName: string; price: number | ""; sellingPrice: number | ""; images: ProductImage[]; sizes: Size[]; badge: string; isFeatured: boolean; isActive: boolean; };
 
 type CategoryNode = {
   _id: string;
@@ -33,11 +33,6 @@ export default function AddProductPage() {
     category: "",
     subCategory: "",
     subSubCategory: "",
-    price: "" as number | "",
-    sellingPrice: "" as number | "",
-    badge: "",
-    isFeatured: false,
-    isActive: true,
     colors: [] as ColorVariant[],
   });
 
@@ -115,7 +110,7 @@ export default function AddProductPage() {
   const addColor = () => {
     setFormData((prev) => ({
       ...prev,
-      colors: [...prev.colors, { colorName: "", images: [], sizes: [] }],
+      colors: [...prev.colors, { colorName: "", price: "", sellingPrice: "", images: [], sizes: [], badge: "", isFeatured: false, isActive: true }],
     }));
   };
 
@@ -126,12 +121,12 @@ export default function AddProductPage() {
     }));
   };
 
-  const handleColorNameChange = (colorIndex: number, value: string) => {
+  const handleColorFieldChange = (colorIndex: number, field: keyof ColorVariant, value: string | number) => {
     setFormData((prev) => {
       const newColors = [...prev.colors];
       newColors[colorIndex] = { 
         ...newColors[colorIndex], 
-        colorName: value
+        [field]: value
       };
       return { ...prev, colors: newColors };
     });
@@ -266,14 +261,7 @@ export default function AddProductPage() {
         hasError = true;
       }
 
-      if (payload.price === "" || payload.price <= 0) {
-        newErrors.price = "Regular price must be greater than 0.";
-        hasError = true;
-      }
-      if (payload.sellingPrice === "" || payload.sellingPrice <= 0) {
-        newErrors.sellingPrice = "Selling price must be greater than 0.";
-        hasError = true;
-      }
+
 
       if (hasError) {
         setFormErrors(newErrors);
@@ -283,12 +271,7 @@ export default function AddProductPage() {
         return;
       }
 
-      if (payload.price < payload.sellingPrice) {
-        setFormErrors(prev => ({ ...prev, price: "Regular price must be greater than or equal to selling price." }));
-        toast.error("Regular price must be greater than or equal to the selling price.");
-        setLoading(false);
-        return;
-      }
+
 
       if (payload.colors.length === 0) {
         toast.error("You must add at least one color variant.");
@@ -297,13 +280,28 @@ export default function AddProductPage() {
       }
 
       for (const color of payload.colors) {
+        if (color.price === "" || color.price <= 0) {
+          toast.error(`Regular price for ${color.colorName || "a color"} must be > 0.`);
+          setLoading(false);
+          return;
+        }
+        if (color.sellingPrice === "" || color.sellingPrice <= 0) {
+          toast.error(`Selling price for ${color.colorName || "a color"} must be > 0.`);
+          setLoading(false);
+          return;
+        }
+        if (color.price < color.sellingPrice) {
+          toast.error(`Regular price for ${color.colorName || "a color"} must be >= selling price.`);
+          setLoading(false);
+          return;
+        }
         if (color.images.length === 0) {
-          toast.error(`You must upload at least one image for ${color.colorName} color.`);
+          toast.error(`You must upload at least one image for ${color.colorName || "a color"}.`);
           setLoading(false);
           return;
         }
         if (color.sizes.length === 0) {
-          toast.error(`You must add at least one size for ${color.colorName} color.`);
+          toast.error(`You must add at least one size for ${color.colorName || "a color"}.`);
           setLoading(false);
           return;
         }
@@ -494,18 +492,100 @@ export default function AddProductPage() {
                     </button>
 
                     {/* Color Name */}
-                    <div className="pr-10">
-                      <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
-                        Color Name *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={color.colorName}
-                        onChange={(e) => handleColorNameChange(colorIdx, e.target.value)}
-                        placeholder="e.g. Midnight Blue"
-                        className="w-full max-w-[250px] px-3 py-2 rounded-lg border border-gray-200 bg-white focus:border-black outline-none text-sm font-bold"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+                          Color Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={color.colorName}
+                          onChange={(e) => handleColorFieldChange(colorIdx, "colorName", e.target.value)}
+                          placeholder="e.g. Midnight Blue"
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white focus:border-black outline-none text-sm font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+                          Regular Price *
+                        </label>
+                        <input
+                          type="number"
+                          required
+                          min="0"
+                          step="0.01"
+                          value={color.price}
+                          onChange={(e) => handleColorFieldChange(colorIdx, "price", e.target.value === "" ? "" : Number(e.target.value))}
+                          onWheel={(e) => (e.target as HTMLElement).blur()}
+                          placeholder="Price"
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white focus:border-black outline-none text-sm font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+                          Selling Price *
+                        </label>
+                        <input
+                          type="number"
+                          required
+                          min="0"
+                          step="0.01"
+                          value={color.sellingPrice}
+                          onChange={(e) => handleColorFieldChange(colorIdx, "sellingPrice", e.target.value === "" ? "" : Number(e.target.value))}
+                          onWheel={(e) => (e.target as HTMLElement).blur()}
+                          placeholder="Selling Price"
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white focus:border-black outline-none text-sm font-bold text-green-600"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Color Metadata (Badge, Featured, Active) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-gray-200/60 pt-4 mt-2">
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+                          Badge
+                        </label>
+                        <select
+                          value={color.badge}
+                          onChange={(e) => handleColorFieldChange(colorIdx, "badge", e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white focus:border-black outline-none text-sm font-medium appearance-none cursor-pointer"
+                        >
+                          <option value="">None</option>
+                          <option value="New">New</option>
+                          <option value="Sale">Sale</option>
+                          <option value="Best Seller">Best Seller</option>
+                          <option value="Limited">Limited</option>
+                        </select>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2 justify-center">
+                        <label className="flex items-center gap-3 cursor-pointer group w-max mt-2">
+                          <div className={`w-9 h-4.5 rounded-full transition-colors relative ${color.isActive ? 'bg-black' : 'bg-gray-200'}`}>
+                            <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white transition-all ${color.isActive ? 'left-5' : 'left-0.5'}`} />
+                          </div>
+                          <span className="text-xs font-bold text-gray-700 group-hover:text-black">Active Color</span>
+                          <input
+                            type="checkbox"
+                            checked={color.isActive}
+                            onChange={(e) => handleColorFieldChange(colorIdx, "isActive", e.target.checked)}
+                            className="hidden"
+                          />
+                        </label>
+
+                        <label className="flex items-center gap-3 cursor-pointer group w-max">
+                          <div className={`w-9 h-4.5 rounded-full transition-colors relative ${color.isFeatured ? 'bg-amber-400' : 'bg-gray-200'}`}>
+                            <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white transition-all ${color.isFeatured ? 'left-5' : 'left-0.5'}`} />
+                          </div>
+                          <span className="text-xs font-bold text-gray-700 group-hover:text-black">Featured Color</span>
+                          <input
+                            type="checkbox"
+                            checked={color.isFeatured}
+                            onChange={(e) => handleColorFieldChange(colorIdx, "isFeatured", e.target.checked)}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
                     </div>
 
                     {/* Images */}
@@ -723,112 +803,6 @@ export default function AddProductPage() {
                 <p className="text-red-500 text-[10px] font-bold mt-1.5 ml-1">{formErrors.subSubCategory}</p>
               )}
             </div>
-            
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
-                Badge
-              </label>
-              <select
-                name="badge"
-                value={formData.badge}
-                onChange={handleChange}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all font-medium text-sm appearance-none cursor-pointer"
-              >
-                <option value="">None</option>
-                <option value="New">New</option>
-                <option value="Sale">Sale</option>
-                <option value="Best Seller">Best Seller</option>
-                <option value="Limited">Limited</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Pricing */}
-          <div className="bg-white border border-gray-200/60 rounded-2xl p-6 shadow-sm space-y-5">
-            <h2 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-2">Pricing</h2>
-            
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
-                Regular Price ($) *
-              </label>
-              <input
-                type="number"
-                name="price"
-                required
-                min="0"
-                step="0.01"
-                value={formData.price}
-                onChange={handleChange}
-                onWheel={(e) => (e.target as HTMLElement).blur()}
-                autoComplete="off"
-                className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white outline-none transition-all font-black text-sm ${
-                  formErrors.price 
-                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
-                    : "border-gray-200 focus:border-black focus:ring-1 focus:ring-black"
-                }`}
-              />
-              {formErrors.price && (
-                <p className="text-red-500 text-[10px] font-bold mt-1.5 ml-1">{formErrors.price}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
-                Selling Price ($) *
-              </label>
-              <input
-                type="number"
-                name="sellingPrice"
-                required
-                min="0"
-                step="0.01"
-                value={formData.sellingPrice}
-                onChange={handleChange}
-                onWheel={(e) => (e.target as HTMLElement).blur()}
-                autoComplete="off"
-                className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white outline-none transition-all font-black text-sm text-green-600 ${
-                  formErrors.sellingPrice 
-                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
-                    : "border-gray-200 focus:border-black focus:ring-1 focus:ring-black"
-                }`}
-              />
-              {formErrors.sellingPrice && (
-                <p className="text-red-500 text-[10px] font-bold mt-1.5 ml-1">{formErrors.sellingPrice}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Status */}
-          <div className="bg-white border border-gray-200/60 rounded-2xl p-6 shadow-sm space-y-5">
-            <h2 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-2">Status & Visibility</h2>
-            
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div className={`w-10 h-5 rounded-full transition-colors relative ${formData.isActive ? 'bg-black' : 'bg-gray-200'}`}>
-                <span className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${formData.isActive ? 'left-6' : 'left-1'}`} />
-              </div>
-              <input
-                type="checkbox"
-                name="isActive"
-                checked={formData.isActive}
-                onChange={handleChange}
-                className="hidden"
-              />
-              <span className="text-sm font-bold text-gray-700 group-hover:text-black">Active Product</span>
-            </label>
-
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div className={`w-10 h-5 rounded-full transition-colors relative ${formData.isFeatured ? 'bg-amber-400' : 'bg-gray-200'}`}>
-                <span className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${formData.isFeatured ? 'left-6' : 'left-1'}`} />
-              </div>
-              <input
-                type="checkbox"
-                name="isFeatured"
-                checked={formData.isFeatured}
-                onChange={handleChange}
-                className="hidden"
-              />
-              <span className="text-sm font-bold text-gray-700 group-hover:text-black">Featured Product</span>
-            </label>
           </div>
 
         </div>

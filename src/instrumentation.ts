@@ -16,64 +16,76 @@ export async function register() {
         // Use an atomic pipeline update to recalculate the score for all active products
         // without pulling any data into Node's RAM.
         await Product.updateMany(
-          { isActive: true },
+          { 'colors.isActive': true },
           [
             {
               $set: {
-                popularityScore: {
-                  $round: [
-                    {
-                      $add: [
-                        // 1. Featured boost: +100
-                        { $cond: ['$isFeatured', 100, 0] },
-                        
-                        // 2. Badge boost
+                colors: {
+                  $map: {
+                    input: '$colors',
+                    as: 'c',
+                    in: {
+                      $mergeObjects: [
+                        '$$c',
                         {
-                          $switch: {
-                            branches: [
-                              { case: { $eq: ['$badge', 'Best Seller'] }, then: 50 },
-                              { case: { $eq: ['$badge', 'New'] },         then: 40 },
-                              { case: { $eq: ['$badge', 'Limited'] },     then: 35 },
-                              { case: { $eq: ['$badge', 'Sale'] },        then: 30 },
+                          popularityScore: {
+                            $round: [
+                              {
+                                $add: [
+                                  // 1. Featured boost: +100
+                                  { $cond: ['$$c.isFeatured', 100, 0] },
+                                  
+                                  // 2. Badge boost
+                                  {
+                                    $switch: {
+                                      branches: [
+                                        { case: { $eq: ['$$c.badge', 'Best Seller'] }, then: 50 },
+                                        { case: { $eq: ['$$c.badge', 'New'] },         then: 40 },
+                                        { case: { $eq: ['$$c.badge', 'Limited'] },     then: 35 },
+                                        { case: { $eq: ['$$c.badge', 'Sale'] },        then: 30 },
+                                      ],
+                                      default: 0,
+                                    },
+                                  },
+                                  
+                                  // 3. Rating score (max +25)
+                                  {
+                                    $multiply: [
+                                      { $divide: [{ $ifNull: ['$$c.ratings.average', 0] }, 5] },
+                                      25,
+                                      { $min: [{ $divide: [{ $ifNull: ['$$c.ratings.count', 0] }, 30] }, 1] },
+                                    ],
+                                  },
+                                  
+                                  // 4. Recency decay (max +35 on day 0, decays to 0 at day 35)
+                                  {
+                                    $max: [
+                                      0,
+                                      {
+                                        $subtract: [
+                                          35,
+                                          {
+                                            $divide: [
+                                              { $subtract: [new Date(), '$createdAt'] },
+                                              86400000, // ms per day
+                                            ],
+                                          },
+                                        ],
+                                      },
+                                    ],
+                                  },
+                                ],
+                              },
+                              1, // round to 1 decimal place
                             ],
-                            default: 0,
                           },
-                        },
-                        
-                        // 3. Rating score (max +25)
-                        // (avg / 5) * 25 * min(count / 30, 1)
-                        {
-                          $multiply: [
-                            { $divide: [{ $ifNull: ['$ratings.average', 0] }, 5] },
-                            25,
-                            { $min: [{ $divide: [{ $ifNull: ['$ratings.count', 0] }, 30] }, 1] },
-                          ],
-                        },
-                        
-                        // 4. Recency decay (max +35 on day 0, decays to 0 at day 35)
-                        {
-                          $max: [
-                            0,
-                            {
-                              $subtract: [
-                                35,
-                                {
-                                  $divide: [
-                                    { $subtract: [new Date(), '$createdAt'] },
-                                    86400000, // ms per day
-                                  ],
-                                },
-                              ],
-                            },
-                          ],
                         },
                       ],
                     },
-                    1 // round to 1 decimal place
-                  ]
-                }
-              }
-            }
+                  },
+                },
+              },
+            },
           ]
         );
         console.log('Daily feed algorithm updated successfully.');

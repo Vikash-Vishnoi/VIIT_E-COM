@@ -17,8 +17,9 @@ type CartItem = {
   productId: {
     _id: string;
     title: string;
-    sellingPrice: number;
-    colors?: { images: { url: string }[] }[];
+    matchedColorPrice: number;
+    matchedColorOriginalPrice: number;
+    matchedColorImage: string;
   };
 };
 
@@ -95,7 +96,7 @@ function CheckoutPage() {
   }, []);
 
   const subtotal = useMemo(() => {
-    return items.reduce((sum, item) => sum + (item.productId.sellingPrice * item.quantity), 0);
+    return items.reduce((sum, item) => sum + (item.productId.matchedColorPrice * item.quantity), 0);
   }, [items]);
 
   const taxAmount = useMemo(() => Math.round(subtotal - (subtotal / 1.18)), [subtotal]);
@@ -103,7 +104,7 @@ function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     if (!selectedAddressId) return showToast("Please select a shipping address");
-    
+
     setPlacingOrder(true);
     try {
       const res = await fetch("/api/user/checkout", {
@@ -112,7 +113,7 @@ function CheckoutPage() {
         body: JSON.stringify({ addressId: selectedAddressId, paymentMethod })
       });
       const data = await res.json();
-      
+
       if (data.success) {
         // Clear global cart counter instantly
         window.dispatchEvent(new CustomEvent('cart-change', { detail: { action: 'cleared' } }));
@@ -138,7 +139,7 @@ function CheckoutPage() {
   return (
     <div className="min-h-screen bg-gray-50 pt-5 md:pt-[10px] pb-0 md:pb-20 px-3 md:px-6 xl:px-16">
       <div className="max-w-[1200px] mx-auto">
-        
+
         <div className="mb-10 text-center">
           <h1 className="text-2xl md:text-3xl font-black uppercase tracking-widest text-black mb-2">Secure Checkout</h1>
           <p className="text-xs font-bold tracking-widest text-gray-400 flex items-center justify-center gap-2 uppercase">
@@ -148,9 +149,8 @@ function CheckoutPage() {
 
         {/* Toast Notification */}
         {toast && (
-          <div className={`fixed top-6 right-6 z-[9999] flex items-start gap-3 px-5 py-4 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 max-w-sm ${
-            toast.type === 'error' ? 'bg-black text-white' : 'bg-white border border-gray-100 text-black'
-          }`}>
+          <div className={`fixed top-6 right-6 z-[9999] flex items-start gap-3 px-5 py-4 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 max-w-sm ${toast.type === 'error' ? 'bg-black text-white' : 'bg-white border border-gray-100 text-black'
+            }`}>
             <div className="flex-shrink-0 mt-0.5">
               {toast.type === 'error'
                 ? <AlertCircle size={16} className="text-red-400" />
@@ -164,10 +164,10 @@ function CheckoutPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          
+
           {/* Left Column: Accordions */}
           <div className="lg:col-span-7 flex flex-col gap-6">
-            
+
             {/* Step 1: Shipping Address */}
             <div className="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
               <div className="bg-black px-4 py-3 md:px-6 md:py-4">
@@ -176,23 +176,22 @@ function CheckoutPage() {
                   Shipping Address
                 </h2>
               </div>
-              
+
               <div className="p-4 md:p-6">
                 {addresses.length > 0 ? (
                   <div className="flex flex-col gap-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {addresses.map((addr) => (
-                        <label 
+                        <label
                           key={addr._id}
-                          className={`relative flex flex-col gap-1 p-3 md:p-4 border rounded-sm cursor-pointer transition-all ${
-                            selectedAddressId === addr._id 
-                              ? "border-black bg-gray-50 ring-1 ring-black" 
+                          className={`relative flex flex-col gap-1 p-3 md:p-4 border rounded-sm cursor-pointer transition-all ${selectedAddressId === addr._id
+                              ? "border-black bg-gray-50 ring-1 ring-black"
                               : "border-gray-200 hover:border-gray-300"
-                          }`}
+                            }`}
                         >
-                          <input 
-                            type="radio" 
-                            name="address" 
+                          <input
+                            type="radio"
+                            name="address"
                             className="sr-only"
                             checked={selectedAddressId === addr._id}
                             onChange={() => setSelectedAddressId(addr._id)}
@@ -255,17 +254,16 @@ function CheckoutPage() {
                     { id: "UPI", label: "UPI (Google Pay, PhonePe, Paytm)", icon: ShieldCheck },
                     { id: "COD", label: "Cash on Delivery", icon: Banknote },
                   ].map((method) => (
-                    <label 
+                    <label
                       key={method.id}
-                      className={`relative flex items-center gap-3 md:gap-4 p-3 md:p-4 border rounded-sm cursor-pointer transition-all ${
-                        paymentMethod === method.id 
-                          ? "border-black bg-gray-50 ring-1 ring-black" 
+                      className={`relative flex items-center gap-3 md:gap-4 p-3 md:p-4 border rounded-sm cursor-pointer transition-all ${paymentMethod === method.id
+                          ? "border-black bg-gray-50 ring-1 ring-black"
                           : "border-gray-200 hover:border-gray-300"
-                      }`}
+                        }`}
                     >
-                      <input 
-                        type="radio" 
-                        name="payment" 
+                      <input
+                        type="radio"
+                        name="payment"
                         className="sr-only"
                         checked={paymentMethod === method.id}
                         onChange={() => setPaymentMethod(method.id)}
@@ -285,49 +283,49 @@ function CheckoutPage() {
 
           {/* Right Column: Order Summary */}
           <div className="lg:col-span-5 sticky top-24">
-              <OrderSummaryCard subtotal={subtotal} title="Review Order" headerContent={
-                <div className="flex flex-col gap-4 border-b border-gray-100 pb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                  {items.map(item => (
-                    <div key={item._id} className="flex items-center gap-4">
-                      <div className="relative w-16 aspect-[3/4] bg-gray-100 flex-shrink-0">
-                        <Image
-                          src={item.productId.colors?.[0]?.images?.[0]?.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
-                          alt={item.productId.title}
-                          fill
-                          sizes="64px"
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="flex flex-col flex-1">
-                        <span className="text-xs font-bold uppercase truncate max-w-[180px]">{item.productId.title}</span>
-                        <span className="text-[10px] text-gray-500 uppercase mt-1">
-                          {item.colorName !== "Default" && `${item.colorName}`}
-                          {item.size !== "Default" && ` | Size: ${item.size}`}
-                        </span>
-                        <span className="text-[10px] font-bold text-gray-500 mt-1">Qty: {item.quantity}</span>
-                      </div>
-                      <div className="text-xs font-black">
-                        ₹{(item.productId.sellingPrice * item.quantity).toLocaleString("en-IN")}
-                      </div>
+            <OrderSummaryCard subtotal={subtotal} title="Review Order" headerContent={
+              <div className="flex flex-col gap-4 border-b border-gray-100 pb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                {items.map(item => (
+                  <div key={item._id} className="flex items-center gap-4">
+                    <div className="relative w-16 aspect-[3/4] bg-gray-100 flex-shrink-0">
+                      <Image
+                        src={item.productId.matchedColorImage}
+                        alt={item.productId.title}
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
                     </div>
-                  ))}
-                </div>
-              }>
-                <button 
-                  onClick={handlePlaceOrder}
-                  disabled={placingOrder || !selectedAddressId}
-                  className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-sm font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-none disabled:cursor-not-allowed"
-                >
-                  {placingOrder ? "Processing..." : `Pay ₹${subtotal.toLocaleString("en-IN")}`}
-                </button>
+                    <div className="flex flex-col flex-1">
+                      <span className="text-xs font-bold uppercase truncate max-w-[180px]">{item.productId.title}</span>
+                      <span className="text-[10px] text-gray-500 uppercase mt-1">
+                        {item.colorName !== "Default" && `${item.colorName}`}
+                        {item.size !== "Default" && ` | Size: ${item.size}`}
+                      </span>
+                      <span className="text-[10px] font-bold text-gray-500 mt-1">Qty: {item.quantity}</span>
+                    </div>
+                    <div className="text-xs font-black">
+                      ₹{(item.productId.matchedColorPrice * item.quantity).toLocaleString("en-IN")}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            }>
+              <button
+                onClick={handlePlaceOrder}
+                disabled={placingOrder || !selectedAddressId}
+                className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-sm font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-none disabled:cursor-not-allowed"
+              >
+                {placingOrder ? "Processing..." : `Pay ₹${subtotal.toLocaleString("en-IN")}`}
+              </button>
 
-                <div className="flex items-center justify-center gap-2 mt-1">
-                  <ShieldCheck size={14} className="text-gray-400" />
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                    Payments encrypted by standard SSL
-                  </p>
-                </div>
-              </OrderSummaryCard>
+              <div className="flex items-center justify-center gap-2 mt-1">
+                <ShieldCheck size={14} className="text-gray-400" />
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                  Payments encrypted by standard SSL
+                </p>
+              </div>
+            </OrderSummaryCard>
           </div>
 
         </div>
@@ -340,7 +338,7 @@ function CheckoutPage() {
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Total</span>
             <span className="text-lg font-black text-black leading-none mt-1">₹{subtotal.toLocaleString("en-IN")}</span>
           </div>
-          <button 
+          <button
             onClick={handlePlaceOrder}
             disabled={placingOrder || !selectedAddressId}
             className="flex items-center justify-center gap-2 bg-black text-white px-8 py-3.5 text-xs font-black uppercase tracking-widest active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"

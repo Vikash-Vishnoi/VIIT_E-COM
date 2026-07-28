@@ -4,7 +4,7 @@ import { connectDB } from '@/lib/db';
 import { Product } from '@/models';
 import { 
   validateTitle, validateDescription, validateObjectId,
-  validateCategory, validateBadge, validateBoolean, validateColors, validatePricing 
+  validateCategory, validateBadge, validateBoolean, validateColors 
 } from '@/lib/productValidation';
 export const dynamic = 'force-dynamic';
 import { getAdminUser } from '@/lib/auth';
@@ -28,7 +28,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
     }
 
     const product = await Product.findById(id)
-      .select('_id category subCategory subSubCategory title description price sellingPrice colors badge isFeatured isActive')
+      .select('_id category subCategory subSubCategory title description colors')
       .lean();
 
     if (!product) {
@@ -46,15 +46,15 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
       subSubCategory: product.subSubCategory,
       title:          product.title,
       description:    product.description,
-      price:          product.price,
-      sellingPrice:   product.sellingPrice,
-      badge:          product.badge,
-      isFeatured:     product.isFeatured,
-      isActive:       product.isActive,
       colors: (product.colors as any[]).map((c: any) => ({
         colorName: c.colorName,
+        price:     c.price,
+        sellingPrice: c.sellingPrice,
         images:    c.images.map((img: any) => ({ url: img.url, order: img.order })),
         sizes:     c.sizes.map((s: any)   => ({ size: s.size, quantity: s.quantity })),
+        badge:     c.badge,
+        isFeatured: c.isFeatured,
+        isActive:  c.isActive,
       })),
     };
     return Response.json({ success: true, data: shaped });
@@ -114,17 +114,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       safeData.subSubCategory = res.value;
     }
 
-    if (body.isFeatured !== undefined) {
-      const res = validateBoolean(body.isFeatured, 'isFeatured');
-      if (!res.isValid) return Response.json({ success: false, message: res.error }, { status: 400 });
-      safeData.isFeatured = res.value;
-    }
-
-    if (body.isActive !== undefined) {
-      const res = validateBoolean(body.isActive, 'isActive');
-      if (!res.isValid) return Response.json({ success: false, message: res.error }, { status: 400 });
-      safeData.isActive = res.value;
-    }
+    // Root fields validation skipped for removed metadata
 
     if (body.title !== undefined) {
       const res = validateTitle(body.title);
@@ -138,18 +128,9 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       safeData.description = res.value;
     }
 
-    if (body.badge !== undefined) {
-      const res = validateBadge(body.badge);
-      if (!res.isValid) return Response.json({ success: false, message: res.error }, { status: 400 });
-      safeData.badge = res.value;
-    }
+    // Badge validation is now in colors
 
-    if (body.price !== undefined || body.sellingPrice !== undefined) {
-      const res = validatePricing(body.price, body.sellingPrice, existingProduct);
-      if (!res.isValid) return Response.json({ success: false, message: res.error }, { status: 400 });
-      if (body.price !== undefined) safeData.price = res.price;
-      if (body.sellingPrice !== undefined) safeData.sellingPrice = res.sellingPrice;
-    }
+
 
     if (body.colors !== undefined) {
       const res = validateColors(body.colors);
@@ -185,15 +166,15 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       subSubCategory: updatedProduct.subSubCategory,
       title:          updatedProduct.title,
       description:    updatedProduct.description,
-      price:          updatedProduct.price,
-      sellingPrice:   updatedProduct.sellingPrice,
-      badge:          updatedProduct.badge,
-      isFeatured:     updatedProduct.isFeatured,
-      isActive:       updatedProduct.isActive,
       colors: updatedProduct.colors.map((c: any) => ({
         colorName: c.colorName,
+        price:     c.price,
+        sellingPrice: c.sellingPrice,
         images:    c.images.map((img: any) => ({ url: img.url, order: img.order })),
         sizes:     c.sizes.map((s: any)   => ({ size: s.size, quantity: s.quantity })),
+        badge:     c.badge,
+        isFeatured: c.isFeatured,
+        isActive:  c.isActive,
       })),
     };
     return Response.json({ success: true, data: shaped });
@@ -233,8 +214,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
         category: 1,
         subCategory: 1,
         slug: 1,
-        sellingPrice: 1,
-        isActive: 1,
+        minSellingPrice: 1,
         'colors.images.url': 1, // only URLs needed for Cloudinary cleanup
       },
     });
@@ -257,8 +237,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
         category:     deleted.category,
         subCategory:  deleted.subCategory,
         slug:         deleted.slug,
-        sellingPrice: deleted.sellingPrice,
-        isActive:     deleted.isActive,
+        minSellingPrice: deleted.minSellingPrice,
       },
     });
 

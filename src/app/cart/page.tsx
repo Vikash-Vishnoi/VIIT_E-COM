@@ -19,9 +19,9 @@ type CartItem = {
     _id: string;
     title: string;
     slug: string;
-    price: number;
-    sellingPrice: number;
-    colors?: { images: { url: string }[] }[];
+    matchedColorPrice: number;
+    matchedColorOriginalPrice: number;
+    matchedColorImage: string;
     badge?: string;
   };
   isUnavailable?: boolean;
@@ -57,7 +57,7 @@ export default function CartPage() {
         // Fetch new cart count
         fetch('/api/user/cart/count').then(r => r.json()).then(d => {
           if (d.success) setCartCount(d.count);
-        }).catch(() => {});
+        }).catch(() => { });
         mutate(); // Revalidate from server
       } else {
         mutate({ success: true, data: originalItems }, false);
@@ -89,9 +89,9 @@ export default function CartPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ productId })
         });
-      } catch (err) {}
+      } catch (err) { }
     }
-    
+
     await handleRemove(id);
   };
 
@@ -115,7 +115,7 @@ export default function CartPage() {
         // Fetch new cart count
         fetch('/api/user/cart/count').then(r => r.json()).then(d => {
           if (d.success) setCartCount(d.count);
-        }).catch(() => {});
+        }).catch(() => { });
         mutate(); // Revalidate from server
       } else {
         mutate({ success: true, data: originalItems }, false);
@@ -130,7 +130,7 @@ export default function CartPage() {
   const subtotal = useMemo(() => {
     return items.reduce((sum, item) => {
       if (item.isUnavailable || item.isOutOfStock) return sum;
-      return sum + (item.productId.sellingPrice * item.quantity);
+      return sum + (item.productId.matchedColorPrice * item.quantity);
     }, 0);
   }, [items]);
 
@@ -149,7 +149,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-white pt-5 md:pt-[10px] pb-0 md:pb-20 px-3 md:px-6 xl:px-16">
       <div className="max-w-[1200px] mx-auto">
-        
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-6 mb-5 md:mb-10">
           <div>
@@ -170,7 +170,7 @@ export default function CartPage() {
             <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
               Looks like you haven't added anything to your bag yet. Start exploring our collections.
             </p>
-            <Link 
+            <Link
               href="/"
               className="inline-flex items-center justify-center bg-black text-white px-8 py-4 text-xs font-black uppercase tracking-widest hover:bg-gray-800 transition-colors"
             >
@@ -179,125 +179,124 @@ export default function CartPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
-            
+
             {/* Left: Cart Items */}
             <div className="lg:col-span-8 flex flex-col gap-8">
               {items.map((item) => {
-                const colorObj = item.productId.colors?.find((c: any) => c.colorName === item.colorName) || item.productId.colors?.[0];
-                const imageUrl = colorObj?.images?.[0]?.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa";
+                const imageUrl = item.productId.matchedColorImage;
 
                 return (
                   <div key={item._id} className="flex gap-4 md:gap-6 pb-8 border-b border-gray-100 last:border-0 relative group">
-                  
-                  {/* Image */}
-                  <Link href={`/products/${item.productId.slug}?color=${encodeURIComponent(item.colorName)}`} className="relative w-24 md:w-40 aspect-[3/4] bg-gray-50 flex-shrink-0">
-                    <Image
-                      src={imageUrl}
-                      alt={item.productId.title || "Product image"}
-                      fill
-                      sizes="(max-width: 768px) 96px, 160px"
-                      className={`object-cover ${item.isUnavailable || item.isOutOfStock ? 'opacity-50 grayscale' : ''}`}
-                    />
-                    {(item.isUnavailable || item.isOutOfStock) && (
-                      <div className="absolute inset-x-0 bottom-0 bg-black bg-opacity-70 text-white text-[8px] md:text-[10px] font-bold text-center py-1 uppercase tracking-widest">
-                        {item.isUnavailable ? 'Unavailable' : 'Out of Stock'}
-                      </div>
-                    )}
-                  </Link>
 
-                  {/* Details */}
-                  <div className="flex flex-col flex-1 py-1">
-                    <div className="flex justify-between items-start gap-4">
-                      <Link href={`/products/${item.productId.slug}?color=${encodeURIComponent(item.colorName)}`}>
-                        <h3 className="text-xs md:text-base font-bold uppercase tracking-wide text-black leading-snug hover:underline underline-offset-2 md:pr-8">
-                          {item.productId.title}
-                        </h3>
-                      </Link>
-                      <button 
-                        onClick={() => setItemToRemove(item)}
-                        className="hidden md:block absolute right-0 top-1 text-gray-400 hover:text-red-500 transition-colors p-1"
-                        aria-label="Remove item"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-
-                    <div className="flex items-center gap-2 mt-2">
-                      <p className="text-sm font-semibold text-black">
-                        ₹{item.productId.sellingPrice.toLocaleString("en-IN")}
-                      </p>
-                      {item.productId.price > item.productId.sellingPrice && (
-                        <p className="text-xs font-semibold text-gray-400 line-through">
-                          ₹{item.productId.price.toLocaleString("en-IN")}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-3 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-500 mt-4">
-                      {item.colorName !== "Default" && (
-                        <span>Color: <span className="text-black">{item.colorName}</span></span>
-                      )}
-                      {item.colorName !== "Default" && item.size !== "Default" && <span className="text-gray-300">|</span>}
-                      {item.size !== "Default" && (
-                        <span>Size: <span className="text-black">{item.size}</span></span>
-                      )}
-                    </div>
-
-                    {/* Quantity Selector + Mobile Delete */}
-                    <div className="mt-auto pt-5 md:pt-6 flex justify-between items-end">
-                      <div className="flex flex-col gap-1.5">
-                        <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500 md:mr-4 md:inline-block">
-                          Qty:
-                        </span>
-                        <div className="flex items-center border border-gray-200 h-8 md:h-10 rounded-full md:rounded-none overflow-hidden">
-                          <button
-                            disabled={item.quantity <= 1 || item.isUnavailable || item.isOutOfStock}
-                            onClick={() => handleUpdateQuantity(item._id, item.quantity - 1)}
-                            className="w-8 h-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                          >
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="md:w-[12px] md:h-[12px]">
-                              <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                          </button>
-                          <input
-                            type="number"
-                            min="1"
-                            value={item.quantity}
-                            disabled={item.isUnavailable || item.isOutOfStock}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value);
-                              if (!isNaN(val) && val > 0) {
-                                const max = item.availableQuantity || 0;
-                                handleUpdateQuantity(item._id, Math.min(val, max));
-                              }
-                            }}
-                            className="w-8 md:w-12 h-full text-center text-xs md:text-sm font-bold focus:outline-none focus:bg-gray-50 transition-colors [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none disabled:opacity-50 disabled:bg-gray-100"
-                            style={{ MozAppearance: 'textfield' }}
-                          />
-                          <button
-                            disabled={item.quantity >= (item.availableQuantity || 0) || item.isUnavailable || item.isOutOfStock}
-                            onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
-                            className="w-8 h-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                          >
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="md:w-[12px] md:h-[12px]">
-                              <line x1="12" y1="5" x2="12" y2="19"></line>
-                              <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                          </button>
+                    {/* Image */}
+                    <Link href={`/products/${item.productId.slug}?color=${encodeURIComponent(item.colorName)}`} className="relative w-24 md:w-40 aspect-[3/4] bg-gray-50 flex-shrink-0">
+                      <Image
+                        src={imageUrl}
+                        alt={item.productId.title || "Product image"}
+                        fill
+                        sizes="(max-width: 768px) 96px, 160px"
+                        className={`object-cover ${item.isUnavailable || item.isOutOfStock ? 'opacity-50 grayscale' : ''}`}
+                      />
+                      {(item.isUnavailable || item.isOutOfStock) && (
+                        <div className="absolute inset-x-0 bottom-0 bg-black bg-opacity-70 text-white text-[8px] md:text-[10px] font-bold text-center py-1 uppercase tracking-widest">
+                          {item.isUnavailable ? 'Unavailable' : 'Out of Stock'}
                         </div>
+                      )}
+                    </Link>
+
+                    {/* Details */}
+                    <div className="flex flex-col flex-1 py-1">
+                      <div className="flex justify-between items-start gap-4">
+                        <Link href={`/products/${item.productId.slug}?color=${encodeURIComponent(item.colorName)}`}>
+                          <h3 className="text-xs md:text-base font-bold uppercase tracking-wide text-black leading-snug hover:underline underline-offset-2 md:pr-8">
+                            {item.productId.title}
+                          </h3>
+                        </Link>
+                        <button
+                          onClick={() => setItemToRemove(item)}
+                          className="hidden md:block absolute right-0 top-1 text-gray-400 hover:text-red-500 transition-colors p-1"
+                          aria-label="Remove item"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       </div>
 
-                      <button 
-                        onClick={() => setItemToRemove(item)}
-                        className="md:hidden text-gray-400 hover:text-red-500 transition-colors p-1"
-                        aria-label="Remove item"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <p className="text-sm font-semibold text-black">
+                          ₹{item.productId.matchedColorPrice.toLocaleString("en-IN")}
+                        </p>
+                        {item.productId.matchedColorOriginalPrice > item.productId.matchedColorPrice && (
+                          <p className="text-xs font-semibold text-gray-400 line-through">
+                            ₹{item.productId.matchedColorOriginalPrice.toLocaleString("en-IN")}
+                          </p>
+                        )}
+                      </div>
 
+                      <div className="flex items-center gap-3 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-500 mt-4">
+                        {item.colorName !== "Default" && (
+                          <span>Color: <span className="text-black">{item.colorName}</span></span>
+                        )}
+                        {item.colorName !== "Default" && item.size !== "Default" && <span className="text-gray-300">|</span>}
+                        {item.size !== "Default" && (
+                          <span>Size: <span className="text-black">{item.size}</span></span>
+                        )}
+                      </div>
+
+                      {/* Quantity Selector + Mobile Delete */}
+                      <div className="mt-auto pt-5 md:pt-6 flex justify-between items-end">
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500 md:mr-4 md:inline-block">
+                            Qty:
+                          </span>
+                          <div className="flex items-center border border-gray-200 h-8 md:h-10 rounded-full md:rounded-none overflow-hidden">
+                            <button
+                              disabled={item.quantity <= 1 || item.isUnavailable || item.isOutOfStock}
+                              onClick={() => handleUpdateQuantity(item._id, item.quantity - 1)}
+                              className="w-8 h-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="md:w-[12px] md:h-[12px]">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                              </svg>
+                            </button>
+                            <input
+                              type="number"
+                              min="1"
+                              value={item.quantity}
+                              disabled={item.isUnavailable || item.isOutOfStock}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                if (!isNaN(val) && val > 0) {
+                                  const max = item.availableQuantity || 0;
+                                  handleUpdateQuantity(item._id, Math.min(val, max));
+                                }
+                              }}
+                              className="w-8 md:w-12 h-full text-center text-xs md:text-sm font-bold focus:outline-none focus:bg-gray-50 transition-colors [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none disabled:opacity-50 disabled:bg-gray-100"
+                              style={{ MozAppearance: 'textfield' }}
+                            />
+                            <button
+                              disabled={item.quantity >= (item.availableQuantity || 0) || item.isUnavailable || item.isOutOfStock}
+                              onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
+                              className="w-8 h-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="md:w-[12px] md:h-[12px]">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => setItemToRemove(item)}
+                          className="md:hidden text-gray-400 hover:text-red-500 transition-colors p-1"
+                          aria-label="Remove item"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+
+                    </div>
                   </div>
-                </div>
                 );
               })}
             </div>
@@ -305,7 +304,7 @@ export default function CartPage() {
             {/* Right: Order Summary */}
             <div className="lg:col-span-4 sticky top-24">
               <OrderSummaryCard subtotal={subtotal}>
-                <Link 
+                <Link
                   href="/checkout"
                   className="hidden md:flex w-full items-center justify-center gap-3 bg-black text-white px-4 py-5 mt-4 text-xs font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all hover:shadow-lg group"
                 >
@@ -337,7 +336,7 @@ export default function CartPage() {
               <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Total</span>
               <span className="text-lg font-black text-black leading-none mt-1">₹{subtotal.toLocaleString("en-IN")}</span>
             </div>
-            <Link 
+            <Link
               href="/checkout"
               className="flex items-center justify-center gap-2 bg-black text-white px-8 py-3.5 text-xs font-black uppercase tracking-widest active:scale-[0.98] transition-transform"
             >
@@ -356,21 +355,21 @@ export default function CartPage() {
               <h3 className="text-lg font-black uppercase tracking-widest text-black mb-2">Remove Item?</h3>
               <p className="text-sm text-gray-500 font-medium">Are you sure you want to remove this item from your bag?</p>
             </div>
-            
+
             <div className="flex flex-col gap-3">
-              <button 
+              <button
                 onClick={handleMoveToWishlist}
                 className="w-full bg-black text-white text-xs font-black uppercase tracking-widest py-4 hover:bg-gray-800 transition-colors"
               >
                 Move to Wishlist
               </button>
-              <button 
+              <button
                 onClick={handleConfirmRemove}
                 className="w-full bg-white text-red-500 border border-gray-200 text-xs font-black uppercase tracking-widest py-4 hover:bg-red-50 hover:border-red-200 transition-colors"
               >
                 Remove
               </button>
-              <button 
+              <button
                 onClick={() => setItemToRemove(null)}
                 className="w-full text-xs font-black uppercase tracking-widest text-gray-500 py-2 hover:text-black transition-colors"
               >

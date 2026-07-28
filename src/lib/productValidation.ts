@@ -17,13 +17,6 @@ export const validateDescription = (description: any): { isValid: boolean, value
   return { isValid: true, value: sanitizeHtml(safeDesc) };
 };
 
-export const validatePrice = (price: any): { isValid: boolean, value?: number, error?: string } => {
-  const p = Number(price);
-  if (isNaN(p) || p <= 0) {
-    return { isValid: false, error: 'Price must be a valid number greater than 0' };
-  }
-  return { isValid: true, value: p };
-};
 
 export const validateObjectId = (id: string, resourceName: string = 'product'): { isValid: boolean, error?: string } => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -91,25 +84,44 @@ export const validateColors = (colors: any): { isValid: boolean, value?: any[], 
       images.push({ url: img.url, order: Number(img.order) || 0 });
     }
 
-    safeColors.push({ colorName: safeColorName, images, sizes });
+    const price = Number(c.price);
+    const sellingPrice = Number(c.sellingPrice);
+    
+    if (isNaN(price) || price <= 0) {
+      return { isValid: false, error: 'price must be > 0' };
+    }
+    if (isNaN(sellingPrice) || sellingPrice <= 0) {
+      return { isValid: false, error: 'sellingPrice must be > 0' };
+    }
+    if (price < sellingPrice) {
+      return { isValid: false, error: 'price must be >= sellingPrice' };
+    }
+
+    const badgeRes = validateBadge(c.badge);
+    if (!badgeRes.isValid) return { isValid: false, error: `Color "${safeColorName}": ${badgeRes.error}` };
+
+    const isFeatured = typeof c.isFeatured === 'boolean' ? c.isFeatured : false;
+    const isActive = typeof c.isActive === 'boolean' ? c.isActive : true;
+    
+    // Ratings are not validated from input because they are calculated/internal, 
+    // but if passed we could sanitize. For safety, just strip them or allow them.
+    // In our case, admin APIs don't typically let you set ratings directly from the form.
+    
+    safeColors.push({
+      colorName: safeColorName,
+      price,
+      sellingPrice,
+      images,
+      sizes,
+      badge: badgeRes.value || null,
+      isFeatured,
+      isActive,
+      // ratings are preserved if present (e.g. on updates)
+      ...(c.ratings && { ratings: c.ratings }),
+      ...(c.popularityScore !== undefined && { popularityScore: c.popularityScore }),
+    });
   }
 
   return { isValid: true, value: safeColors };
 };
 
-export const validatePricing = (price: any, sellingPrice: any, existingProduct?: any): { isValid: boolean, price?: number, sellingPrice?: number, error?: string } => {
-  let currentPrice = price !== undefined ? price : existingProduct?.price;
-  let currentSellingPrice = sellingPrice !== undefined ? sellingPrice : existingProduct?.sellingPrice;
-  
-  const pResult = validatePrice(currentPrice);
-  if (!pResult.isValid) return { isValid: false, error: pResult.error };
-  
-  const spResult = validatePrice(currentSellingPrice);
-  if (!spResult.isValid) return { isValid: false, error: 'Selling price must be a valid number greater than 0' };
-  
-  if (pResult.value! < spResult.value!) {
-    return { isValid: false, error: 'Regular price must be greater than or equal to selling price' };
-  }
-  
-  return { isValid: true, price: pResult.value, sellingPrice: spResult.value };
-};

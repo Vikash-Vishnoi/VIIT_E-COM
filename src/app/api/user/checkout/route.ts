@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     // 2. Fetch Cart Items and populate Product details securely (including colors for inventory check)
     const cartItems = await Cart.find({ userId })
       .select('productId quantity colorName size')
-      .populate({ path: 'productId', select: 'title sellingPrice colors' })
+      .populate({ path: 'productId', select: 'title colors.colorName colors.price colors.sellingPrice colors.sizes' })
       .lean();
 
     if (cartItems.length === 0) {
@@ -95,8 +95,14 @@ export async function POST(req: NextRequest) {
         }
       });
       
+      const matchedColor = product.colors.find((c: any) => c.colorName === item.colorName);
+      if (!matchedColor) {
+        return NextResponse.json({ success: false, message: `Color not found for ${product.title}` }, { status: 400 });
+      }
+
       // Price at order is locked in
-      const priceAtOrder = product.sellingPrice;
+      const priceAtOrder = matchedColor.sellingPrice;
+      const originalPriceAtOrder = matchedColor.price;
       const quantity = item.quantity;
       
       subtotal += (priceAtOrder * quantity);
@@ -108,6 +114,7 @@ export async function POST(req: NextRequest) {
         size: item.size,
         quantity: quantity,
         priceAtOrder: priceAtOrder,
+        originalPriceAtOrder: originalPriceAtOrder,
       });
     }
 

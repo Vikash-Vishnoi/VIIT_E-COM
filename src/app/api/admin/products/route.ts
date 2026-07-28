@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
 
     // ─── Common query parsing (pagination · search · sort) ────────────
     const SORT_MAP: Record<string, Record<string, 1 | -1>> = {
-      price_asc:  { sellingPrice:  1 },
-      price_desc: { sellingPrice: -1 },
+      price_asc:  { minSellingPrice:  1 },
+      price_desc: { minSellingPrice: -1 },
       newest:     { createdAt:    -1 },
       oldest:     { createdAt:     1 },
       title_asc:  { title:         1 },
@@ -45,14 +45,14 @@ export async function GET(req: NextRequest) {
     if (category) filter.category = category;
 
     const status = searchParams.get('status');
-    if (status === 'active') filter.isActive = true;
-    else if (status === 'inactive') filter.isActive = false;
+    if (status === 'active') filter['colors.isActive'] = true;
+    else if (status === 'inactive') filter['colors.isActive'] = false;
 
     const badge = searchParams.get('badge');
-    if (badge) filter.badge = badge;
+    if (badge) filter['colors.badge'] = badge;
 
     const featured = searchParams.get('featured');
-    if (featured === 'true') filter.isFeatured = true;
+    if (featured === 'true') filter['colors.isFeatured'] = true;
 
     const stock = searchParams.get('stock');
     if (stock === 'in_stock') {
@@ -72,14 +72,16 @@ export async function GET(req: NextRequest) {
       subSubCategory: 1,
       title: 1,
       slug: 1,
-      price: 1,
-      sellingPrice: 1,
+      minSellingPrice: 1,
       'colors.colorName': 1,
+      'colors.price': 1,
+      'colors.sellingPrice': 1,
       'colors.images': { $slice: 1 }, // first image per color (url + order — see note below)
       'colors.sizes.size': 1,         // sub-field projection excludes sku from wire payload
       'colors.sizes.quantity': 1,
-      isFeatured: 1,
-      isActive: 1,
+      'colors.isFeatured': 1,
+      'colors.isActive': 1,
+      'colors.badge': 1,
       // Note: badge, ratings, createdAt removed — not needed in list view
     };
 
