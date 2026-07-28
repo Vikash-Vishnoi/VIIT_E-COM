@@ -58,7 +58,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     category: "",
     subCategory: "",
     subSubCategory: "",
-    subSubCategory: "",
     colors: [],
   });
 
