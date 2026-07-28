@@ -57,9 +57,9 @@ export async function GET(req: NextRequest) {
           price: targetColor?.price ?? 0,
           sellingPrice: targetColor?.sellingPrice ?? 0,
           badge: targetColor?.badge,
-          isActive: targetColor?.isActive ?? p.isActive,
-          ratings: targetColor?.ratings ?? p.ratings,
-          popularityScore: targetColor?.popularityScore ?? p.popularityScore,
+          isActive: targetColor?.isActive ?? false,
+          ratings: targetColor?.ratings ?? { average: 0, count: 0 },
+          popularityScore: targetColor?.popularityScore ?? 0,
           isOutOfStock: totalQty <= 0,
           colors: firstImageUrl ? [{ images: [{ url: firstImageUrl }] }] : []
         }

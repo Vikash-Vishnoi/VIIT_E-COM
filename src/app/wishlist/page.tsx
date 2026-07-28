@@ -8,6 +8,8 @@ import ProductCard, { FormattedProduct } from "@/components/ProductCard";
 import { useStore } from "@/store/useStore";
 
 type WishlistItem = {
+  _id: string;
+  colorName: string;
   productId: {
     _id: string;
     title: string;

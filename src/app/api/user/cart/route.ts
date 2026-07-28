@@ -36,17 +36,15 @@ export async function GET(req: NextRequest) {
       newItem.productId = { ...item.productId };
       
       const p = newItem.productId;
-      newItem.isUnavailable = p.isActive === false;
+      const matchedColor = p.colors?.find((c: any) => c.colorName === newItem.colorName);
+      newItem.isUnavailable = matchedColor ? matchedColor.isActive === false : true;
 
       // Calculate stock for the specific variant
       let availableQty = 0;
-      if (p.colors) {
-        const color = p.colors.find((c: any) => c.colorName === newItem.colorName);
-        if (color && color.sizes) {
-          const sizeObj = color.sizes.find((s: any) => s.size === newItem.size);
-          if (sizeObj) {
-            availableQty = sizeObj.quantity || 0;
-          }
+      if (matchedColor && matchedColor.sizes) {
+        const sizeObj = matchedColor.sizes.find((s: any) => s.size === newItem.size);
+        if (sizeObj) {
+          availableQty = sizeObj.quantity || 0;
         }
       }
 
@@ -54,7 +52,6 @@ export async function GET(req: NextRequest) {
       newItem.availableQuantity = availableQty;
 
       // Extract price for the matched color
-      const matchedColor = p.colors?.find((c: any) => c.colorName === newItem.colorName);
       newItem.productId.matchedColorPrice = matchedColor?.sellingPrice ?? 0;
       newItem.productId.matchedColorOriginalPrice = matchedColor?.price ?? 0;
       newItem.productId.matchedColorImage = matchedColor?.images?.[0]?.url ?? "";
@@ -107,16 +104,16 @@ export async function POST(req: NextRequest) {
 
     // 4. Validate existence in DB and check if it already exists in cart (Parallel)
     const [product, existing] = await Promise.all([
-      Product.findById(productId).select('_id isActive colors.colorName colors.sizes'),
+      Product.findById(productId).select('_id colors.isActive colors.colorName colors.sizes'),
       Cart.findOne({ userId, productId, colorName, size }).select('_id quantity')
     ]);
 
-    if (!product || !product.isActive) {
-      return NextResponse.json({ success: false, message: 'Product not found or unavailable' }, { status: 404 });
+    if (!product) {
+      return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
     }
 
     const colorObj = product.colors?.find((c: any) => c.colorName === colorName);
-    if (!colorObj) {
+    if (!colorObj || !colorObj.isActive) {
       return NextResponse.json({ success: false, message: 'Selected color is not available' }, { status: 400 });
     }
 
@@ -194,12 +191,15 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Validate against product stock
-    const product = await Product.findById(cartItem.productId).select('_id isActive colors.colorName colors.sizes');
-    if (!product || !product.isActive) {
-      return NextResponse.json({ success: false, message: 'Product not found or unavailable' }, { status: 404 });
+    const product = await Product.findById(cartItem.productId).select('_id colors.isActive colors.colorName colors.sizes');
+    if (!product) {
+      return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
     }
 
     const colorObj = product.colors?.find((c: any) => c.colorName === cartItem.colorName);
+    if (!colorObj || !colorObj.isActive) {
+      return NextResponse.json({ success: false, message: 'Selected color is not available' }, { status: 400 });
+    }
     const sizeObj = colorObj?.sizes?.find((s: any) => s.size === cartItem.size);
 
     if (!sizeObj) {

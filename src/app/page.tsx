@@ -27,6 +27,7 @@ export default function Home() {
           alt=""
           fill
           priority
+          loading="eager"
           sizes="100vw"
           className="object-cover object-[center_38.5%] md:scale-[1.05] md:translate-x-[2%]"
           style={{ willChange: "transform" }}

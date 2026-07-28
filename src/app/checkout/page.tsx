@@ -288,13 +288,19 @@ function CheckoutPage() {
                 {items.map(item => (
                   <div key={item._id} className="flex items-center gap-4">
                     <div className="relative w-16 aspect-[3/4] bg-gray-100 flex-shrink-0">
-                      <Image
-                        src={item.productId.matchedColorImage}
-                        alt={item.productId.title}
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                      />
+                      {item.productId.matchedColorImage ? (
+                        <Image
+                          src={item.productId.matchedColorImage}
+                          alt={item.productId.title}
+                          fill
+                          sizes="64px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-[8px] uppercase tracking-widest font-bold text-center p-1">
+                          No Image
+                        </div>
+                      )}
                     </div>
                     <div className="flex flex-col flex-1">
                       <span className="text-xs font-bold uppercase truncate max-w-[180px]">{item.productId.title}</span>

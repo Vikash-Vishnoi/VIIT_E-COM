@@ -169,7 +169,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     }));
   };
 
-  const handleColorFieldChange = (colorIndex: number, field: keyof ColorVariant, value: string | number) => {
+  const handleColorFieldChange = (colorIndex: number, field: keyof ColorVariant, value: string | number | boolean) => {
     setFormData((prev) => {
       const newColors = [...prev.colors];
       newColors[colorIndex] = {

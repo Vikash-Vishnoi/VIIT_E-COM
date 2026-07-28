@@ -190,15 +190,20 @@ export default function CartPage() {
                 return (
                   <div key={item._id} className="flex gap-4 md:gap-6 pb-8 border-b border-gray-100 last:border-0 relative group">
 
-                    {/* Image */}
                     <Link href={`/products/${item.productId.slug}?color=${encodeURIComponent(item.colorName)}`} className="relative w-24 md:w-40 aspect-[3/4] bg-gray-50 flex-shrink-0">
-                      <Image
-                        src={imageUrl}
-                        alt={item.productId.title || "Product image"}
-                        fill
-                        sizes="(max-width: 768px) 96px, 160px"
-                        className={`object-cover ${item.isUnavailable || item.isOutOfStock ? 'opacity-50 grayscale' : ''}`}
-                      />
+                      {imageUrl ? (
+                        <Image
+                          src={imageUrl}
+                          alt={item.productId.title || "Product image"}
+                          fill
+                          sizes="(max-width: 768px) 96px, 160px"
+                          className={`object-cover ${item.isUnavailable || item.isOutOfStock ? 'opacity-50 grayscale' : ''}`}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-[10px] uppercase tracking-widest font-bold text-center p-2">
+                          No Image
+                        </div>
+                      )}
                       {(item.isUnavailable || item.isOutOfStock) && (
                         <div className="absolute inset-x-0 bottom-0 bg-black bg-opacity-70 text-white text-[8px] md:text-[10px] font-bold text-center py-1 uppercase tracking-widest">
                           {item.isUnavailable ? 'Unavailable' : 'Out of Stock'}

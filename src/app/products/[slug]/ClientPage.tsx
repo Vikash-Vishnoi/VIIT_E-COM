@@ -228,14 +228,20 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
             <div ref={imageGalleryRef} className="flex md:grid flex-nowrap md:grid-cols-2 overflow-x-auto md:overflow-visible snap-x snap-mandatory gap-0 md:gap-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
               {images.map((img, idx) => (
                 <div key={idx} className="relative aspect-[3/4] w-full flex-shrink-0 snap-center bg-gray-50 overflow-hidden">
-                  <Image
-                    src={img.url}
-                    alt={`${product.title} - ${currentColor.colorName} - ${idx + 1}`}
-                    fill
-                    priority={idx < 2}
-                    className="object-cover hover:scale-105 transition-transform duration-700"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
+                  {img.url ? (
+                    <Image
+                      src={img.url}
+                      alt={`${product.title} - ${currentColor.colorName} - ${idx + 1}`}
+                      fill
+                      priority={idx < 2}
+                      className="object-cover hover:scale-105 transition-transform duration-700"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs uppercase tracking-widest font-bold">
+                      No Image
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -315,13 +321,19 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
                       className={`w-12 h-16 relative rounded-sm overflow-hidden border-2 transition-all ${selectedColorIndex === idx ? "border-black" : "border-transparent hover:border-gray-300"
                         }`}
                     >
-                      <Image
-                        src={c.images[0]?.url}
-                        alt={c.colorName}
-                        fill
-                        sizes="48px"
-                        className="object-cover"
-                      />
+                      {c.images[0]?.url ? (
+                        <Image
+                          src={c.images[0].url}
+                          alt={c.colorName}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-[8px] uppercase tracking-widest font-bold text-center">
+                          No Image
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>
