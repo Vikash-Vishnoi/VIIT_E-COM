@@ -19,7 +19,7 @@ export default function UserActions() {
   // The server runs cart and wishlist queries in parallel after one JWT verify.
   useEffect(() => {
     const fetchSession = () => {
-      fetch('/api/user/session')
+      fetch('/api/user/session', { cache: 'no-store' })
         .then(res => res.json())
         .then(async data => {
           if (data.authenticated) {
@@ -28,14 +28,15 @@ export default function UserActions() {
             setWishlistData(data.wishlistIds ?? []);
 
             // Handle pending wishlist action (set before redirect to login)
-            const pendingProductId = sessionStorage.getItem('pendingWishlistAction');
-            if (pendingProductId) {
+            const pendingWishlistPayload = sessionStorage.getItem('pendingWishlistAction');
+            if (pendingWishlistPayload) {
               sessionStorage.removeItem('pendingWishlistAction');
               try {
+                const payload = JSON.parse(pendingWishlistPayload);
                 await fetch('/api/user/wishlist', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ productId: pendingProductId })
+                  body: JSON.stringify(payload)
                 });
               } catch (err) {}
             }
@@ -63,6 +64,11 @@ export default function UserActions() {
     };
 
     fetchSession();
+
+    window.addEventListener('auth-change', fetchSession);
+    return () => {
+      window.removeEventListener('auth-change', fetchSession);
+    };
   }, [setUser, setWishlistData, setCartCount, setLoadingAuth]);
 
   useEffect(() => {

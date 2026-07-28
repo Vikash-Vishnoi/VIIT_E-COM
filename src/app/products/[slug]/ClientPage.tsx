@@ -54,8 +54,10 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
   const [quantity, setQuantity] = useState<number | "">(1);
   const [addingToCart, setAddingToCart] = useState(false);
 
+  const currentColor = product.colors[selectedColorIndex] || product.colors[0];
   const { wishlistIds, toggleWishlistId, setCartCount } = useStore();
-  const isWishlisted = wishlistIds.has(product._id);
+  const compositeId = `${product._id}-${currentColor.colorName}`;
+  const isWishlisted = wishlistIds.has(compositeId);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
 
   // Reset quantity to 1 whenever the user switches size or color
@@ -68,14 +70,15 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
 
     // Optimistic update
     const previousState = isWishlisted;
-    toggleWishlistId(product._id, previousState ? 'removed' : 'added');
+    toggleWishlistId(compositeId, previousState ? 'removed' : 'added');
 
     try {
       const res = await fetch('/api/user/wishlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          productId: product._id
+          productId: product._id,
+          colorName: currentColor.colorName
         })
       });
       const data = await res.json();
@@ -83,14 +86,14 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
       if (data.success) {
         // Zustand already optimistically updated
       } else if (data.message === 'Unauthorized') {
-        toggleWishlistId(product._id, previousState ? 'added' : 'removed');
-        sessionStorage.setItem('pendingWishlistAction', product._id);
+        toggleWishlistId(compositeId, previousState ? 'added' : 'removed');
+        sessionStorage.setItem('pendingWishlistAction', JSON.stringify({ productId: product._id, colorName: currentColor.colorName }));
         window.location.href = `/login?returnTo=/products/${product.slug}`;
       } else {
-        toggleWishlistId(product._id, previousState ? 'added' : 'removed');
+        toggleWishlistId(compositeId, previousState ? 'added' : 'removed');
       }
     } catch (error) {
-      toggleWishlistId(product._id, previousState ? 'added' : 'removed');
+      toggleWishlistId(compositeId, previousState ? 'added' : 'removed');
     } finally {
       setLoadingWishlist(false);
     }
@@ -144,7 +147,6 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
     setOpenAccordion(openAccordion === id ? "" : id);
   };
 
-  const currentColor = product.colors[selectedColorIndex] || product.colors[0];
   const images = currentColor?.images.sort((a, b) => a.order - b.order) || [];
   const sizes = currentColor?.sizes || [];
   const currentSizeObj = sizes.find(s => s.size === selectedSize);

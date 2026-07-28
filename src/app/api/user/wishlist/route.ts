@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const wishlist = await Wishlist.find({ userId })
       .populate({
         path: 'productId',
-        select: 'title slug colors.price colors.sellingPrice colors.images colors.sizes badge isActive',
+        select: 'title slug colors.colorName colors.price colors.sellingPrice colors.images colors.sizes colors.badge colors.isActive colors.ratings colors.popularityScore badge isActive',
       })
       .sort({ addedAt: -1 })
       .lean();
@@ -32,33 +32,34 @@ export async function GET(req: NextRequest) {
 
     const minimizedWishlist = validWishlist.map((item: any) => {
       const p = item.productId;
+      const targetColor = p.colors?.find((c: any) => c.colorName === item.colorName);
 
-      // Calculate stock
+      // Calculate stock for the specific color
       let totalQty = 0;
-      if (p.colors) {
-        p.colors.forEach((c: any) => {
-          if (c.sizes) {
-            c.sizes.forEach((s: any) => {
-              totalQty += s.quantity || 0;
-            });
-          }
+      if (targetColor && targetColor.sizes) {
+        targetColor.sizes.forEach((s: any) => {
+          totalQty += s.quantity || 0;
         });
       }
 
       let firstImageUrl = null;
-      if (p.colors && p.colors.length > 0 && p.colors[0].images && p.colors[0].images.length > 0) {
-        firstImageUrl = p.colors[0].images[0].url;
+      if (targetColor && targetColor.images && targetColor.images.length > 0) {
+        firstImageUrl = targetColor.images[0].url;
       }
 
       return {
+        _id: item._id,
+        colorName: item.colorName,
         productId: {
           _id: p._id,
           title: p.title,
           slug: p.slug,
-          price: p.colors?.[0]?.price ?? 0,
-          sellingPrice: p.colors?.[0]?.sellingPrice ?? 0,
-          badge: p.badge,
-          isActive: p.isActive,
+          price: targetColor?.price ?? 0,
+          sellingPrice: targetColor?.sellingPrice ?? 0,
+          badge: targetColor?.badge,
+          isActive: targetColor?.isActive ?? p.isActive,
+          ratings: targetColor?.ratings ?? p.ratings,
+          popularityScore: targetColor?.popularityScore ?? p.popularityScore,
           isOutOfStock: totalQty <= 0,
           colors: firstImageUrl ? [{ images: [{ url: firstImageUrl }] }] : []
         }
@@ -83,13 +84,13 @@ export async function POST(req: NextRequest) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json({ success: false, message: 'Product ID is required to update your wishlist' }, { status: 400 });
+      return NextResponse.json({ success: false, message: 'Product ID and color are required' }, { status: 400 });
     }
 
-    let { productId } = body;
+    let { productId, colorName } = body;
 
-    if (!productId) {
-      return NextResponse.json({ success: false, message: 'Product ID is required' }, { status: 400 });
+    if (!productId || !colorName) {
+      return NextResponse.json({ success: false, message: 'Product ID and color are required' }, { status: 400 });
     }
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
@@ -98,19 +99,24 @@ export async function POST(req: NextRequest) {
 
     
     // Try deleting first (toggle off)
-    const deleteResult = await Wishlist.deleteOne({ userId, productId });
+    const deleteResult = await Wishlist.deleteOne({ userId, productId, colorName });
     if (deleteResult.deletedCount > 0) {
       return NextResponse.json({ success: true, message: 'Removed from wishlist' });
     }
     
     // Validate productId exists and check wishlist limit in parallel
-    const [productExists, currentCount] = await Promise.all([
-      Product.exists({ _id: productId }),
+    const [product, currentCount] = await Promise.all([
+      Product.findById(productId).select('colors.colorName isActive'),
       Wishlist.countDocuments({ userId })
     ]);
 
-    if (!productExists) {
+    if (!product) {
       return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
+    }
+
+    const colorExists = product.colors?.some((c: any) => c.colorName === colorName);
+    if (!colorExists) {
+      return NextResponse.json({ success: false, message: 'Product variant not found' }, { status: 404 });
     }
 
     if (currentCount >= 20) {
@@ -121,6 +127,7 @@ export async function POST(req: NextRequest) {
     const newItem = await Wishlist.create({
       userId,
       productId,
+      colorName,
     });
 
     return NextResponse.json({ success: true, message: 'Added to wishlist' });

@@ -40,12 +40,12 @@ export async function GET(req: NextRequest) {
         { $match: { userId: userObjectId } },
         { $group: { _id: null, total: { $sum: "$quantity" } } },
       ]),
-      // Wishlist IDs only — minimal payload
-      Wishlist.find({ userId }).select("productId -_id").lean(),
+      // Wishlist IDs and colors — minimal payload
+      Wishlist.find({ userId }).select("productId colorName -_id").lean(),
     ]);
 
     const cartCount   = cartResult[0]?.total ?? 0;
-    const wishlistIds = (wishlistDocs as any[]).map((w) => w.productId.toString());
+    const wishlistIds = (wishlistDocs as any[]).map((w) => `${w.productId.toString()}-${w.colorName}`);
 
     return NextResponse.json({ authenticated: true, cartCount, wishlistIds });
   } catch (error: any) {

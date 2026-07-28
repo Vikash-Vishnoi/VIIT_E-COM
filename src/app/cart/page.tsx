@@ -78,16 +78,18 @@ export default function CartPage() {
     if (!itemToRemove) return;
     const id = itemToRemove._id;
     const productId = itemToRemove.productId._id;
+    const colorName = itemToRemove.colorName;
+    const compositeId = `${productId}-${colorName}`;
     setItemToRemove(null);
 
-    const isWishlisted = wishlistIds.has(productId);
+    const isWishlisted = wishlistIds.has(compositeId);
     if (!isWishlisted) {
       try {
-        toggleWishlistId(productId, 'added'); // Optimistic
+        toggleWishlistId(compositeId, 'added'); // Optimistic
         await fetch('/api/user/wishlist', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId })
+          body: JSON.stringify({ productId, colorName })
         });
       } catch (err) { }
     }

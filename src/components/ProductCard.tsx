@@ -37,11 +37,26 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
     const previousState = isWishlisted;
     toggleWishlistId(product.id, previousState ? 'removed' : 'added');
 
+    // Extract productId and colorName from the composite ID string (e.g., "1234567890-Red")
+    // In some cases (like similar products from old feeds), it might just be the productId.
+    // To handle hyphenated color names securely, we assume the 24-char hex string is the ID.
+    const rawIdStr = String(product.id);
+    let extractedProductId = rawIdStr;
+    let extractedColorName = "Default";
+
+    if (rawIdStr.length > 24 && rawIdStr.charAt(24) === '-') {
+      extractedProductId = rawIdStr.substring(0, 24);
+      extractedColorName = rawIdStr.substring(25);
+    }
+
     try {
       const res = await fetch('/api/user/wishlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: product.id })
+        body: JSON.stringify({ 
+          productId: extractedProductId,
+          colorName: extractedColorName
+        })
       });
       const data = await res.json();
 
@@ -50,7 +65,10 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
       } else if (data.message === 'Unauthorized') {
         // Revert optimistic update and redirect
         toggleWishlistId(product.id, previousState ? 'added' : 'removed');
-        sessionStorage.setItem('pendingWishlistAction', product.id);
+        sessionStorage.setItem('pendingWishlistAction', JSON.stringify({
+          productId: extractedProductId,
+          colorName: extractedColorName
+        }));
         window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`;
       } else {
         // Revert on general error
@@ -67,13 +85,19 @@ export default function ProductCard({ product }: { product: FormattedProduct }) 
   return (
     <Link href={`/products/${product.slug}`} className="group flex flex-col cursor-pointer" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-50 rounded-sm mb-2 md:mb-3">
-        <Image
-          src={product.image}
-          alt={product.name || "Product image"}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className={`object-cover transition-transform duration-500 ${hovered ? "scale-105" : "scale-100"} ${product.isUnavailable || product.isOutOfStock ? "grayscale opacity-75" : ""}`}
-        />
+        {product.image ? (
+          <Image
+            src={product.image}
+            alt={product.name || "Product image"}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className={`object-cover transition-transform duration-500 ${hovered ? "scale-105" : "scale-100"} ${product.isUnavailable || product.isOutOfStock ? "grayscale opacity-75" : ""}`}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-xs uppercase tracking-widest font-bold">
+            No Image
+          </div>
+        )}
 
         {product.badge && (() => {
           const badgeStyles: Record<string, string> = {

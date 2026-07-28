@@ -36,7 +36,7 @@ export default function WishlistPage() {
   const items: WishlistItem[] = data?.success ? data.data : [];
 
   // Reactively filter items that are still in the global wishlist store
-  const activeItems = items.filter(item => item.productId && wishlistIds.has(String(item.productId._id)));
+  const activeItems = items.filter(item => item.productId && wishlistIds.has(`${item.productId._id}-${item.colorName}`));
 
   if (isLoading) {
     return (
@@ -92,17 +92,17 @@ export default function WishlistPage() {
           else if (isOutOfStock) badge = "OUT OF STOCK";
 
           const formattedProduct: FormattedProduct = {
-            id: product._id,
+            id: `${product._id}-${item.colorName}`,
             name: product.title,
             price: product.sellingPrice,
             originalPrice: product.price,
-            image: product.colors?.[0]?.images?.[0]?.url,
+            image: product.colors?.[0]?.images?.[0]?.url ?? "",
             badge,
-            slug: product.slug,
+            slug: `${product.slug}?color=${encodeURIComponent(item.colorName)}`,
             isUnavailable,
             isOutOfStock
           };
-          return <ProductCard key={product._id} product={formattedProduct} />;
+          return <ProductCard key={item._id} product={formattedProduct} />;
         })}
       </div>
     </div>

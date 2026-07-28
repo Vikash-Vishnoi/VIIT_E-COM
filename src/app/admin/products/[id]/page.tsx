@@ -24,7 +24,6 @@ type FormData = {
   category: string;
   subCategory: string;
   subSubCategory: string;
-  subSubCategory: string;
   colors: ColorVariant[];
 };
 

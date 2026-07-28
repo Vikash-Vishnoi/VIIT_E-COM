@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
       .select('-userId -addedAt -createdAt -updatedAt -__v')
       .populate({
         path: 'productId',
-        select: '-_id title slug colors.colorName colors.price colors.sellingPrice colors.images colors.sizes isActive badge',
+        select: 'title slug colors.colorName colors.price colors.sellingPrice colors.images colors.sizes isActive badge',
       })
       .sort({ addedAt: -1 })
       .lean();
@@ -31,34 +31,38 @@ export async function GET(req: NextRequest) {
     }
 
     const processedCartItems = validCartItems.map((item: any) => {
-      const p = item.productId;
-      item.isUnavailable = p.isActive === false;
+      // Clone the objects so they don't share references in memory
+      const newItem = { ...item };
+      newItem.productId = { ...item.productId };
+      
+      const p = newItem.productId;
+      newItem.isUnavailable = p.isActive === false;
 
       // Calculate stock for the specific variant
       let availableQty = 0;
       if (p.colors) {
-        const color = p.colors.find((c: any) => c.colorName === item.colorName);
+        const color = p.colors.find((c: any) => c.colorName === newItem.colorName);
         if (color && color.sizes) {
-          const sizeObj = color.sizes.find((s: any) => s.size === item.size);
+          const sizeObj = color.sizes.find((s: any) => s.size === newItem.size);
           if (sizeObj) {
             availableQty = sizeObj.quantity || 0;
           }
         }
       }
 
-      item.isOutOfStock = availableQty <= 0;
-      item.availableQuantity = availableQty;
+      newItem.isOutOfStock = availableQty <= 0;
+      newItem.availableQuantity = availableQty;
 
       // Extract price for the matched color
-      const matchedColor = p.colors?.find((c: any) => c.colorName === item.colorName);
-      item.productId.matchedColorPrice = matchedColor?.sellingPrice ?? 0;
-      item.productId.matchedColorOriginalPrice = matchedColor?.price ?? 0;
-      item.productId.matchedColorImage = matchedColor?.images?.[0]?.url ?? "";
+      const matchedColor = p.colors?.find((c: any) => c.colorName === newItem.colorName);
+      newItem.productId.matchedColorPrice = matchedColor?.sellingPrice ?? 0;
+      newItem.productId.matchedColorOriginalPrice = matchedColor?.price ?? 0;
+      newItem.productId.matchedColorImage = matchedColor?.images?.[0]?.url ?? "";
 
       // Strip colors to minimize payload size
-      delete item.productId.colors;
+      delete newItem.productId.colors;
 
-      return item;
+      return newItem;
     });
 
     return NextResponse.json({ success: true, data: processedCartItems });

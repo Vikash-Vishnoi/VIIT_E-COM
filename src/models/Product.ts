@@ -19,6 +19,14 @@ const SizeSchema = new Schema(
   { _id: false }
 );
 
+const RatingsSchema = new Schema(
+  {
+    average: { type: Number, default: 0, min: 0, max: 5 },
+    count: { type: Number, default: 0, min: 0 },
+  },
+  { _id: false }
+);
+
 const ColorSchema = new Schema(
   {
     colorName: { type: String, required: true },
@@ -35,14 +43,6 @@ const ColorSchema = new Schema(
     isActive: { type: Boolean, default: true },
     ratings: { type: RatingsSchema, default: () => ({ average: 0, count: 0 }) },
     popularityScore: { type: Number, default: 0 },
-  },
-  { _id: false }
-);
-
-const RatingsSchema = new Schema(
-  {
-    average: { type: Number, default: 0, min: 0, max: 5 },
-    count: { type: Number, default: 0, min: 0 },
   },
   { _id: false }
 );

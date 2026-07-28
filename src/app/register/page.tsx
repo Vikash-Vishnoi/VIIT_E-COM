@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 import { validatePassword, passwordErrorMsg, validateName, nameErrorMsg, validateMobile, mobileErrorMsg } from "@/lib/validation";
 import toast from "react-hot-toast";
 import { getAuthRedirectUrl } from "@/lib/authRedirect";
+import { useStore } from "@/store/useStore";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { setUser } = useStore();
   const [loading, setLoading] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
@@ -84,6 +86,7 @@ export default function RegisterPage() {
       const data = await res.json();
       if (data.success) {
         toast.success("Registration successful!");
+        setUser({ authenticated: true });
         window.dispatchEvent(new Event('auth-change'));
         const returnUrl = getAuthRedirectUrl();
 

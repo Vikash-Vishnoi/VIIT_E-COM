@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { getAuthRedirectUrl } from "@/lib/authRedirect";
+import { useStore } from "@/store/useStore";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setUser } = useStore();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,12 +28,12 @@ export default function LoginPage() {
       const data = await res.json();
       
       if (data.success) {
+        setUser({ authenticated: true });
         window.dispatchEvent(new Event('auth-change'));
         const returnUrl = getAuthRedirectUrl();
 
         toast.success("Successfully logged in!");
         router.push(returnUrl);
-        router.refresh(); // Refresh the layout to trigger any server-side auth checks
       } else {
         toast.error(data.message || "Invalid credentials");
       }
