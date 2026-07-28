@@ -152,12 +152,20 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
   // Max purchasable qty = min(actual stock for selected size, API hard-cap of 20)
   const maxStock = Math.min(currentSizeObj?.quantity ?? 0, 20);
 
-  // Carousel ref and scroll function
+  // Carousel refs and scroll functions
   const carouselRef = useRef<HTMLDivElement>(null);
   const scrollCarousel = (dir: 'left' | 'right') => {
     if (carouselRef.current) {
       const scrollAmount = carouselRef.current.clientWidth;
       carouselRef.current.scrollBy({ left: dir === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const imageGalleryRef = useRef<HTMLDivElement>(null);
+  const scrollImageGallery = (dir: 'left' | 'right') => {
+    if (imageGalleryRef.current) {
+      const scrollAmount = imageGalleryRef.current.clientWidth;
+      imageGalleryRef.current.scrollBy({ left: dir === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
     }
   };
 
@@ -203,19 +211,43 @@ export default function ClientPage({ product, similarProducts }: ClientPageProps
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16 items-start">
           
           {/* ── Left side: Image Gallery ── */}
-          <div className="lg:col-span-7 flex md:grid flex-nowrap md:grid-cols-2 overflow-x-auto md:overflow-visible snap-x snap-mandatory gap-0 md:gap-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-            {images.map((img, idx) => (
-              <div key={idx} className="relative aspect-[3/4] w-full flex-shrink-0 snap-center bg-gray-50 overflow-hidden">
-                <Image
-                  src={img.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
-                  alt={`${product.title} - ${currentColor.colorName} - ${idx + 1}`}
-                  fill
-                  priority={idx < 2}
-                  className="object-cover hover:scale-105 transition-transform duration-700"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
-            ))}
+          <div className="lg:col-span-7 relative group/image">
+            {/* Left Arrow (Mobile only) */}
+            {images.length > 1 && (
+              <button
+                onClick={() => scrollImageGallery('left')}
+                className="md:hidden absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/80 rounded-full text-black shadow-sm"
+                aria-label="Previous image"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+            )}
+
+            <div ref={imageGalleryRef} className="flex md:grid flex-nowrap md:grid-cols-2 overflow-x-auto md:overflow-visible snap-x snap-mandatory gap-0 md:gap-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+              {images.map((img, idx) => (
+                <div key={idx} className="relative aspect-[3/4] w-full flex-shrink-0 snap-center bg-gray-50 overflow-hidden">
+                  <Image
+                    src={img.url || "https://tse4.mm.bing.net/th/id/OIP.z2thg6aE_lahXOHgvUsv7gHaHa"}
+                    alt={`${product.title} - ${currentColor.colorName} - ${idx + 1}`}
+                    fill
+                    priority={idx < 2}
+                    className="object-cover hover:scale-105 transition-transform duration-700"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Right Arrow (Mobile only) */}
+            {images.length > 1 && (
+              <button
+                onClick={() => scrollImageGallery('right')}
+                className="md:hidden absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/80 rounded-full text-black shadow-sm"
+                aria-label="Next image"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+            )}
           </div>
 
           {/* ── Right side: Sticky Info Panel ── */}
