@@ -13,7 +13,7 @@ export default function ForgotPasswordPage() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [cooldown, setCooldown] = useState(0);
-  
+
   // Form Data
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
   const handleSendOTP = async () => {
     if (!email) return toast.error("Please enter your registered email");
     if (cooldown > 0) return;
-    
+
     setOtpLoading(true);
     try {
       const res = await fetch("/api/auth/forgot-password", {
@@ -63,7 +63,7 @@ export default function ForgotPasswordPage() {
     if (!validatePassword(newPassword)) {
       return toast.error(passwordErrorMsg);
     }
-    
+
     setLoading(true);
     try {
       const res = await fetch("/api/auth/reset-password", {
@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
         window.dispatchEvent(new Event('auth-change'));
         const returnUrl = getAuthRedirectUrl();
 
-        router.push(returnUrl); 
+        router.push(returnUrl);
         router.refresh();
       } else {
         toast.error(data.message || "Password reset failed");
@@ -100,13 +100,13 @@ export default function ForgotPasswordPage() {
         </p>
 
         <form onSubmit={handleResetPassword} className="flex flex-col gap-6">
-          
+
           {/* Email & OTP Request */}
           <div className="flex flex-col gap-2">
             <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Registered Email</label>
             <div className="flex flex-row gap-2 items-end">
-              <input 
-                type="email" 
+              <input
+                type="email"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -114,9 +114,9 @@ export default function ForgotPasswordPage() {
                 }}
                 required
                 className="placeholder:text-gray-400 flex-1 border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
-                placeholder="you@example.com"
+                placeholder="Email Address"
               />
-              <button 
+              <button
                 type="button"
                 onClick={handleSendOTP}
                 disabled={otpLoading || cooldown > 0 || !email}
@@ -132,8 +132,8 @@ export default function ForgotPasswordPage() {
             <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">5-Digit Reset Code</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   maxLength={5}
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} // only numbers
@@ -145,8 +145,8 @@ export default function ForgotPasswordPage() {
 
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">New Password</label>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
@@ -158,8 +158,8 @@ export default function ForgotPasswordPage() {
                 </div>
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
                 className="w-full py-3.5 md:py-4 bg-black text-white text-xs md:text-sm font-black uppercase tracking-[0.2em] hover:bg-gray-800 disabled:opacity-50 transition-colors mt-2"
               >
@@ -172,7 +172,7 @@ export default function ForgotPasswordPage() {
         {/* Footer */}
         <div className="mt-8 text-center border-t border-gray-100 pt-6">
           <p className="text-xs text-gray-500 flex justify-center gap-2">
-            <button 
+            <button
               type="button"
               onClick={() => {
                 const searchParams = new URLSearchParams(window.location.search);

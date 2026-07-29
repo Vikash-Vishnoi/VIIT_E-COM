@@ -47,12 +47,13 @@ export default async function ProductPage({ params }: PageProps) {
 
   // Format similar products for the ProductCard component
   const formattedSimilar = similarDocs.map((p: any) => {
+    const firstColor = (p.colors as any[])?.[0];
     const prices = (p.colors as any[])?.map(c => c.sellingPrice) ?? [];
     const lowestSp = Math.min(...prices);
     const allSame  = prices.every(sp => sp === lowestSp);
     return {
-      id: p._id.toString(),
-      name: p.title,
+      id: `${p._id.toString()}-${firstColor?.colorName || ''}`,
+      name: firstColor ? `${p.title} | ${firstColor.colorName}` : p.title,
       price: lowestSp,
       originalPrice: (p.colors as any[])?.[0]?.price ?? lowestSp,
       pricePrefix: allSame ? undefined : 'From',

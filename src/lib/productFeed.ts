@@ -111,7 +111,7 @@ export async function fetchFeedProducts(
     
     return {
       id:            `${p._id.toString()}-${color.colorName}`,
-      name:          p.title,
+      name:          `${p.title} | ${color.colorName}`,
       price:         color.sellingPrice,
       originalPrice: color.price,
       pricePrefix:   undefined, // Not needed, explicit color is shown

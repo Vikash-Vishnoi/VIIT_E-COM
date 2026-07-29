@@ -23,7 +23,7 @@ export default function RegisterPage() {
     }
   }, [cooldown]);
 
-  
+
   // Form Data
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -75,7 +75,7 @@ export default function RegisterPage() {
     if (!validatePassword(password)) {
       return toast.error(passwordErrorMsg);
     }
-    
+
     setLoading(true);
     try {
       const res = await fetch("/api/auth/register", {
@@ -90,7 +90,7 @@ export default function RegisterPage() {
         window.dispatchEvent(new Event('auth-change'));
         const returnUrl = getAuthRedirectUrl();
 
-        router.push(returnUrl); 
+        router.push(returnUrl);
       } else {
         toast.error(data.message || "Registration failed");
       }
@@ -109,19 +109,19 @@ export default function RegisterPage() {
         </h1>
 
         <form onSubmit={handleRegister} className="flex flex-col gap-6">
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex flex-col gap-2">
               <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Full Name</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
                 minLength={2}
                 maxLength={100}
                 className="placeholder:text-gray-400 w-full border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
-                placeholder="Priya Sharma"
+                placeholder=" Full Name"
               />
             </div>
 
@@ -129,14 +129,14 @@ export default function RegisterPage() {
               <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Mobile Number</label>
               <div className="flex items-center border-b-2 border-gray-200 focus-within:border-black transition-colors">
                 <span className="text-sm font-medium text-gray-800 pr-2">+91</span>
-                <input 
-                  type="tel" 
+                <input
+                  type="tel"
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
                   required
                   maxLength={10}
                   className="placeholder:text-gray-400 w-full py-2 text-sm focus:outline-none bg-transparent"
-                  placeholder="9876543210"
+                  placeholder="Mobile Number"
                 />
               </div>
             </div>
@@ -145,8 +145,8 @@ export default function RegisterPage() {
           <div className="flex flex-col gap-2">
             <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Email Address</label>
             <div className="flex flex-row gap-2 items-end">
-              <input 
-                type="email" 
+              <input
+                type="email"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -154,9 +154,9 @@ export default function RegisterPage() {
                 }}
                 required
                 className="placeholder:text-gray-400 flex-1 border-b-2 border-gray-200 py-2 text-sm focus:outline-none focus:border-black transition-colors bg-transparent"
-                placeholder="you@example.com"
+                placeholder="Email Address"
               />
-              <button 
+              <button
                 type="button"
                 onClick={handleSendOTP}
                 disabled={otpLoading || cooldown > 0}
@@ -169,8 +169,8 @@ export default function RegisterPage() {
 
           <div className="flex flex-col gap-2">
             <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">5-Digit OTP</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               maxLength={5}
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} // only numbers
@@ -183,8 +183,8 @@ export default function RegisterPage() {
 
           <div className="flex flex-col gap-2">
             <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500">Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -196,8 +196,8 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="w-full py-3.5 md:py-4 bg-black text-white text-xs md:text-sm font-black uppercase tracking-[0.2em] hover:bg-gray-800 disabled:opacity-50 transition-colors mt-4"
           >
@@ -209,7 +209,7 @@ export default function RegisterPage() {
         <div className="mt-8 text-center border-t border-gray-100 pt-6">
           <p className="text-xs text-gray-500">
             Already have an account?{' '}
-            <button 
+            <button
               type="button"
               onClick={() => {
                 const searchParams = new URLSearchParams(window.location.search);

@@ -264,7 +264,7 @@ export default function CategoryFeedLayout({
                     onChange={(e) => { const v = Number(e.target.value); if (v <= priceRange[1] - 100) setPriceRange([v, priceRange[1]]); }}
                     onMouseUp={() => applyPriceFilter(priceRange[0], priceRange[1])}
                     onTouchEnd={() => applyPriceFilter(priceRange[0], priceRange[1])}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    className="absolute inset-0 w-full h-full opacity-0 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:cursor-pointer"
                     style={{ zIndex: priceRange[0] > ABSOLUTE_MAX - 200 ? 5 : 3 }}
                   />
                   <input
@@ -272,7 +272,7 @@ export default function CategoryFeedLayout({
                     onChange={(e) => { const v = Number(e.target.value); if (v >= priceRange[0] + 100) setPriceRange([priceRange[0], v]); }}
                     onMouseUp={() => applyPriceFilter(priceRange[0], priceRange[1])}
                     onTouchEnd={() => applyPriceFilter(priceRange[0], priceRange[1])}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    className="absolute inset-0 w-full h-full opacity-0 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:cursor-pointer"
                     style={{ zIndex: 4 }}
                   />
                   <div

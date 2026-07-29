@@ -95,7 +95,7 @@ export default function WishlistPage() {
 
           const formattedProduct: FormattedProduct = {
             id: `${product._id}-${item.colorName}`,
-            name: product.title,
+            name: `${product.title} | ${item.colorName}`,
             price: product.sellingPrice,
             originalPrice: product.price,
             image: product.colors?.[0]?.images?.[0]?.url ?? "",
