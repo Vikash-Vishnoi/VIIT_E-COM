@@ -93,6 +93,13 @@ export default function MobileMenu({ navTreeBySlug }: { navTreeBySlug: Map<strin
                           </Link>
                           {sub.children.length > 0 && (
                             <div className="pl-4 flex flex-col">
+                              <Link
+                                href={`/${link.slug}/${sub.slug}`}
+                                onClick={closeMenu}
+                                className="block py-1.5 text-xs font-semibold text-gray-500 hover:text-black transition-colors"
+                              >
+                                View All
+                              </Link>
                               {sub.children.map((subsub) => (
                                 <Link
                                   key={subsub._id}

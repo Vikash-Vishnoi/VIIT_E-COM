@@ -18,7 +18,7 @@ export default function Category() {
       headerClassName="pr-6 md:pr-10"
       autoScrollOnHover={true}
     >
-      {products.map((product) => (
+      {products.map((product, index) => (
         <Link
           key={product.href}
           href={product.href}
@@ -30,6 +30,7 @@ export default function Category() {
               src={product.src}
               alt={product.label}
               fill
+              priority={index === 0}
               sizes="(max-width: 768px) 100vw, 20vw"
               className="object-cover object-top transition-transform duration-500 hover:scale-105"
               style={{ willChange: "transform" }}

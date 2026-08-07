@@ -12,7 +12,7 @@ const looks = [
 export default function Looks() {
   return (
     <CarouselSection title="Own iT" sectionClassName="py-8 px-6 md:px-10" autoScrollOnHover={true}>
-      {looks.map((look) => (
+      {looks.map((look, index) => (
         <div
           key={look.src}
           className="flex-none relative overflow-hidden bg-gray-50 group cursor-pointer w-[calc(100vw-3rem)] md:w-[65vw] lg:w-[clamp(220px,24vw,340px)] snap-center aspect-[3/4]"
@@ -21,6 +21,7 @@ export default function Looks() {
             src={look.src}
             alt={look.alt}
             fill
+            priority={index === 0}
             sizes="(max-width: 768px) 100vw, 20vw"
             className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
             style={{ willChange: "transform" }}
